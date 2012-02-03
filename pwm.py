@@ -6,22 +6,24 @@ class PWM:
     def __init__(self):
         self.P = []
     
-    def randomize(self, len):
+    def randomize(self):
         """generate a random P matrix with length len"""
         self.P = []
-        for i in range(0, len=INIT_PWM_LEN):
+        for i in range(0, INIT_PWM_LEN):
             self.P.append( {} )
             sump = 0.0
-            for c in ALPHABET:
+            shuffled_alphabet = ALPHABET
+            random.shuffle(shuffled_alphabet)
+            for c in shuffled_alphabet:
                 thisp = random.uniform(0.0, 1.0 - sump)
                 self.P[i][c] = thisp
                 sump += thisp
     
-    def make_flat(self, len=INIT_PWM_LEN):
+    def make_flat(self):
         """flattens the P matrix to be non-specific, with length len"""
         flat_p = 1.0 / ALPHABET.__len__()
         self.P = []
-        for i in range(0, len):
+        for i in range(0, INIT_PWM_LEN):
             self.P.append( {} )
             for c in ALPHABET:
                 self.P[i][c] = flat_p 

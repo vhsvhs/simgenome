@@ -1,5 +1,7 @@
-from configuration import *
 from argparser import *
+from configuration import *
+from genetic_algorithm import *
+from population import *
 
 def main():
     ap = ArgParser(sys.argv)
@@ -10,7 +12,9 @@ def main():
     population = Population()
     
     """Build a fitness landscape"""
+    landscape = Landscape()
     
+    return population
     
     
     

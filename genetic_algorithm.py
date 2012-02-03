@@ -1,11 +1,10 @@
 from configuration import *
+from landscape import *
+from population import *
 
 class Genetic_Algorithm:
-    self.generation_counter = 0
-    
-    def __init__(self, maxg):
-        self.max_generations = maxg
-    
+    generation_counter = 0
+        
     def runsim(self, population, landscape):
         """This method implements the main loop of the genetic algorithm."""
         for i in range(0, MAX_GA_GENS):

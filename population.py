@@ -1,13 +1,29 @@
 from configuration import *
+from genome import *
 
 class Population:
-    self.genomes = []
+    genomes = []
     
     def __init__(self):
         """Build a seed genome."""
-        genome = Genome()
+        genome = Genome( self.generate_unique_genomeid() )
         for i in range(0, N_GENOMES):
-            self.genomes.append( Genome() )
+            """Fill the population with N_GENOMES copies of the seed genome."""
+            self.genomes.append( genome )
+    
+    def contains_genome(self, id):
+        """Does the population contain a genome with ID == id?"""
+        for genome in self.genomes:
+            if genome.id == id:
+                return True
+        return False
+    
+    def generate_unique_genomeid(self):
+        """Returns a unique integer ID for a new genome"""
+        randid = random.randint(0,1000000)
+        while (True == self.contains_genome(randid) ):
+            randid = random.randint(0,1000000)
+        return randid
     
     def do_mutations(self):
         """Introduce mutations into (potentially) all genomes in the population"""
