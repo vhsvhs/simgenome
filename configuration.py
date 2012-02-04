@@ -1,3 +1,4 @@
+import operator
 import os
 import random
 import re
@@ -38,5 +39,5 @@ gene expression pulses in time."""
 GOAL_COMPLEXITY = 20
 
 """Each random fitness goal will include ideal expression pulses that are
-GOAL_PULSE_MAX_INTERVAL number of time ticks apart from each other.""" 
-GOAL_PULSE_INTERVAL = 10
+smaller than or equal to GOAL_PULSE_MAX number of time ticks apart from each other.""" 
+GOAL_PULSE_MAX = 10

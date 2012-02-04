@@ -11,10 +11,10 @@ def main():
     """Build a population"""
     population = Population()
     
-    """Build a fitness landscape"""
-    landscape = Landscape()
-    
-    return population
+    """Build a random fitness landscape"""
+    landscape = Landscape(genome = population)
+
+    return [population, landscape]
     
     
     

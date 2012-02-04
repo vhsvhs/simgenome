@@ -4,7 +4,7 @@ from gene import *
 class Genome:
     id = None
     
-    """genes 0 through N_TR-1 are TR genes, genes N_TR through N_REPORTER are reporter genes."""
+    """genes 0 through N_TR-1 are TR genes, genes N_TR through N_REPORTER+N_TR-1 are reporter genes."""
     genes = []
     
     def __init__(self, id):
@@ -31,3 +31,4 @@ class Genome:
         return randid
     
     def get_expression_levels(self):
+        pass
