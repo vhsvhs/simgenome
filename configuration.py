@@ -1,8 +1,12 @@
+import math
 import operator
+from operator import mul, add
 import os
+from progressbar import *
 import random
 import re
 import sys
+from tools import *
 
 
 """The values in this configuration file will be used as defaults.
@@ -20,13 +24,13 @@ INIT_PWM_LEN = 3
 ALPHABET = ["A", "C", "G", "T"]
 
 """How many genomes (i.e. individuals) in the population?"""
-N_GENOMES = 2000
+N_GENOMES = 1000
 
 """How many transcription factors per genome?"""
 N_TR = 200
 
 """How many reporter genes per genome?"""
-N_REPORTER = 1000
+N_REPORTER = 2000
 
 """Mean mutation rate"""
 MU = 0.001
@@ -41,3 +45,6 @@ GOAL_COMPLEXITY = 20
 """Each random fitness goal will include ideal expression pulses that are
 smaller than or equal to GOAL_PULSE_MAX number of time ticks apart from each other.""" 
 GOAL_PULSE_MAX = 10
+
+"""maximum distance between TFs to include gamma term"""
+MAX_GD = 80

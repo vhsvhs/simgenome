@@ -5,14 +5,25 @@ from population import *
 class Genetic_Algorithm:
     generation_counter = 0
         
-    def runsim(self, population, landscape):
+    population = None
+    landscape = None
+        
+    def __init__(self, population, landscape):
+        self.population = population
+        self.landscape = landscape
+        
+    def runsim(self):
         """This method implements the main loop of the genetic algorithm."""
         for i in range(0, MAX_GA_GENS):
             """Reproduce the population based on fitness"""
-            population.do_reproduction()
+            self.population.do_reproduction()
             
             """Mutate the population"""
-            population.do_mutations()
+            self.population.do_mutations()
+            
+            # for debugging:
+            for genome in self.population.genomes:
+                self.landscape.get_fitness( genome )
             
             """Advance the generation counter"""
             self.generation_counter += 1

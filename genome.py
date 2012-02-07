@@ -7,14 +7,21 @@ class Genome:
     """genes 0 through N_TR-1 are TR genes, genes N_TR through N_REPORTER+N_TR-1 are reporter genes."""
     genes = []
     
-    def __init__(self, id):
+    def __init__(self, id, init_genes = None):
+        p = ProgressBar()
+        
         self.id = id
-        """Add N_TR number of transcription factor genes"""
-        for i in range(0, N_TR):
-            self.genes.append( Gene(self.generate_unique_geneid(), has_dbd=True) )
-        """Add N_REPORTER number of transcription factor genes"""
-        for i in range(0, N_REPORTER):
-            self.genes.append( Gene(self.generate_unique_geneid(), has_dbd=False) )
+        if init_genes == None:
+            """Add N_TR number of transcription factor genes"""
+            for i in range(0, N_TR):
+                self.genes.append( Gene(i, has_dbd=True) )
+                p.render(i, 'step %s' % i)
+            """Add N_REPORTER number of transcription factor genes"""
+            for i in range(0, N_REPORTER):
+                self.genes.append( Gene(N_TR + i, has_dbd=False) )
+                p.render(i, 'step %s' % i)
+        else:
+            self.genes = list(init_genes)
     
     def contains_gene(self, id):
         """Does the genome contain a gene with ID = id?"""

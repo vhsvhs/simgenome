@@ -13,6 +13,9 @@ def main():
     
     """Build a random fitness landscape"""
     landscape = Landscape(genome = population)
+    
+    ga = Genetic_Algorithm(population, landscape)
+    ga.runsim()
 
     return [population, landscape]
     

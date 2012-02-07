@@ -6,9 +6,14 @@ class Population:
     
     def __init__(self):
         """Build a seed genome."""
-        genome = Genome( self.generate_unique_genomeid() )
+        print "Building a new population..."
+        
+        init_genes = None
         for i in range(0, N_GENOMES):
             """Fill the population with N_GENOMES copies of the seed genome."""
+            genome = Genome( i, init_genes )
+            if init_genes == None:
+                init_genes = genome.genes
             self.genomes.append( genome )
     
     def contains_genome(self, id):
