@@ -35,7 +35,7 @@ class Time_Pattern:
     rules = []
     
     def __init__(self, basal_gene_id, rules = None):
-        print "Building a new fitness landscape..."
+        print "\n. Building a new fitness landscape..."
         if rules != None:
             self.basal_gene_id = basal_gene_id
             self.rules = rules
@@ -61,10 +61,11 @@ class Time_Pattern:
             e = 0.5
             r = RULE_TYPES[2]
             self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
-
+    
 class Landscape:
     """An array of Time_Patterns"""
     timepatterns = []
+    gamma = None
     r = None
     
     def __init__(self, scapepath = None, genome = None):
@@ -98,10 +99,7 @@ class Landscape:
     
     def get_fitness(self, genome):
         """Calculates the fitness of the given genome.  Returns a floating-point value."""
-        
-        print "Calculating fitness of genome", genome.id
-        
-        # build the r vector
+        # Build the r vector...
         self.r = []
         self.maxr = 0
         for x in range(0, N_TR):
@@ -109,111 +107,162 @@ class Landscape:
             if self.r[x] > self.maxr:
                 self.maxr = self.r[x]
         
-        gene_expr = {}
-        for gene in genome.genes:
-             pe = self.get_expression(genome, gene)
-             #gene_expr[ gene.id ] = pe
+        # Build the TF expression level vector...
+        tf_expr_level = {}
+        for tf in range(0, N_TR):
+            tf_expr_level[ genome.genes[tf].id ] = 0.0
+            #
+            # to-do: initialize the basal TF to have 1.0 ?
+            #
         
+        
+        # Get expression for each timeslice...
+        for timeslice in range(0, MAX_TIME):
+            gene_expr = {} # key = gene.id, value = probability of gene being expressed
+            
+            #
+            # to-do: this would be a good place for simple parallelization
+            #
+            
+            for gene in genome.genes:
+                pe = self.get_expression(genome, gene, timeslice, tf_expr_level)
+                #gene_expr[ gene.id ] = pe
+
         #
-        # to-do: asses fitness...
+        # to-do: assess fitness...
         #
         
         
         # debugging:
         return pe
     
-    def get_expression(self, genome, gene):
+    def get_expression(self, genome, gene, timeslice, tf_expr_level):
         """ Returns an array of expression values."""
+        print "debug: Calculating expression for gene", gene.id, " in genome", genome.id
         
-        #print "Calculating expression for gene", gene.id, " in genome", genome.id
-        
-        #if (pe.size() != conditions.size())
-        #throw SimError("num. of desired expression levels must match num. cond.");
-        # loop through the conditions first pre-computing tables then est. expr. */
-        #ptables = ProbTable( N_TR, MAX_GD, gene.urs.__len__() )
-        #for i in range(0, conditions.size() ):
-            #ptables = self.calc_prob_tables(genome, conditions[i], alpha, gamma, gene, ptables)
-            #pe.append( self.prob_expr(genome, ptables, gene, i) )
+        # pe is an array of gene expression levels, each index is a time slice
+        pe = []
+        """ Loop through the conditions first pre-computing tables then est. expr. """
+        ptables = ProbTable( N_TR, MAX_GD, gene.urs.__len__() )
+        for timepattern in self.timepatterns: 
+            ptables = self.calc_prob_tables(genome, tf_expr_level, gene, ptables)
+            #pe.append( self.prob_expr(genome, ptables, gene, i) )            
         #return pe
         return
     
-    def calc_prob_tables(self, genome, rel_tf_expr, alpha, gm, gene, ret):
+    def calc_prob_tables(self, genome, rel_tf_expr, gene, ret):
         """returns a ProbTable object"""
         L = gene.urs.__len__()
 
         for x in range(0, L): # foreach site in gene's upstream region
+            print "debug calc_prob_tables, x=", x
             for i in range(0, N_TR):   # foreach transcription factor
-                pwm_tmp = p_pwm(i, x, gene.urs)
+                pwm_tmp = genome.genes[i].pwm.prob_binding( x, gene.urs )
                 for j in range(0, N_TR+1):
                     for d in range(0, MAX_GD):
                         if (x+1 - self.r[i] < 0):
-                            ret.cpa.mem[ ret.cpa.pos([i,j,d,x]) ] = 0 # then probability = 0
+                            #ret.cpa.mem[ ret.cpa.pos([i,j,d,x]) ] = 0 # then probability = 0
+                            ret.cpa[i,j,d,x] = 0
                             continue
                         if (x+1 - self.r[i] == 0 and j == 0 and d == 0): # // if TF i can bind here
-                            ret.cpa.mem[ ret.cpa.pos([i,j,d,x]) ] = alpha[i] * rel_tf_expr[i] * pwm_tmp
+                            ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp
+                            #ret.cpa.mem[ ret.cpa.pos([i,j,d,x]) ] = alpha[i] * rel_tf_expr[i] * pwm_tmp
                             continue
                         if (j > 0):
                             if (x+1 - self.r[i] - d - self.r[j-1] < 0):
-                                ret.cpa.mem[ ret.cpa.pos([i,j,d,x]) ] = 0
+                                ret.cpa[i,j,d,x] = 0
+                                #ret.cpa.mem[ ret.cpa.pos([i,j,d,x]) ] = 0
                                 continue
-                            if (d < minimum_tf_separation):
+                            if (d < MIN_TF_SEPARATION):
                                 # we forbid TFs this close together */
-                                ret.cpa.mem[ ret.cpa.pos( [i,j,d,x] ) ] = 0 
+                                ret.cpa[i,j,d,x] = 0
+                                #ret.cpa.mem[ ret.cpa.pos( [i,j,d,x] ) ] = 0 
                                 continue
-                            ret.cpa.mem[ ret.cpa.pos( [i,j,d,x] ) ] = ret.cpt.mem[ ret.cpt.pos([j-1,x-r[i]-d] ) ]  * gm.mem[ gm.pos([j-1, i, d]) ] * alpha[i] * (rel_tf_expr)[i] * pwm_tmp
+                            ret.cpa[i,j,d,x] = 0.0 # ret.cpt[j-1, x-self.r[i]-d] * self.gamma[j-1, i, d] * rel_tf_expr[i] * pwm_tmp
+                            #ret.cpa.mem[ ret.cpa.pos( [i,j,d,x] ) ] = ret.cpt.mem[ ret.cpt.pos([j-1,x-r[i]-d] ) ]  * gm.mem[ gm.pos([j-1, i, d]) ] * alpha[i] * (rel_tf_expr)[i] * pwm_tmp
                             continue
                         else:  # /* previous TF is D or further away or no other TF */
                             if (d > 0): # /* we don't use this slot */
-                                ret.cpa.mem[ ret.cpa.pos([i,0,d,x]) ]= 0 
+                                ret.cpa[i,0,d,x] = 0
+                                #ret.cpa.mem[ ret.cpa.pos([i,0,d,x]) ]= 0 
                                 continue
                             if (x+1 - self.r[i] - MAX_GD <= 0): # /* no other TF */
-                                ret.cpa.mem[ ret.cpa.pos([i,0,0,x]) ] = alpha[i] * (rel_tf_expr)[i] * pwm_tmp;
+                                ret.cpa[i,0,0,x] = rel_tf_expr[i] * pwm_tmp;
+                                #ret.cpa.mem[ ret.cpa.pos([i,0,0,x]) ] = alpha[i] * (rel_tf_expr)[i] * pwm_tmp;
                                 continue
-                            ret.cpa.mem[ ret.cpa.pos([i,0,0,x])] = (1+ret.cpr.mem[ ret.cpr.pos([ x - self.r[i]-MAX_GD ]) ]) * alpha[i] * (rel_tf_expr)[i] * pwm_tmp;
+                            ret.cpa[i,0,0,x] = 1+ret.cpr[ x - self.r[i]-MAX_GD] * rel_tf_expr[i] * pwm_tmp
+                            #ret.cpa.mem[ ret.cpa.pos([i,0,0,x])] = (1+ret.cpr.mem[ ret.cpr.pos([ x - self.r[i]-MAX_GD ]) ]) * alpha[i] * (rel_tf_expr)[i] * pwm_tmp;
                             continue
-                ans1 = ret.cpa.mem[x*N_TR*(N_TR+1)*MAX_GD+i : (N_TR+1)*MAX_GD : N_TR] # // collect elements from this slice of cpa
-                ret.cpt.mem[ ret.cpt.pos([i,x])] = sum(ans1) # // ... and sum those elements into cpt
+                
+                # to-do: write correct ans1 expression
+                #ans1 = ret.cpa[x*N_TR*(N_TR+1)*MAX_GD+i, (N_TR+1)*MAX_GD, N_TR] # // collect elements from this slice of cpa
+                #ans1 = ret.cpa.mem[x*N_TR*(N_TR+1)*MAX_GD+i : (N_TR+1)*MAX_GD : N_TR] # // collect elements from this slice of cpa
+                ans1 = 1.0
+                ret.cpt[i,x] = sum(ans1)
+                #ret.cpt.mem[ ret.cpt.pos([i,x])] = sum(ans1) # // ... and sum those elements into cpt
             if (x == 0): 
-                ans2 = ret.cpt.mem[0 : N_TR : 1]
-                ret.cpt.mem[0] = sum(ans2)
+                #
+                # to-do: write correct ans2 expression
+                #
+                #ans2 = ret.cpt[0, N_TR, 1]
+                #ans2 = ret.cpt.mem[0 : N_TR : 1]
+                ans2 = 1.0
+                ret.cpt[0] = sum(ans2)
+                #ret.cpt.mem[0] = sum(ans2)
             else: 
-                ans3 = ret.cpt.mem[x*N_TR : N_TR : 1]
-                ret.cpr.mem[ x ] = ret.cpr.mem[ x-1 ] + sum(ans3)
+                #
+                # to-do: write correct ans3 expression
+                #
+                #ans3 = ret.cpt[x*N_TR, N_TR, 1]
+                #ans3 = ret.cpt.mem[x*N_TR : N_TR : 1]
+                ans3 = 1.0
+                ret.cpr[x] = ret.cpr[x-1] + sum(ans3)
+                #ret.cpr.mem[ x ] = ret.cpr.mem[ x-1 ] + sum(ans3)
     
        # /* make the margin tables */
+       #
+       # to-do: verify the array math in this section
+       #
         for k1 in range(0, N_TR):
+            print "debug calc_prob_tables, k1=", k1
             for k2 in range(0, L):
                 csum = 0
-                ret.cpm.mem[ ret.cpm.pos([0, k1, k2]) ] = 0
-                for k3 in range(0, (int)((N_TR+1)*MAX_GD) ): # // foreach slice in cpa
-                    csum += ret.cpa.mem[k2*N_TR*(N_TR+1)*MAX_GD+k1+N_TR*k3]
-                    ret.cpm.mem[((N_TR+1)*MAX_GD+1)*(k2*N_TR+k1)+1+k3] = csum
+                ret.cpm[0, k1, k2] = 0
+                #ret.cpm.mem[ ret.cpm.pos([0, k1, k2]) ] = 0
+                for k3 in range(0, ((N_TR+1)*MAX_GD) ): # // foreach slice in cpa
+                    
+                    csum += ret.cpa[0,0,0,0]
+                    #csum += ret.cpa[k2*N_TR*(N_TR+1), MAX_GD, k1, N_TR*k3]
+                    #csum += ret.cpa.mem[k2*N_TR*(N_TR+1)*MAX_GD+k1+N_TR*k3]
+                    
+                    ret.cpm[0,0,0] = csum
+                    #ret.cpm[((N_TR+1)*MAX_GD+1), (k2*N_TR+k1)+1, k3] = csum
+                    #ret.cpm.mem[((N_TR+1)*MAX_GD+1)*(k2*N_TR+k1)+1+k3] = csum
     
        # /* now make s_array cumulative, we need the first two values to be 0, 1
        #  * and shifting the result of the cumulative sum over by 2 */
         tmp1 = 1 
-        tmp2 = ret.cpa.mem[0];
-        tmp3 = ret.cpa.mem[1];
-        ret.cpa.posi[0] = 0;
-        for i in range(2, reduce(mul, ret.cpa.dims) ):
-            ret.cpa.mem[i-1] = tmp1
+        tmp2 = ret.cpa[0,0,0,0];
+        tmp3 = ret.cpa[1,0,0,0];
+        ret.cpa[0,0,0,0] = 0;
+        for i in range(2, N_TR ):
+            ret.cpa[i-1,0,0,0] = tmp1
             tmp1 += tmp2
             tmp2 = tmp3
-            tmp3 = ret.cpa.mem[i]
-        ret.cpa.mem[i-1] = tmp1
+            tmp3 = ret.cpa[i,0,0,0]
+        ret.cpa[i-1,0,0,0] = tmp1
         tmp1 += tmp2
-        ret.cpa.mem[i] = tmp1
+        ret.cpa[i,0,0,0] = tmp1
         tmp1 += tmp3
-        ret.cpa.mem[i+1] = tmp1
+        ret.cpa[i,0,0,0] = tmp1
     
        # /* now we add one to s_row to account for the empty configuration */
-        for i in range(0, ret.cpr.mem.__len__()):
-            ret.cpr.mem[i] += 1
+        for i in range(0, gene.urs.__len__() ):
+            ret.cpr[i] += 1
     
         return ret
     
-    def prob_expr(self, genome, L, M, D, r, lam, ptables, logistic_parameter, print_configs):
-        """ L = """ 
+    def prob_expr(self, genome, L, M    , D, r, lam, ptables, logistic_parameter, print_configs):
         #int up, min_r, cell, left_tf, right_tf, d, tbl_size, pos;
         #int i=steps;
         pe_tmp = 0
@@ -231,14 +280,16 @@ class Landscape:
                 if (left_tf == 0):
                     tbl_size = mmp1d * up + 1 # size of ptables.cpa + 1 (for empty configuration)
                             #it's called like this: sample_cdf(int tbl_size, double tbl_sum, valarray<double> &tbl, int offset)
-                    cell = sample_cdf(tbl_size, ptables.cpr.mem[up-1], ptables.cpa.mem, 0) # to-do: implement sample_cdf
+                    cell = 0
+                    #cell = sample_cdf(tbl_size, ptables.cpr[up-1], ptables.cpa, 0) # to-do: implement sample_cdf
                     if (cell == 0): break
                     right_tf = ((cell-1) % M)+1
                     pos = ((cell-1) / mmp1d)+1
                     left_tf = ((cell-1) % mmp1) / M
                     d = ((cell-1) % mmp1d) / mmp1
                 else: 
-                    cell = sample_cdf(mp1d, ptables.cpt.mem[ ptables.cpt.pos([left_tf-1, up-1] ) ], ptables.cpm.mem, ((up-1)*M + left_tf-1) * (mp1d+1))
+                    cell = 0
+                    #cell = sample_cdf(mp1d, ptables.cpt[left_tf-1, up-1], ptables.cpm.mem, ((up-1)*M + left_tf-1) * (mp1d+1))
                     right_tf = left_tf
                     pos = up
                     left_tf = cell % (M+1)
@@ -255,5 +306,9 @@ class Landscape:
                 print "\n"
             pe_tmp += (1/(1+exp((-1)*sum_lam/logistic_parameter)))
         return pe_tmp/MAX_GA_GENS
+    
+    def set_gamma(self):
+        self.gamma = zeroes( (N_TR, N_TR, MAX_GD), dtype=float)
           
-          
+    
+      

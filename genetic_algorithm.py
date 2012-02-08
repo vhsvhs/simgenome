@@ -22,8 +22,12 @@ class Genetic_Algorithm:
             self.population.do_mutations()
             
             # for debugging:
+            print "\n. Calculating fitness of each genome..."
+            prog = ProgressBar(0, N_GENOMES, 50, mode='dynamic', char='#')
             for genome in self.population.genomes:
                 self.landscape.get_fitness( genome )
-            
+                prog.increment_progress()
+            prog.finish()
+          
             """Advance the generation counter"""
             self.generation_counter += 1

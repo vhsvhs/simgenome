@@ -8,18 +8,19 @@ class Genome:
     genes = []
     
     def __init__(self, id, init_genes = None):
-        p = ProgressBar()
-        
+        """init_genes will be used for self.genes, unless it's None"""
         self.id = id
         if init_genes == None:
+            prog = ProgressBar(0, N_TR + N_REPORTER, 50, mode='dynamic', char='#')
             """Add N_TR number of transcription factor genes"""
             for i in range(0, N_TR):
                 self.genes.append( Gene(i, has_dbd=True) )
-                p.render(i, 'step %s' % i)
+                prog.increment_progress()
             """Add N_REPORTER number of transcription factor genes"""
             for i in range(0, N_REPORTER):
                 self.genes.append( Gene(N_TR + i, has_dbd=False) )
-                p.render(i, 'step %s' % i)
+                prog.increment_progress()
+            prog.finish()
         else:
             self.genes = list(init_genes)
     

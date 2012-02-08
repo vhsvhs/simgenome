@@ -5,9 +5,7 @@ class Population:
     genomes = []
     
     def __init__(self):
-        """Build a seed genome."""
-        print "Building a new population..."
-        
+        print "\n. Building a new population..."
         init_genes = None
         for i in range(0, N_GENOMES):
             """Fill the population with N_GENOMES copies of the seed genome."""

@@ -1,4 +1,5 @@
 import math
+from numpy import *
 import operator
 from operator import mul, add
 import os
@@ -16,7 +17,7 @@ Most of these parameter values can be overrided by command-line values."""
    If the mutation model allows indels, then URS_LENGTH will be
    the mean expected length, but the URS length will vary
    for each individual gene."""
-URS_LEN = 1000
+URS_LEN = 500
 
 """What is the initial length (# sites) in a new PWM?"""
 INIT_PWM_LEN = 3
@@ -24,19 +25,19 @@ INIT_PWM_LEN = 3
 ALPHABET = ["A", "C", "G", "T"]
 
 """How many genomes (i.e. individuals) in the population?"""
-N_GENOMES = 1000
+N_GENOMES = 2000
 
 """How many transcription factors per genome?"""
-N_TR = 200
+N_TR = 20
 
 """How many reporter genes per genome?"""
-N_REPORTER = 2000
+N_REPORTER = 20
 
 """Mean mutation rate"""
 MU = 0.001
 
 """How many generations to run the genetic algorithm?"""
-MAX_GA_GENS = 1000
+MAX_GA_GENS = 1
 
 """Each random fitness goal will involve GOAL_COMPLEXITY number of expected unique 
 gene expression pulses in time."""
@@ -48,3 +49,9 @@ GOAL_PULSE_MAX = 10
 
 """maximum distance between TFs to include gamma term"""
 MAX_GD = 80
+
+"""Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
+MAX_TIME = 10
+
+"""Minimum distance between transcription factors bound to the same upstream regulatory sequence."""
+MIN_TF_SEPARATION = 0

@@ -26,5 +26,14 @@ class PWM:
         for i in range(0, INIT_PWM_LEN):
             self.P.append( {} )
             for c in ALPHABET:
-                self.P[i][c] = flat_p 
-            
+                self.P[i][c] = flat_p
+    
+    def prob_binding(self, pos, urs):
+        """What is the probability that this PWM will bind the upstream 
+        regulatory region (urs) sequence with the right edge of the PWM at site pos?"""
+        
+        #
+        # to-do
+        #
+        
+        return 1.0

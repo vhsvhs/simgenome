@@ -2,9 +2,12 @@ from argparser import *
 from configuration import *
 from genetic_algorithm import *
 from population import *
+from version import *
 
 def main():
     ap = ArgParser(sys.argv)
+    
+    splash()
     
     """Verify consistency of command-line arguments"""
         
@@ -18,7 +21,16 @@ def main():
     ga.runsim()
 
     return [population, landscape]
+
+def splash():
+    print "======================================="
+    print "."
+    print ". Sim Genome"
+    print "."
+    print ". " + VERSIONSTRING
+    print "."
+    print "======================================="
     
     
-    
+x = main()
     
