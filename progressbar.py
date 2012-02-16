@@ -97,3 +97,4 @@ class ProgressBar:
     def finish(self):
         print '\r'
         sys.stdout.flush()
+    

@@ -3,6 +3,7 @@ from configuration import *
 from genetic_algorithm import *
 from population import *
 from version import *
+from debug_tools import *
 
 def main():
     ap = ArgParser(sys.argv)
@@ -31,6 +32,9 @@ def splash():
     print "."
     print "======================================="
     
-    
+#
+# main:
+#    
 x = main()
+
     
