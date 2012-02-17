@@ -5,6 +5,15 @@ class PWM:
     
     def __init__(self):
         self.P = []
+        
+    def __str__(self):
+        str = ""
+        for i in range(0, self.P.__len__()):
+            str += "(site " + i.__str__() + ")"
+            for c in ALPHABET:
+                str += " " + c + ":%.3f"%self.P[i][c]                
+            str += "\n"
+        return str
     
     def randomize(self):
         """generate a random P matrix with length len"""
@@ -32,15 +41,22 @@ class PWM:
         """What is the probability that the PWM in gene tf will bind the upstream 
         regulatory region (urs) sequence with the right edge of the PWM at site pos?"""
         a = ALPHABET.__len__()
-        if (pos - self.P.__len__() + 1 < 0) or ( pos >= urs.__len__() ):
+        
+        if (urs.__len__() - pos < self.P.__len__() ):
             return 0.0
+        if ( pos + 1 > urs.__len__() ):
+            return 0.0
+        
         part = urs[pos:pos+self.P.__len__()] # the partial URS
-        res1 = 1
+        #print "pos=", pos, "part = ", part
+        res1 = 1.0        
         # In Kevin Bullaughey's original Rescape code he assumed 
         # the affinity of a TF is the sum of the affinity to both
         # strand at this location.
         # But in my code, I'm only dealing with single stranded DNA.
-        for k in range(0, self.P.__len__()):
+        for k in range(0, self.P.__len__() ):
             res1 *= self.P[k][ part[k] ]
+            #print "res1=", res1
         res1 *= a**( self.P.__len__() )
+        #print "res1=", res1
         return res1

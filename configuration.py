@@ -20,7 +20,7 @@ Most of these parameter values can be overrided by command-line values."""
 URS_LEN = 3
 
 """What is the initial length (# sites) in a new PWM?"""
-INIT_PWM_LEN = 1
+INIT_PWM_LEN = 3
 
 ALPHABET = ["A", "C", "G", "T"]
 
@@ -37,7 +37,10 @@ N_REPORTER = 1
 MU = 0.001
 
 """How many generations to run the genetic algorithm?"""
-MAX_GA_GENS = 5
+MAX_GA_GENS = 1
+
+"""When sampling configurations, how many i.i.d. samples should be drawn from the cumulative distribution?"""
+IID_SAMPLES = 1
 
 """Each random fitness goal will involve GOAL_COMPLEXITY number of expected unique 
 gene expression pulses in time."""
@@ -51,7 +54,7 @@ GOAL_PULSE_MAX = 10
 MAX_GD = 1
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
-MAX_TIME = 10
+MAX_TIME = 1
 
 """Minimum distance between transcription factors bound to the same upstream regulatory sequence."""
 MIN_TF_SEPARATION = 0

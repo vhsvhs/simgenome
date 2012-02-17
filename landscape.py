@@ -36,8 +36,8 @@ class Time_Pattern:
     
     def __init__(self, basal_gene_id, rules = None):
         print "\n. Building a new fitness landscape..."
+        self.basal_gene_id = basal_gene_id
         if rules != None:
-            self.basal_gene_id = basal_gene_id
             self.rules = rules
         else:
             self.init_random()
@@ -61,6 +61,11 @@ class Time_Pattern:
             e = 0.5
             r = RULE_TYPES[2]
             self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
+    
+    def __str__(self):
+        ret = ""
+        ret += "Time pattern for basal gene " + self.basal_gene_id.__str__() + " " + self.rules.__len__().__str__() + " rules."
+        return ret
     
 class Landscape:
     """An array of Time_Patterns"""
@@ -105,10 +110,13 @@ class Landscape:
         return 1 + g * math.exp( (-1)*(d**2)/V_RATE_OF_COOP_DECAY );
 
     def set_gamma(self):
-        """Precalculates the cooperative/competitive binding interactions between all TFs."""
+        """Prec-alculates the cooperative/competitive binding interactions between all TFs."""
         # g is the binding coop term (see the coopfunc).
         # for now, g is all zeroes, so there is no cooperative binding.
-        g = zeroes( (N_TR, N_TR), dtype=float)
+        #
+        # to-do: grab gamma values from the command-line, or radomly initialize them
+        # from an a priori distribution.
+        g = zeros( (N_TR, N_TR), dtype=float)
         self.gamma = zeros( (N_TR, N_TR, MAX_GD), dtype=float)
         for i in range (0, N_TR):
             for j in range(0, N_TR):
@@ -140,8 +148,9 @@ class Landscape:
         gene_expr = {} 
         for gene in genome.genes:
             gene_expr[gene.id] = []
-        
+                
         for timeslice in range(0, MAX_TIME):
+            print "\n+++++++++++++++\nTIME", timeslice
             #
             # to-do: this would be a good place for simple parallelization
             #
@@ -149,14 +158,15 @@ class Landscape:
                 pe = self.get_expression(genome, gene, tf_expr_level)
                 gene_expr[gene.id].append( pe )
             
+            # debugging:
+            for gene in genome.genes:
+                print "gene", gene.id, gene.urs, "expr: %.3f"%gene_expr[ gene.id ][timeslice]
+                if gene.has_dbd:
+                    print gene.pwm
+            
             # Update TF expression levels for the next time iteration...
             for tf in range(0, N_TR):
                 tf_expr_level[ genome.genes[tf].id ] = gene_expr[ genome.genes[tf].id ][timeslice]
-            
-            # debugging:
-            print "debug landscape.py 143"
-            for gene in genome.genes:
-                print gene.id, gene_expr[ gene.id ][timeslice]
 
         #
         # to-do: assess fitness of genome, using gene_expr
@@ -167,58 +177,62 @@ class Landscape:
     
     def get_expression(self, genome, gene, tf_expr_level):
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""
-        pe = []
+        pe = []        
         ptables = ProbTable( N_TR, MAX_GD, gene.urs.__len__() )
         ptables = self.calc_prob_tables(genome, gene, tf_expr_level, ptables)
+        
+        #print ptables # for debugging
+        
         return self.prob_expr(genome, ptables, gene)          
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret):
         """returns a ProbTable object. ret is the ProbTable that should be returned."""
-        L = gene.urs.__len__()
-
+        L = gene.urs.__len__()        
         for x in range(0, L): # foreach site in gene's upstream region
-            #print "debug calc_prob_tables, site", x
+            sum_cpr = 0.0
             for i in range(0, N_TR):   # foreach transcription factor
-                
-                # pwm_tmp: probability of TF i binding to the sequence with right edge at position x ?
                 pwm_tmp = genome.genes[i].pwm.prob_binding( x, gene.urs )
-                
+                #print "pwm_tmp = ", pwm_tmp
+                sum_cpt = 0.0
                 for j in range(0, N_TR+1): # +1 to also consider the empty case
                     for d in range(0, MAX_GD):                        
-                        # CASE: TF i's PWM is too wide to start binding at site x
-                        if (x+1 - self.r[i] < 0): 
+                        # CASE 1: TF i's PWM is too wide to start binding at site x
+                        if (L-x < self.r[i]): 
                             ret.cpa[i,j,d,x] = 0 # P @ x = 0
+                            #print "case 1:", i, j, d, x, ret.cpa[i,j,d,x], self.r[i]
                             continue
-                        # CASE: TF i can start binding at site x
+                        # CASE 2: TF i can start binding at site x
                         #    and TF i is identical to j.
-                        if (x+1 - self.r[i] == 0 and j == 0 and d == 0): # // if TF i can bind here
+                        if (L-x >= self.r[i] and j == i and d == 0): # // if TF i can bind here
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp # basic case, no competition or cooperation
+                            #print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
                         if (j < N_TR): 
-                            # CASE: TF i and j cannot both fit on the sequence
+                            # CASE 3: TF i and j cannot both fit on the sequence
                             if (x+1 - self.r[i] - d - self.r[j-1] < 0):
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
+                                #print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
-                            # CASE: the distance between TFs i and j is too small.
+                            # CASE 4: the distance between TFs i and j is too small.
                             if (d < MIN_TF_SEPARATION):
                                 # we forbid TFs to bind this close together
                                 ret.cpa[i,j,d,x] = 0
+                                #print "case 4:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
-                            # CASE: TFs i and j are different AND they can both fit on the URS...
+                            # CASE 5: TFs i and j are different AND they can both fit on the URS...
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d]
+                            #print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
-                        # CASE: there is no j:
+                        # CASE 6: there is no j:
                         if j == N_TR:
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp;
+                            #print "case 6:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
-    return ret
-    
-    #
-    # continue here!
-    #
-    # also calculate cpt and cpr, but not cpm
-    #
-
+                        sum_cpt += ret.cpa[i,j,d,x]
+                        sum_cpr += ret.cpa[i,j,d,x]
+                ret.cpt[i,x] = sum_cpt
+            ret.cpr[x] = sum_cpr
+        return ret
     
     def sample_cdf(self, site, ptables):
         """Picks a random configuration starting at site, drawing IID from ptables.
@@ -255,32 +269,40 @@ class Landscape:
         pe_tmp = 0
         min_r = min( self.r )
 
-        
-        for sample in range(0, MAX_GA_GENS):
+        for sample in range(0, IID_SAMPLES):
             # 1. build a configuration c_k, by sampling cells from ptables.cpa            
             this_config = {} # key = TF id, value = site at which TF binds.  Not all TFs are necessarily in this_config.
             site = 0
             while (site < L):
-                [i, j, d] = sample_cdf()
-                this_config[i] = site
-                site += genome.genes[i].pwm.P.__len__()
+                [i, j, d] = self.sample_cdf(site, ptables)
+                print "debug 278:, CDF sample = ", i, j, d
+                if i < N_TR:
+                    this_config[i] = site
+                    site += genome.genes[i].pwm.P.__len__()
                 site += d
-                this_config[j] = site
-                site += genome.genes[j].pwm.P.__len__()
+                if j < N_TR:
+                    this_config[j] = site
+                    site += genome.genes[j].pwm.P.__len__()
             
-            #
+            self.print_configuration(this_config, genome, gene, sample)
+            print ""
+            
             # 2. Then calculate P(E|c_k)
             #  . Sum the lambda values for all the TFs in the configuration.
             sum_lambda = 0.0
             for tf in this_config:
-                sum_lamba += lam[tf]
-            
+                sum_lambda += lam[tf]
             
             # 3. the probability of this configuration equals:
             pe_tmp = (1/(1+math.exp(-1*sum_lambda)))
-            #
-            #
         return pe_tmp/MAX_GA_GENS
     
+    
+    def print_configuration(self, c, genome, gene, sample):
+        """Prints a TR configuration, c, which is really a hashtable."""
+        for tf in c:
+            start_site = c[tf]
+            end_site = c[tf] + genome.genes[tf].pwm.P.__len__() - 1
+            print "( IID sample", sample, ") TF", tf,"binds gene", gene.id, "at sites", start_site, "->", end_site 
     
       
