@@ -14,7 +14,10 @@ class Genome:
             prog = ProgressBar(0, N_TR + N_REPORTER, 50, mode='dynamic', char='#')
             """Add N_TR number of transcription factor genes"""
             for i in range(0, N_TR):
-                self.genes.append( Gene(i, has_dbd=True) )
+                repressor = False
+                if i%2:
+                    repressor = True
+                self.genes.append( Gene(i, has_dbd=True, repressor=repressor) )
                 prog.increment_progress()
             """Add N_REPORTER number of transcription factor genes"""
             for i in range(0, N_REPORTER):

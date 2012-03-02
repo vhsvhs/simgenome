@@ -6,8 +6,9 @@ class Gene:
     has_dbd = False # False = gene is reporter, True = gene is regulatory gene
     pwm = None
     id = None
+    is_repressor = False # True means it's an activator
     
-    def __init__(self, id, urs = None, has_dbd = False):
+    def __init__(self, id, urs = None, has_dbd = False, repressor = False):
         self.id = id
         """Initialize the gene.  urs can be a specified sequence, or random"""
         if urs == None:
@@ -20,4 +21,5 @@ class Gene:
             self.pwm = PWM()
             #self.pwm.make_flat() # initialize all PWMs to be non-specific
             self.pwm.randomize()
+        self.is_repressor = repressor
 

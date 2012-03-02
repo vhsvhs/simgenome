@@ -15,6 +15,8 @@ class Genetic_Algorithm:
     def runsim(self):
         """This method implements the main loop of the genetic algorithm."""
         for i in range(0, MAX_GA_GENS):
+            now = datetime.now()
+            
             """Reproduce the population based on fitness"""
             self.population.do_reproduction()
             
@@ -27,6 +29,7 @@ class Genetic_Algorithm:
             
             gid_fitness = {}
             for genome in self.population.genomes:
+                print "\n.Calculating fitness for individual", genome.id
                 gid_fitness[ genome.id ] = self.landscape.get_fitness( genome )
                 prog.increment_progress()
             prog.finish()
@@ -36,6 +39,8 @@ class Genetic_Algorithm:
             """Advance the generation counter"""
             self.generation_counter += 1
 
+            timedelta = datetime.now() - now
+            print "Generation", i, "required", timedelta, "to compute."
     def print_fitness_stats(self, gid_fitness):
         """gid_fitness is a hashtable, key = genome.id, value = fitness for that genome."""
         f_vals = gid_fitness.values()
