@@ -20,6 +20,26 @@ class Fitness_Rule:
         self.expression_level = e
         self.reporter_id = id
         self.rule_type = r
+    
+    def __str__(self):
+        l = "\t- At time "
+        l += self.timepoint.__str__()
+        l += " expression of gene "
+        l += self.reporter_id.__str__()
+        l += " must be "
+        if self.rule_type == operator.ge:
+            l += ">"
+        if self.rule_type == operator.le:
+            l += "<"
+        if self.rule_type == operator.eq:
+            l += "="
+        l += " "
+        l += self.expression_level.__str__()
+        l += ".\n"
+        return l
+    
+    def collapse(self):
+        return [self.timepoint, self.expression_level, self.reporter_id, self.rule_type]
 
 class Time_Pattern:
     """Each instance of the class Time_Pattern defines a unique set of temporal expression patterns
@@ -34,13 +54,28 @@ class Time_Pattern:
     basal_gene_id = None
     rules = []
     
-    def __init__(self, basal_gene_id, rules = None):
-        print "\n. Building a new fitness landscape..."
+    def __init__(self, basal_gene_id):
         self.basal_gene_id = basal_gene_id
+    
+    def init(self, rules = None):
         if rules != None:
             self.rules = rules
         else:
-            self.init_random()
+            #self.init_random()
+            self.init_basic_test()
+    
+    def collapse(self):
+        data = []
+        for r in self.rules:
+            #print "debug 72, rule"
+            data.append( r.collapse() )
+        return data
+    
+    def uncollapse(self, data):
+        for rule in data:
+            #print "debug 78, rule"
+            this_rule = Fitness_Rule(rule[0], rule[1], rule[2], rule[3])
+            self.rules.append( this_rule )
     
     def init_random(self):
         last_time = 0
@@ -68,9 +103,19 @@ class Time_Pattern:
                 last_time = MAX_TIME
             self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
     
+    def init_basic_test(self):
+        """This method is for debugging/testing only."""
+        time = MAX_TIME-1
+        e = 0.5
+        rand_ri = random.randint(N_TR, N_REPORTER+N_TR-1) 
+        r = RULE_TYPES[0] 
+        self.rules.append( Fitness_Rule(time, e, rand_ri, r) )
+    
     def __str__(self):
         ret = ""
-        ret += "Time pattern for basal gene " + self.basal_gene_id.__str__() + " " + self.rules.__len__().__str__() + " rules."
+        ret += "\n. Rule: activation of basal gene " + self.basal_gene_id.__str__() + " should cause the following:\n"
+        for r in self.rules:
+            ret += r.__str__()
         return ret
     
 class Landscape:
@@ -79,13 +124,35 @@ class Landscape:
     gamma = None
     r = None
     
-    def __init__(self, scapepath = None, genome = None):
+    def __init__(self):
+        pass
+    
+    def init(self, scapefile = None, genome = None):
         """scapepath is a filepath."""
         if genome != None:
             self.init_random(genome)
         elif scapefile != None:
             self.init_spec(scapefile)
         self.set_gamma()
+        
+        for t in self.timepatterns:
+            print t
+    
+    def uncollapse(self, data):
+        #print "debug 142"
+        for d in data:
+            #print "debug 143, time pattern for basal gene id", d
+            this_timepattern = Time_Pattern(d)
+            this_timepattern.uncollapse( data[d] )
+            self.timepatterns.append( this_timepattern )
+            self.set_gamma()
+    
+    def collapse(self):
+        data = {}
+        for t in self.timepatterns:
+            #print "debug 153, timepattern for basal gene id", t.basal_gene_id
+            data[ t.basal_gene_id ] = t.collapse()
+        return data
 
     def init_random(self, genome):
         """Creates a random fitness goal, using genome as the seed."""    
@@ -95,7 +162,9 @@ class Landscape:
         
         """Next, build a random pattern.
         For now, the random Landscape contains only one time pattern."""
-        self.timepatterns.append( Time_Pattern(randid) )
+        rand_timepattern = Time_Pattern(randid)
+        rand_timepattern.init()
+        self.timepatterns.append( rand_timepattern )
     
     def init_spec(self, scapepath):
         """The landscape specification file should be formatted as follows:
@@ -136,15 +205,17 @@ class Landscape:
             for rule in pattern.rules:
                 obs_expr = gene_expr_level[rule.reporter_id][rule.timepoint]
                 if rule.rule_type(obs_expr, rule.expression_level):
+                    #print "fitsum += 1.0"
                     fitsum += 1.0
                 else:
-                    fitsum += 1.0 / abs(obs_expr - rule.expression_level)
+                    fitsum += abs(obs_expr - rule.expression_level)
+                    #print "fitsum += ", abs(obs_expr - rule.expression_level)
         return fitsum
                     
     
-    def get_fitness(self, genome):
+    def get_fitness(self, genome, generation):
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.  Returns a floating-point value."""
-        # Build the r vector...
+        """ Build the r vector..."""
         self.r = []
         self.maxr = 0
         for x in range(0, N_TR):
@@ -153,25 +224,23 @@ class Landscape:
                 self.maxr = self.r[x]
         
             
-        # gene_expr[gene ID][timeslice] = expression level of gene at timeslice
-        gene_expr = {}
-        last_gene_expr = {} 
+        """ gene_expr[gene ID][timeslice] = expression level of gene at timeslice"""
+        genome.gene_expr = {}
         for gene in genome.genes:
-            gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL] # all genes begin with zero
-            last_gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL] # all genes begin with zero
+            genome.gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL] # all genes begin with zero
             
-        # tf_expr_level[gene ID] = current expression level
-        # tf_expr_level is used as short-term variable inside the loop "for timeslice..."
+        """ tf_expr_level[gene ID] = current expression level"""
+        """ tf_expr_level is used as short-term variable inside the loop "for timeslice..." """
         tf_expr_level = {}
         for timepattern in self.timepatterns:
-            gene_expr[timepattern.basal_gene_id] = [MAXIMUM_ACTIVITY_LEVEL]
+            genome.gene_expr[timepattern.basal_gene_id] = [MAXIMUM_ACTIVITY_LEVEL]
                 
         for timeslice in range(1, MAX_TIME):
 
             # 1a. Ensure that basal genes remain activated
             for timepattern in self.timepatterns:
-                if gene_expr[timepattern.basal_gene_id][timeslice-1] < MAXIMUM_ACTIVITY_LEVEL:
-                    gene_expr[timepattern.basal_gene_id][timeslice-1] = MAXIMUM_ACTIVITY_LEVEL
+                if genome.gene_expr[timepattern.basal_gene_id][timeslice-1] < MAXIMUM_ACTIVITY_LEVEL:
+                    genome.gene_expr[timepattern.basal_gene_id][timeslice-1] = MAXIMUM_ACTIVITY_LEVEL
             
             # for debugging:
             #if timeslice > 10:
@@ -181,50 +250,49 @@ class Landscape:
             
             # 1b. Update TF expression levels...            
             for tf in range(0, N_TR):
-                tf_expr_level[ genome.genes[tf].id ] = gene_expr[ genome.genes[tf].id ][timeslice-1]
-                
-
-            print "\n+++++++++++++++\nTIME", timeslice
-            
-            #
-            # to-do: this would be a good place for simple parallelization
-            #
-            
+                tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice-1]
+                                       
             for gene in genome.genes:
                 # calculate the delta G of binding on the cis-region for every gene.
                 pe = self.get_expression(genome, gene, tf_expr_level)
                 
                 # if the delta G is high enough, then transcribe the gene.
                 if pe >= ACTIVATION_THRESHOLD:
-                    new_expr_level = gene_expr[gene.id][timeslice-1] * GROWTH_FACTOR;
-                    gene_expr[gene.id].append( new_expr_level )
+                    new_expr_level = genome.gene_expr[gene.id][timeslice-1] * GROWTH_FACTOR;
+                    genome.gene_expr[gene.id].append( new_expr_level )
                 else: # otherwise, decay the expression level of the gene.
-                    new_expr_level = gene_expr[gene.id][timeslice-1] / DECAY_FACTOR;
-                    gene_expr[gene.id].append( new_expr_level )
+                    new_expr_level = genome.gene_expr[gene.id][timeslice-1] / DECAY_FACTOR;
+                    genome.gene_expr[gene.id].append( new_expr_level )
             
                 # sanity check:
-                if gene_expr[gene.id][timeslice] > MAXIMUM_ACTIVITY_LEVEL:
-                    gene_expr[gene.id][timeslice] = MAXIMUM_ACTIVITY_LEVEL
-                if gene_expr[gene.id][timeslice] < MINIMUM_ACTIVITY_LEVEL:
-                    gene_expr[gene.id][timeslice] = MINIMUM_ACTIVITY_LEVEL
+                if genome.gene_expr[gene.id][timeslice] > MAXIMUM_ACTIVITY_LEVEL:
+                    genome.gene_expr[gene.id][timeslice] = MAXIMUM_ACTIVITY_LEVEL
+                if genome.gene_expr[gene.id][timeslice] < MINIMUM_ACTIVITY_LEVEL:
+                    genome.gene_expr[gene.id][timeslice] = MINIMUM_ACTIVITY_LEVEL
             
-            # debugging:
-            #for gene in genome.genes:
-                print "gene", gene.id, "expr= %.3f"%gene_expr[ gene.id ][timeslice], "pe=%.3f"%pe
-            #    if gene.has_dbd:
-            #        print gene.pwm
+                # print report to screen
+                expr_delta = 0.0
+                if timeslice > 1:
+                    expr_delta = genome.gene_expr[ gene.id ][timeslice] - genome.gene_expr[ gene.id ][timeslice - 1]
+                marka = "*"
+                if gene.has_dbd == False:
+                    marka = ""
+                print "generation", generation, "\ttime", timeslice, "\tind.", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\td: %.3f"%expr_delta 
             
 
             #
             # to-do: if gene expression has not changed from the last timeslice
             #    then we've reached equilibrium, so stop cycling through time slices.
             #
+            print ""
 
 
         #
         # to-do: assess fitness of genome, using gene_expr
         #
-        return self.fitness_helper(gene_expr)
+        fitness = self.fitness_helper(genome.gene_expr)
+        print "\n. At generation", generation, ", individual", genome.id, "has fitness", fitness, "\n"
+        return fitness
     
     def get_expression(self, genome, gene, tf_expr_levels):
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""

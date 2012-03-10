@@ -1,5 +1,10 @@
+try:
+   import cPickle as pickle
+except:
+   import pickle
 from datetime import datetime
 import math
+from mpilibs import *
 from numpy import *
 import operator
 from operator import mul, add
@@ -25,19 +30,19 @@ INIT_PWM_LEN = 3
 ALPHABET = ["A", "C", "G", "T"]
 
 """How many genomes (i.e. individuals) in the population?"""
-N_GENOMES = 2
+N_GENOMES = 4
 
 """How many transcription factors per genome?"""
-N_TR = 3
+N_TR = 2
 
 """How many reporter genes per genome?"""
 N_REPORTER = 2
 
 """Mean mutation rate"""
-MU = 0.001
+MU = 0.9
 
 """How many generations to run the genetic algorithm?"""
-MAX_GA_GENS = 10
+MAX_GA_GENS = 3
 
 """When sampling configurations, how many i.i.d. samples should be drawn from the cumulative distribution?"""
 IID_SAMPLES = 1000
@@ -54,7 +59,7 @@ GOAL_PULSE_MAX = 2
 MAX_GD = 1
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
-MAX_TIME = 5
+MAX_TIME = 20
 
 """Minimum distance between transcription factors bound to the same upstream regulatory sequence."""
 MIN_TF_SEPARATION = 0
@@ -68,8 +73,8 @@ MINIMUM_ACTIVITY_LEVEL = 0.001
 MAXIMUM_ACTIVITY_LEVEL = 1.0
 
 """If RNA polymerase is active, then the expression level at time t+1 will be GROWTH_FACTOR times the expr. level at current time t."""
-GROWTH_FACTOR = 1.3
-DECAY_FACTOR = 1.2
+GROWTH_FACTOR = 1.6
+DECAY_FACTOR = 1.4
 
 
 """This rate gets used in the function coopfunc (in Landscape) to
