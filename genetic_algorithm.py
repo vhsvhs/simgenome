@@ -3,9 +3,7 @@ from landscape import *
 from population import *
 from plots import *
 
-class Genetic_Algorithm:
-    generation_counter = 0
-        
+class Genetic_Algorithm:        
     population = None
     landscape = None    
     simid = None
@@ -25,54 +23,36 @@ class Genetic_Algorithm:
                 maxgid = gid
         return maxgid
     
-    def runsim(self):
-        """This method implements the main loop of the genetic algorithm."""
-        comm = MPI.COMM_WORLD
-        rank = comm.Get_rank()
+    def runsim_master(self, comm):
         self.gen_gid_fitness = []
+        
+        """For each GA generation. . . ."""
         for i in range(0, MAX_GA_GENS):
             now = datetime.now()
-            
-            if rank == 0:
-                if i > 0:
-                    """Reproduce the population based on fitness"""
-                    self.population.do_reproduction()
-                
-                    """Mutate the population"""
-                    self.population.do_mutations()
-                
-                prog = ProgressBar(0, N_GENOMES, 50, mode='dynamic', char='#')
-            
-            gid_fitness = {}
+                        
+            #prog = ProgressBar(0, N_GENOMES, 50, mode='dynamic', char='#')
         
-            """Broadcast the population to MPI slaves."""
-            self.population = comm.bcast(self.population, root=0)
+            """gid_fitness[genome ID] = [fitness at generation i]"""
+            gid_fitness = {}
+
+            """Find my items."""
+            my_items = list_my_items(self.population.list_genome_ids(), 0)
         
             """Calculate fitness for every individual."""
-            for genome in self.population.genomes:
+            for gid in self.population.genomes.keys():
                 """. .  .but only compute for the individuals that have been assigned to my MPI slice."""
-                if is_my_item(genome.id, self.population.genomes.__len__(), rank):
-                    print "Calling get_fitness for gid", genome.id, "for rank", rank
-                    gid_fitness[ genome.id ] = self.landscape.get_fitness( genome, i )
-                    prog.increment_progress()
+                if my_items.__contains__(gid):
+                    gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], i )
+                    #prog.increment_progress()
             
-            if rank == 0:
-                prog.finish()
+            #prog.finish()
             
-            """Gather the population from MPI slaves."""
-            if rank > 0:
-                my_genomes = []
-                for genome in self.population.genomes:
-                    if is_my_item(genome.id, self.population.genomes.__len__(), rank):
-                        my_genomes.append( genome )
-                comm.send([my_genomes, gid_fitness], dest=0, tag=11)  
-            
-            elif rank == 0:
-                for slave in range(1, comm.Get_size()):
-                    [their_genomes, their_gid_fitness] = comm.recv(source=slave, tag=11)
-                    for d in their_genomes:
-                        self.population.genomes[d.id] = d
-                        gid_fitness[d.id] = their_gid_fitness[d.id]
+            """Wait for data from slaves."""
+            for slave in range(1, comm.Get_size()):
+                [their_genomes, their_gid_fitness] = comm.recv(source=slave, tag=11)
+                for gid in their_genomes.keys():
+                    self.population.genomes[gid] = their_genomes[gid]
+                    gid_fitness[gid] = their_gid_fitness[gid]
             
             """Post-fitness. . .print stats, record data, etc."""
             self.print_fitness_stats(gid_fitness)
@@ -81,10 +61,60 @@ class Genetic_Algorithm:
             filenameseed = "PLOTS/expression.gen" + i.__str__() + ".gid" + maxgid.__str__() 
             plot_expression( self.population.genomes[maxgid], filenameseed, filenameseed, "time", "expression")
             
-            """Advance the generation counter"""
-            self.generation_counter += 1
             timedelta = datetime.now() - now
             print "Generation", i, "required", timedelta, "to compute."
+            
+            if i < MAX_GA_GENS:
+                """Reproduce the population based on fitness"""
+                self.population.do_reproduction()
+                """Mutate the population"""
+                self.population.do_mutations()
+                """Broadcast the population to MPI slaves."""
+                pop_data = self.population.collapse()
+                pop_data_pickle = pickle.dumps( pop_data )
+                for slave in range(1, comm.Get_size()):
+                    comm.send(pop_data_pickle, dest=slave, tag=11)
+
+
+    def runsim_slave(self, rank, comm):
+        self.gen_gid_fitness = []
+        
+        """For each GA generation. . . ."""
+        for i in range(0, MAX_GA_GENS):        
+            """gid_fitness[genome ID] = [fitness at generation i]"""
+            gid_fitness = {}
+
+            """Find my items."""
+            my_items = list_my_items(self.population.list_genome_ids(), rank)
+        
+            """Calculate fitness for every individual."""
+            for gid in my_items:
+                gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], i )
+                #prog.increment_progress()
+                        
+            """Send data to master."""
+            my_genomes = {}
+            for gid in my_items:
+                my_genomes[gid] = self.population.genomes[gid]
+            comm.send([my_genomes, gid_fitness], dest=0, tag=11)  
+            
+            if i < MAX_GA_GENS:
+                """Get updated data from master."""
+                pop_data_pickle = comm.recv(source=0, tag=11)
+                pop_data = pickle.loads( pop_data_pickle ) 
+                population = Population()
+                population.uncollapse(pop_data)
+                self.population = population
+
+    def runsim(self):
+        """This is the main method of the genetic algorithm."""
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        if rank == 0:
+            self.runsim_master(comm)
+        else:
+            self.runsim_slave(rank, comm)
+            
  
     def print_fitness_stats(self, gid_fitness):
         """gid_fitness is a hashtable, key = genome.id, value = fitness for that genome."""

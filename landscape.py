@@ -214,8 +214,10 @@ class Landscape:
                     
     
     def get_fitness(self, genome, generation):
-        """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.  Returns a floating-point value."""
-        """ Build the r vector..."""
+        """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
+        Returns a floating-point value."""
+        
+        """First, bild the r vector..."""
         self.r = []
         self.maxr = 0
         for x in range(0, N_TR):
@@ -223,7 +225,6 @@ class Landscape:
             if self.r[x] > self.maxr:
                 self.maxr = self.r[x]
         
-            
         """ gene_expr[gene ID][timeslice] = expression level of gene at timeslice"""
         genome.gene_expr = {}
         for gene in genome.genes:
@@ -277,7 +278,7 @@ class Landscape:
                 marka = "*"
                 if gene.has_dbd == False:
                     marka = ""
-                print "generation", generation, "\ttime", timeslice, "\tind.", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\td: %.3f"%expr_delta 
+                print "gen.", generation, "\tt", timeslice, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\td: %.3f"%expr_delta 
             
 
             #
@@ -285,7 +286,6 @@ class Landscape:
             #    then we've reached equilibrium, so stop cycling through time slices.
             #
             print ""
-
 
         #
         # to-do: assess fitness of genome, using gene_expr

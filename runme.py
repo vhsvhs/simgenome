@@ -25,8 +25,9 @@ def main():
         land_data_pickle = pickle.dumps( land_data )
         for slave in range(1, comm.Get_size()):
             comm.send([pop_data_pickle, land_data_pickle], dest=slave, tag=11)
-            #comm.send([1,2,3], dest=slave, tag=11)
+        #print "debug test:", rank, ":", population.genomes[0].genes[0].urs
     else:
+        """Recieve the population and landscape from master"""
         [pop_data_pickle, land_data_pickle] = comm.recv(source=0, tag=11)
         pop_data = pickle.loads( pop_data_pickle ) 
         population = Population()
@@ -34,21 +35,21 @@ def main():
         land_data = pickle.loads( land_data_pickle ) 
         landscape = Landscape()
         landscape.uncollapse(land_data)
-        
-    """Setup the genetic algorithm."""
+
+        #print "debug test:", rank, ":", population.genomes[0].genes[0].urs
+    
+    """Setup the genetic algorithm, using the population and landscape"""
     ga = Genetic_Algorithm(ap)
     ga.population = population
     ga.landscape = landscape
         
-
     """Run the simulation."""
     ga.runsim()
 
-    return [ga.gen_gid_fitness, population, landscape]
-
-def slave():
-    ap = ArgParser(sys.argv)
-    
+    if rank == 0:
+        return [ga.gen_gid_fitness, population, landscape]
+    else:
+        return None
 
 def splash():
     print "======================================="
@@ -68,5 +69,3 @@ if rank == 0:
 print "\n. MPI process", rank, "of", comm.Get_size(), "is alive."
 comm.Barrier()
 x = main()
-
-    

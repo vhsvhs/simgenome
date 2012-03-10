@@ -59,7 +59,7 @@ GOAL_PULSE_MAX = 2
 MAX_GD = 1
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
-MAX_TIME = 20
+MAX_TIME = 2
 
 """Minimum distance between transcription factors bound to the same upstream regulatory sequence."""
 MIN_TF_SEPARATION = 0

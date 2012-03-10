@@ -16,6 +16,8 @@ class Gene:
             for i in range(0, URS_LEN):
                 """Sample a random character from the alphabet, where all chars are equally probable."""
                 self.urs += random.sample(ALPHABET, 1)[0]
+        else:
+            self.urs = urs
         self.has_dbd = has_dbd
         if (self.has_dbd and pwm != None):
             self.pwm = pwm

@@ -2,7 +2,7 @@ from configuration import *
 from genome import *
 
 class Population:
-    genomes = []
+    genomes = {}
     
     def __init__(self):
         pass
@@ -16,24 +16,29 @@ class Population:
             genome.init( init_genes )
             if init_genes == None:
                 init_genes = genome.genes
-            self.genomes.append( genome )
+            self.genomes[ i ] = genome
     
     def uncollapse(self, data):
         for gid in data:
             this_genome = Genome(gid)
             this_genome.uncollapse(data[gid])
-            self.genomes.append( this_genome )
+            self.genomes[gid] = this_genome
     
     def collapse(self):
         data = {}
-        for g in self.genomes:
-            data[g.id] = g.collapse()
+        for gid in self.genomes.keys():
+            data[gid] = self.genomes[gid].collapse()
         return data
-        
+    
+    def list_genome_ids(self):
+        l = self.genomes.keys()
+        l.sort()
+        return l
+            
     def contains_genome(self, id):
         """Does the population contain a genome with ID == id?"""
-        for genome in self.genomes:
-            if genome.id == id:
+        for gids in self.genomes.keys():
+            if genome.id == gid:
                 return True
         return False
     
@@ -46,8 +51,8 @@ class Population:
     
     def do_mutations(self):
         """Introduce mutations into (potentially) all genomes in the population"""
-        for g in self.genomes:
-            n_point_mutations = int(g.count_cis_seq_len() * MU)
+        for gid in self.genomes.keys():
+            n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * MU)
             n_deletions = None
             n_duplications = None
             
@@ -55,21 +60,21 @@ class Population:
             
             for i in range(0, n_point_mutations):
                 # pick a random gene
-                rand_gene = random.randint(0, g.genes.__len__()-1)
+                rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
                 # pick a random site
-                rand_site = random.randint(0, g.genes[rand_gene].urs.__len__()-1)
+                rand_site = random.randint(0, self.genomes[gid].genes[rand_gene].urs.__len__()-1)
                 # mutate!
-                curr_state = g.genes[rand_gene].urs[rand_site]
+                curr_state = self.genomes[gid].genes[rand_gene].urs[rand_site]
                 ALPHABET.remove(curr_state)
                 new_state = random.choice( ALPHABET )
                 ALPHABET.append(curr_state)
                 new_urs = ""
-                for j in range(0, g.genes[rand_gene].urs.__len__()):
+                for j in range(0, self.genomes[gid].genes[rand_gene].urs.__len__()):
                     if j == rand_site:
                         new_urs += new_state.__str__()
                     else:
-                        new_urs += g.genes[rand_gene].urs[j]
-                self.genomes[g.id].genes[rand_gene].urs = new_urs
+                        new_urs += self.genomes[gid].genes[rand_gene].urs[j]
+                self.genomes[gid].genes[rand_gene].urs = new_urs
         
     def do_reproduction(self):
         """reproduces a proportion of genomes based on their fitness"""
