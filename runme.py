@@ -12,11 +12,17 @@ def main():
             
         """Build a population"""
         population = Population()
-        population.init()
+        population.init(ap)
+         
+        #
+        # continue here: scan the population (genome, actually)
+        # and adjust configuration parameters (like URS length)
+        # based on what the user specified.
+        #
         
         """Build a random fitness landscape"""
         landscape = Landscape()
-        landscape.init(genome = population.genomes[0])
+        landscape.init(ap, genome = population.genomes[0])
             
         """Broadcast the population and landscape to slaves"""
         pop_data = population.collapse()
@@ -66,6 +72,5 @@ def splash():
 rank = comm.Get_rank()
 if rank == 0:
     splash()
-print "\n. MPI process", rank, "of", comm.Get_size(), "is alive."
-comm.Barrier()
+mpi_check()
 x = main()

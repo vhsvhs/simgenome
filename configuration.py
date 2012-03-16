@@ -13,7 +13,7 @@ from progressbar import *
 import random
 import re
 import sys
-from tools import *
+#from tools import *
 
 """The values in this configuration file will be used as defaults.
 Most of these parameter values can be overrided by command-line values."""
@@ -59,7 +59,10 @@ GOAL_PULSE_MAX = 2
 MAX_GD = 1
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
-MAX_TIME = 2
+MAX_TIME = 5
+
+def set_max_time(t):
+    MAX_TIME = t
 
 """Minimum distance between transcription factors bound to the same upstream regulatory sequence."""
 MIN_TF_SEPARATION = 0

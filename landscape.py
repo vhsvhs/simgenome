@@ -22,7 +22,7 @@ class Fitness_Rule:
         self.rule_type = r
     
     def __str__(self):
-        l = "\t- At time "
+        l = "\t+ At time "
         l += self.timepoint.__str__()
         l += " expression of gene "
         l += self.reporter_id.__str__()
@@ -56,14 +56,7 @@ class Time_Pattern:
     
     def __init__(self, basal_gene_id):
         self.basal_gene_id = basal_gene_id
-    
-    def init(self, rules = None):
-        if rules != None:
-            self.rules = rules
-        else:
-            #self.init_random()
-            self.init_basic_test()
-    
+        
     def collapse(self):
         data = []
         for r in self.rules:
@@ -113,7 +106,7 @@ class Time_Pattern:
     
     def __str__(self):
         ret = ""
-        ret += "\n. Rule: activation of basal gene " + self.basal_gene_id.__str__() + " should cause the following:\n"
+        ret += "\n+ Rule: activation of basal gene " + self.basal_gene_id.__str__() + " should cause the following:\n"
         for r in self.rules:
             ret += r.__str__()
         return ret
@@ -127,16 +120,54 @@ class Landscape:
     def __init__(self):
         pass
     
-    def init(self, scapefile = None, genome = None):
-        """scapepath is a filepath."""
-        if genome != None:
+    def init(self, ap, genome=None):
+        tp = self.get_timepatterns_from_file(ap)
+        if tp == None:
             self.init_random(genome)
-        elif scapefile != None:
-            self.init_spec(scapefile)
+        else:
+            self.timepatterns = tp
         self.set_gamma()
         
         for t in self.timepatterns:
             print t
+    
+    def get_timepatterns_from_file(self, ap):
+        if ap.getOptionalArg("--patternpath"):
+            ret_timepatterns = []
+            patternpath = ap.getOptionalArg("--patternpath")
+            fin = open(patternpath, "r")
+            for l in fin.readlines():
+                if l.startswith("#"):
+                    continue
+                else:
+                    tokens = l.split()
+                    if tokens.__len__() >= 6:
+                        this_timepattern_id = int(tokens[0])
+                        this_basal_gene_id = int(tokens[1])
+                        this_timepoint = int(tokens[2])
+                        this_expr_level = float(tokens[3])
+                        this_reporter_gene_id = int(tokens[4])
+                        this_rule_type = tokens[5]
+                        if this_rule_type == "ge":
+                            this_rule_type = operator.ge
+                        elif this_rule_type == "eq":
+                            this_rule_type = operator.eq
+                        elif this_rule_type == "le":
+                            this_rule_type = operator.le
+                        else:
+                            this_rule_type = this_rule_type = operator.ge
+
+                        if ret_timepatterns.__len__() <= this_timepattern_id:
+                            this_timepattern = Time_Pattern(this_basal_gene_id)
+                            ret_timepatterns.append(this_timepattern)
+                    
+                        if this_timepoint > MAX_TIME:
+                            set_max_time(this_timepoint)
+                                                
+                        this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type)
+                        ret_timepatterns[ this_timepattern_id ].rules.append( this_rule )
+            return ret_timepatterns
+            fin.close()
     
     def uncollapse(self, data):
         #print "debug 142"
@@ -163,22 +194,9 @@ class Landscape:
         """Next, build a random pattern.
         For now, the random Landscape contains only one time pattern."""
         rand_timepattern = Time_Pattern(randid)
-        rand_timepattern.init()
+        rand_timepattern.init_basic_test()
         self.timepatterns.append( rand_timepattern )
     
-    def init_spec(self, scapepath):
-        """The landscape specification file should be formatted as follows:
-            time expression_level reporter_id rule
-            on each line."""
-        fin = open(scapepath, "r")
-        for l in fin.readlines():
-            tokens = l.split()
-            if tokens.__len__() < 4:
-                print "Hmmm, an error occurred. A line in your landscape specification file is formatted incorrectly."
-                print "This line:\n", l, "\n"
-                exit()
-        fin.close()
-
     def coopfunc(self, g, d):
         """Calculates the degree of binding cooperativity between two TFs binding distance d apart.
         g is positive for synergistic interactions, and negative for antagonistic interactions.
@@ -203,6 +221,8 @@ class Landscape:
         fitsum = 0.0
         for pattern in self.timepatterns:
             for rule in pattern.rules:
+                #print gene_expr_level[rule.reporter_id].__len__(), MAX_TIME, rule.timepoint
+                #exit(1)
                 obs_expr = gene_expr_level[rule.reporter_id][rule.timepoint]
                 if rule.rule_type(obs_expr, rule.expression_level):
                     #print "fitsum += 1.0"
@@ -236,7 +256,7 @@ class Landscape:
         for timepattern in self.timepatterns:
             genome.gene_expr[timepattern.basal_gene_id] = [MAXIMUM_ACTIVITY_LEVEL]
                 
-        for timeslice in range(1, MAX_TIME):
+        for timeslice in range(0, MAX_TIME):
 
             # 1a. Ensure that basal genes remain activated
             for timepattern in self.timepatterns:
@@ -252,6 +272,7 @@ class Landscape:
             # 1b. Update TF expression levels...            
             for tf in range(0, N_TR):
                 tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice-1]
+                #print "landscape 270", tf, genome.genes[tf].id
                                        
             for gene in genome.genes:
                 # calculate the delta G of binding on the cis-region for every gene.

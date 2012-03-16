@@ -12,8 +12,9 @@ class Genome:
     def __init__(self, id):
         self.id = id
     
-    def init(self, init_genes = None):
+    def init(self, ap):
         """init_genes will be used for self.genes, unless it's None"""
+        init_genes = self.get_genes_from_file(ap)
         if init_genes == None:
             """Add N_TR number of transcription factor genes"""
             for i in range(0, N_TR):
@@ -25,7 +26,42 @@ class Genome:
             for i in range(0, N_REPORTER):
                 self.genes.append( Gene(N_TR + i, has_dbd=False) )
         else:
-            self.genes = list(init_genes)
+            self.genes = init_genes
+    
+    """Returns either a list of genes read from a file, OR returns None if the user
+    did not specify to use genes from a file."""
+    def get_genes_from_file(self, ap):
+        if ap.getOptionalArg("--genepath"): 
+            ret_genes = []
+            genepath = ap.getOptionalArg("--genepath")
+            fin = open(genepath, "r")
+            print "\n. Reading genes from", genepath
+            for l in fin.readlines():
+                if l.startswith("#"):
+                    continue
+                else:
+                    tokens = l.split()
+                    if tokens.__len__() >= 4:
+                        this_id = int(tokens[0])
+                        this_has_dbd = int(tokens[1])
+                        this_repressor = tokens[2]
+                        this_urs = tokens[3]
+                        #
+                        # to-do: grab the PWM
+                        #
+                        #if this_has_dbd == 0:
+                        #    this_pwm = tokens[4]
+                        #else:
+                        #    this_pwm = None
+                        this_pwm = None
+                        this_gene = Gene(this_id, urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm) 
+                        ret_genes.append(this_gene)
+                        print "\n.", this_id, this_has_dbd, this_repressor, this_urs
+            fin.close()
+            return ret_genes
+        else:
+            return None
+        
     
     def uncollapse(self, data):
         gids = data[0].keys()

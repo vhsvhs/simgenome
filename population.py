@@ -7,15 +7,13 @@ class Population:
     def __init__(self):
         pass
     
-    def init(self):
+    def init(self, ap):
         print "\n. Building a new population..."
-        init_genes = None
         for i in range(0, N_GENOMES):
             """Fill the population with N_GENOMES copies of the seed genome."""
             genome = Genome(i)
-            genome.init( init_genes )
-            if init_genes == None:
-                init_genes = genome.genes
+            print "\n+ Genome ", i
+            genome.init( ap )
             self.genomes[ i ] = genome
     
     def uncollapse(self, data):
