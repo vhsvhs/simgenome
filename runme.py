@@ -50,7 +50,7 @@ def main():
     ga.landscape = landscape
         
     """Run the simulation."""
-    ga.runsim()
+    ga.runsim(ap)
 
     if rank == 0:
         return [ga.gen_gid_fitness, population, landscape]

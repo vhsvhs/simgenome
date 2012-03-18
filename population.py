@@ -54,7 +54,8 @@ class Population:
             n_deletions = None
             n_duplications = None
             
-            #print "\n. Introducing", n_point_mutations, "point mutations to individual", g.id
+            if int(ap.getOptionalArg("--verbose")) > 4:
+                print "\n. Introducing", n_point_mutations, "point mutations to individual", gid
             
             for i in range(0, n_point_mutations):
                 # pick a random gene
@@ -74,10 +75,34 @@ class Population:
                         new_urs += self.genomes[gid].genes[rand_gene].urs[j]
                 self.genomes[gid].genes[rand_gene].urs = new_urs
         
-    def do_reproduction(self):
-        """reproduces a proportion of genomes based on their fitness"""
-        pass
-    
+    def do_reproduction(self, gid_fitness):
+        if int(ap.getOptionalArg("--verbose")) > 2:
+            print gid_fitness
+        
+        new_genomes = {}
+        for child_gid in gid_fitness:
+            """Here the new population has the same size as its parent population."""
+            new_genomes[child_gid] = Genome(child_gid) 
+            
+            """Select two parents, by selecting from the """
+            parent1 = random.sample(gid_fitness, 1)
+            parent2 = random.sample(gid_fitness, 1)
+            if int(ap.getOptionalArg("--verbose")) > 2:
+                print "\n. Child", child_gid, ":", parent1, "X", parent2
+            
+            """Cross the parents"""
+            for geneid in range(0, self.genomes[parent1].genes.__len__()):
+                """Flip a coin; heads the child gets parent1's copy of this gene, tails the child gets parent2's copy."""
+                gene_copy = None
+                if random.randint(0,1):
+                    gene_copy = self.genomes[parent1].genes[geneid]
+                else:
+                    gene_copy = self.genomes[parent2].genes[geneid]
+                new_genomes[child_gid].genes.append( gene_copy )
+            
+            """Save the new children genomes."""
+            self.genomes = new_genomes
+            
     def compare_two_genomes(self, idx, idy):
         for j in range(0, self.genomes[idx].genes.__len__()):
             if self.genomes[idx].genes[j].urs.__contains__( self.genomes[idy].genes[j].urs ):

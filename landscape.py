@@ -233,7 +233,7 @@ class Landscape:
         return fitsum
                     
     
-    def get_fitness(self, genome, generation):
+    def get_fitness(self, genome, generation, ap):
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
         Returns a floating-point value."""
         
@@ -293,13 +293,14 @@ class Landscape:
                     genome.gene_expr[gene.id][timeslice] = MINIMUM_ACTIVITY_LEVEL
             
                 # print report to screen
-                expr_delta = 0.0
-                if timeslice > 1:
-                    expr_delta = genome.gene_expr[ gene.id ][timeslice] - genome.gene_expr[ gene.id ][timeslice - 1]
-                marka = "*"
-                if gene.has_dbd == False:
-                    marka = ""
-                print "gen.", generation, "\tt", timeslice, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\td: %.3f"%expr_delta 
+                if int(ap.getOptionalArg("--verbose")) > 3:
+                    expr_delta = 0.0
+                    if timeslice > 1:
+                        expr_delta = genome.gene_expr[ gene.id ][timeslice] - genome.gene_expr[ gene.id ][timeslice - 1]
+                    marka = "*"
+                    if gene.has_dbd == False:
+                        marka = ""
+                    print "gen.", generation, "\tt", timeslice, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\td: %.3f"%expr_delta 
             
 
             #
@@ -333,15 +334,15 @@ class Landscape:
                 sum_cpt = 0.0
                 for j in range(0, N_TR+1): # +1 to also consider the empty case
                     for d in range(0, MAX_GD):                        
-                        # CASE 1: TF i's PWM is too wide to start binding at site x
+                        """ CASE 1: TF i's PWM is too wide to start binding at site x"""
                         if (L-x < self.r[i]): 
                             ret.cpa[i,j,d,x] = 0 # P @ x = 0
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
                             #print "case 1:", i, j, d, x, ret.cpa[i,j,d,x], self.r[i]
                             continue
-                        # CASE 2: TF i can start binding at site x
-                        #    and TF i is identical to j.
+                            """CASE 2: TF i can start binding at site x
+                            and TF i is identical to j."""
                         elif (L-x >= self.r[i] and (j == i or j == N_TR) and d == 0): # // if TF i can bind here
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp # basic case, no competition or cooperation
                             sum_cpt += ret.cpa[i,j,d,x]
@@ -349,7 +350,7 @@ class Landscape:
                             #print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
                         elif (j < N_TR): # else, cooperative/competitive binding...
-                            # CASE 4: the distance between TFs i and j is too small.
+                            """ CASE 4: the distance between TFs i and j is too small."""
                             if (d < MIN_TF_SEPARATION):
                                 # we forbid TFs to bind this close together
                                 ret.cpa[i,j,d,x] = 0
@@ -357,20 +358,20 @@ class Landscape:
                                 sum_cpr += ret.cpa[i,j,d,x]
                                 #print "case 4:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
-                            # CASE 3: TF i and j cannot both fit on the sequence
+                                """CASE 3: TF i and j cannot both fit on the sequence."""
                             elif (x+1 - self.r[i] - d - self.r[j-1] < 0):
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
                                 #print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
-                            # CASE 5: TFs i and j are different AND they can both fit on the URS...
+                            """CASE 5: TFs i and j are different AND they can both fit on the URS..."""
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d]
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
                             #print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
-                        # CASE 6: there is no j:
+                        """CASE 6: there is no j:"""
                         #elif (j == N_TR) or (i == j):
                         #    ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp;
                         #   sum_cpt += ret.cpa[i,j,d,x]

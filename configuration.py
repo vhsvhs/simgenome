@@ -30,7 +30,7 @@ INIT_PWM_LEN = 3
 ALPHABET = ["A", "C", "G", "T"]
 
 """How many genomes (i.e. individuals) in the population?"""
-N_GENOMES = 4
+N_GENOMES = 10
 
 """How many transcription factors per genome?"""
 N_TR = 2
@@ -39,7 +39,7 @@ N_TR = 2
 N_REPORTER = 2
 
 """Mean mutation rate"""
-MU = 0.9
+MU = 0.8
 
 """How many generations to run the genetic algorithm?"""
 MAX_GA_GENS = 3

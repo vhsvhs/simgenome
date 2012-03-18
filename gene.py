@@ -32,8 +32,8 @@ class Gene:
             self.pwm = pwm
         elif self.has_dbd:
             self.pwm = PWM()
-            self.pwm.make_flat() # initialize all PWMs to be non-specific
-            #self.pwm.randomize()
+            #self.pwm.make_flat() # initialize all PWMs to be non-specific
+            self.pwm.randomize()
 
     def collapse(self):
         return [self.id, self.urs, self.has_dbd, self.is_repressor, self.pwm]

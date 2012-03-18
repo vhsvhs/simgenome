@@ -13,7 +13,7 @@ def mpi_check():
         for i in range(1, comm.Get_size()):
             comm.send(data, dest=i, tag=11)
         #print "Master sent it."
-    elif rank == 1:
+    elif rank > 0:
         data = comm.recv(source=0, tag=11)
         #print "Rank ", rank, "got it.", data
 
