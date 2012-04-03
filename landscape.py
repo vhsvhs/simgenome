@@ -56,6 +56,7 @@ class Time_Pattern:
     
     def __init__(self, basal_gene_id):
         self.basal_gene_id = basal_gene_id
+        self.rules = []
         
     def collapse(self):
         data = []
@@ -118,7 +119,9 @@ class Landscape:
     r = None
     
     def __init__(self):
-        pass
+        self.timepatterns = []
+        self.gamma = None
+        self.r = None
     
     def init(self, ap, genome=None):
         tp = self.get_timepatterns_from_file(ap)
@@ -219,18 +222,20 @@ class Landscape:
     
     def fitness_helper(self, gene_expr_level):
         fitsum = 0.0
+        fitmax = 0.0
         for pattern in self.timepatterns:
             for rule in pattern.rules:
+                fitmax += rule.expression_level
                 #print gene_expr_level[rule.reporter_id].__len__(), MAX_TIME, rule.timepoint
                 #exit(1)
                 obs_expr = gene_expr_level[rule.reporter_id][rule.timepoint]
                 if rule.rule_type(obs_expr, rule.expression_level):
                     #print "fitsum += 1.0"
-                    fitsum += 1.0
+                    fitsum += rule.expression_level
                 else:
                     fitsum += abs(obs_expr - rule.expression_level)
                     #print "fitsum += ", abs(obs_expr - rule.expression_level)
-        return fitsum
+        return (fitmax - fitsum) / fitmax
                     
     
     def get_fitness(self, genome, generation, ap):
@@ -257,11 +262,11 @@ class Landscape:
             genome.gene_expr[timepattern.basal_gene_id] = [MAXIMUM_ACTIVITY_LEVEL]
                 
         for timeslice in range(0, MAX_TIME):
-
+            GLOBAL_T_COUNTER = timeslice
             # 1a. Ensure that basal genes remain activated
             for timepattern in self.timepatterns:
-                if genome.gene_expr[timepattern.basal_gene_id][timeslice-1] < MAXIMUM_ACTIVITY_LEVEL:
-                    genome.gene_expr[timepattern.basal_gene_id][timeslice-1] = MAXIMUM_ACTIVITY_LEVEL
+                if genome.gene_expr[timepattern.basal_gene_id][timeslice] < MAXIMUM_ACTIVITY_LEVEL:
+                    genome.gene_expr[timepattern.basal_gene_id][timeslice] = MAXIMUM_ACTIVITY_LEVEL
             
             # for debugging:
             #if timeslice > 10:
@@ -271,36 +276,37 @@ class Landscape:
             
             # 1b. Update TF expression levels...            
             for tf in range(0, N_TR):
-                tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice-1]
+                tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice]
                 #print "landscape 270", tf, genome.genes[tf].id
                                        
             for gene in genome.genes:
+                #print "Gene", gene.id, "of", genome.genes.__len__()
                 # calculate the delta G of binding on the cis-region for every gene.
-                pe = self.get_expression(genome, gene, tf_expr_level)
+                pe = self.get_expression(genome, gene, tf_expr_level, ap)
                 
                 # if the delta G is high enough, then transcribe the gene.
                 if pe >= ACTIVATION_THRESHOLD:
-                    new_expr_level = genome.gene_expr[gene.id][timeslice-1] * GROWTH_FACTOR;
+                    new_expr_level = genome.gene_expr[gene.id][timeslice] * GROWTH_FACTOR;
                     genome.gene_expr[gene.id].append( new_expr_level )
                 else: # otherwise, decay the expression level of the gene.
-                    new_expr_level = genome.gene_expr[gene.id][timeslice-1] / DECAY_FACTOR;
+                    new_expr_level = genome.gene_expr[gene.id][timeslice] / DECAY_FACTOR;
                     genome.gene_expr[gene.id].append( new_expr_level )
             
                 # sanity check:
-                if genome.gene_expr[gene.id][timeslice] > MAXIMUM_ACTIVITY_LEVEL:
-                    genome.gene_expr[gene.id][timeslice] = MAXIMUM_ACTIVITY_LEVEL
-                if genome.gene_expr[gene.id][timeslice] < MINIMUM_ACTIVITY_LEVEL:
-                    genome.gene_expr[gene.id][timeslice] = MINIMUM_ACTIVITY_LEVEL
+                if genome.gene_expr[gene.id][timeslice+1] > MAXIMUM_ACTIVITY_LEVEL:
+                    genome.gene_expr[gene.id][timeslice+1] = MAXIMUM_ACTIVITY_LEVEL
+                if genome.gene_expr[gene.id][timeslice+1] < MINIMUM_ACTIVITY_LEVEL:
+                    genome.gene_expr[gene.id][timeslice+1] = MINIMUM_ACTIVITY_LEVEL
             
                 # print report to screen
-                if int(ap.getOptionalArg("--verbose")) > 3:
+                if int(ap.getOptionalArg("--verbose")) > 2:
                     expr_delta = 0.0
-                    if timeslice > 1:
-                        expr_delta = genome.gene_expr[ gene.id ][timeslice] - genome.gene_expr[ gene.id ][timeslice - 1]
+                    #if timeslice > 1:
+                    expr_delta = genome.gene_expr[ gene.id ][timeslice+1] - genome.gene_expr[ gene.id ][timeslice]
                     marka = "*"
                     if gene.has_dbd == False:
                         marka = ""
-                    print "gen.", generation, "\tt", timeslice, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\td: %.3f"%expr_delta 
+                    print "gen.", generation, "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.5f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta 
             
 
             #
@@ -316,12 +322,12 @@ class Landscape:
         print "\n. At generation", generation, ", individual", genome.id, "has fitness", fitness, "\n"
         return fitness
     
-    def get_expression(self, genome, gene, tf_expr_levels):
+    def get_expression(self, genome, gene, tf_expr_levels, ap):
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""
         pe = []        
         ptables = ProbTable( N_TR, MAX_GD, gene.urs.__len__() )
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables)        
-        return self.prob_expr(genome, ptables, gene, tf_expr_levels)          
+        return self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)          
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret):
         """returns a ProbTable object. ret is the ProbTable that should be returned."""
@@ -424,17 +430,18 @@ class Landscape:
         """Convert information bits to Kd"""
         return 1/(math.exp(INFO_ALPHA*i))
     
-    def prob_expr(self, genome, ptables, gene, tf_expr_levels, print_configs=False, lam=None):
+    def prob_expr(self, genome, ptables, gene, tf_expr_levels, ap, lam=None):
         """Returns a floating-point value corresponding to the expression level of gene,
         given the ProbTable ptables"""        
         #print "prob_expr, gene", gene.id, gene.urs
         
-        pe_tmp = 0
+        pe_sum = 0
         min_r = min( self.r )
-        configurations = {} # key = site, value = array of arrays, [i,j,d] samples
+        configurations = {}
+        """configurations: key = site, value = array of arrays, [i,j,d] samples"""
         for sample in range(0, IID_SAMPLES):
             
-            # 1. build a configuration c_k, by sampling cells from ptables.cpa            
+            """"1. build a configuration c_k, by sampling cells from ptables.cpa"""          
             this_config = {} # key = site, value = the TF bound starting at this site.
             site = 0
             while (site < gene.urs.__len__()):
@@ -450,13 +457,13 @@ class Landscape:
                     this_config[site] = j
                     site += genome.genes[j].pwm.P.__len__()
                 
-            # 2. Calculate the binding energy of the configuration.
+            """"2. Calculate the binding energy of the configuration."""
             sum_lambda_act = 0.0
             sum_lambda_rep = 0.0
             for site in this_config:
                 tf = this_config[site]
                 
-                # Get the strength of TF binding at this site
+                """Get the strength of TF binding at this site..."""
                 tf_specificity = genome.genes[tf].pwm.prob_binding(site, gene.urs)
                 #print "site", site, "tf_specificity", tf_specificity
                 if genome.genes[tf].is_repressor:
@@ -464,24 +471,32 @@ class Landscape:
                 else:
                     sum_lambda_act += tf_specificity
             
-            # 3. the probability of this configuration equals:
+            """ 3. the probability of this configuration equals:
             # this is what Kevin did:
-            #pe_tmp = (1/(1+math.exp(-1*sum_lambda)))
+            #pe_sum = (1/(1+math.exp(-1*sum_lambda)))
             # but this is what I'm doing instead:
-            # This incorporates the hill equation
+            # This incorporates the hill equation"""
             
-            #k_act = self.i_to_k(sum_lambda_act)
-            #k_rep = self.i_to_k(sum_lambda_rep)
             k_act = sum_lambda_act
             k_rep = sum_lambda_rep
             this_pe = (1/( 1+50*math.exp(-1*DELTA_G_SCALAR*(k_act-k_rep) ) ))
-            pe_tmp += this_pe
-            #print "k_act", k_act, "k_rep", k_rep, "pe_tmp", pe_tmp
-        #self.print_configuration(configurations, genome, gene)
-        return (pe_tmp / IID_SAMPLES)
+            pe_sum += this_pe
+            #print "k_act", k_act, "k_rep", k_rep, "pe_sum", pe_sum
+        if ap.getOptionalArg("--verbose") > 2:
+            self.print_configuration(configurations, genome, gene, ap)
+        return (pe_sum / IID_SAMPLES)
     
     
-    def print_configuration(self, configs, genome, gene):
+    def print_configuration(self, configs, genome, gene, ap):
+        foutpath = ap.getArg("--runid") + "/EXPR_PLOTS/gen" + GLOBAL_GEN_COUNTER.__str__() + ".gid" + genome.id.__str__()
+        fout = open( foutpath , "a")
+        
+        if GLOBAL_T_COUNTER == 0:
+            fout.write(". GENES:\n")
+            for g in genome.genes:
+                fout.write(". " + g.id.__str__() + "\t" + g.urs + "\n")
+        
+        fout.write("\n. CONFIGURATION at generation " + GLOBAL_GEN_COUNTER.__str__() + " timeslice " + GLOBAL_T_COUNTER.__str__() + "\n" )        
         """configs is array of arrays, [site, tf_i, tf_j, distance between i and j]"""
         sites = configs.keys()
         sites.sort()
@@ -495,7 +510,9 @@ class Landscape:
             line = "site: " + site.__str__()
             for tf in tf_count:
                 line += " \ttf: " + tf.__str__() + " %.3f"%tf_count[tf]
-            print line
+            fout.write(line + "\n")
+            #print line
+        fout.close()
 
     
       

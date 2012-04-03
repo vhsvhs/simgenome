@@ -2,6 +2,7 @@ from configuration import *
 from landscape import *
 from population import *
 from plots import *
+from logs import *
 
 class Genetic_Algorithm:        
     population = None
@@ -25,9 +26,10 @@ class Genetic_Algorithm:
     
     def runsim_master(self, comm, ap):
         self.gen_gid_fitness = []
-        
+                
         """For each GA generation. . . ."""
         for i in range(0, MAX_GA_GENS):
+            GLOBAL_GEN_COUNTER = i
             now = datetime.now()
                         
             #prog = ProgressBar(0, N_GENOMES, 50, mode='dynamic', char='#')
@@ -42,6 +44,7 @@ class Genetic_Algorithm:
             for gid in self.population.genomes.keys():
                 """. .  .but only compute for the individuals that have been assigned to my MPI slice."""
                 if my_items.__contains__(gid):
+                    #print "Genome", gid, "has", self.population.genomes[gid].genes.__len__(), "genes."
                     gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], i , ap)
                     #prog.increment_progress()
             
@@ -56,21 +59,34 @@ class Genetic_Algorithm:
             
             """Post-fitness. . .print stats, record data, etc."""
             if int(ap.getOptionalArg("--verbose")) > 2:
-                self.print_fitness_stats(gid_fitness)
+                pop_data = self.population.collapse()
+                pop_data_pickle = pickle.dumps( pop_data )
+                fout = open(ap.getArg("--runid") + "/HISTORY/population.gen" + i.__str__() + ".pickle", "w")
+                fout.write(pop_data_pickle)
+                fout.close()
             self.gen_gid_fitness.append( gid_fitness )
             maxgid = self.find_max_fit_gid(gid_fitness)
-            filenameseed = "PLOTS/expression.gen" + i.__str__() + ".gid" + maxgid.__str__() 
+            filenameseed = ap.getArg("--runid") + "/EXPR_PLOTS/expression.gen" + i.__str__() + ".gid" + maxgid.__str__() 
             plot_expression( self.population.genomes[maxgid], filenameseed, filenameseed, "time", "expression")
             
             if int(ap.getOptionalArg("--verbose")) > 2:
                 timedelta = datetime.now() - now
-                print "Generation", i, "required", timedelta, "to compute."
+                print "\n................................................\n" 
+                print "\n. Generation", i, "required", timedelta, "to compute."
+                print "\n. popsize=", self.population.genomes.__len__()
+                line = "gen " + i.__str__() + "\t" + self.print_fitness_stats(gid_fitness)
+                log_generation(ap, line)
+                #print "\n. effective popsize=", self.population.effective_popsize()
+                print "\n................................................"
             
             if i < MAX_GA_GENS:
-                """Reproduce the population based on fitness"""
-                self.population.do_reproduction(gid_fitness)
+                [min_fitness, max_fitness, sum_fitness] = self.population.get_minmax_fitness(gid_fitness)
+                """Mark the elite individuals..."""
+                self.population.mark_elite(gid_fitness, max_fitness, min_fitness, ap)
                 """Mutate the population"""
-                self.population.do_mutations()
+                self.population.do_mutations(ap)
+                """Reproduce the population based on pre-mutation fitness"""
+                self.population.do_reproduction(gid_fitness, min_fitness, max_fitness, sum_fitness, ap)
                 """Broadcast the population to MPI slaves."""
                 pop_data = self.population.collapse()
                 pop_data_pickle = pickle.dumps( pop_data )
@@ -126,6 +142,7 @@ class Genetic_Algorithm:
         mean_f = mean(f_vals)
         median_f = mean(f_vals)
         std_f = std(f_vals)
-        print "Fitness... max=", max_f, "min=", min_f, "mean=", mean_f, "median=", median_f, "std=", std_f 
-        
+        line = "\tmaxf=%.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + "\tstdf= %.3f"%std_f 
+        print line
+        return line
         

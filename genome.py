@@ -1,6 +1,9 @@
 from configuration import *
 from gene import *
 
+GLOBAL_GEN_COUNTER = 0
+GLOBAL_T_COUNTER = 0
+
 class Genome:
     id = None
     """genes 0 through N_TR-1 are TR genes, genes N_TR through N_REPORTER+N_TR-1 are reporter genes."""
@@ -11,11 +14,15 @@ class Genome:
     
     def __init__(self, id):
         self.id = id
+        self.genes = []
+        self.gene_expr = {}
+        self.is_elite = False
     
     def init(self, ap):
         """init_genes will be used for self.genes, unless it's None"""
         init_genes = self.get_genes_from_file(ap)
         if init_genes == None:
+            #print "Genome", self.id, "has", self.genes.__len__(), "genes."
             """Add N_TR number of transcription factor genes"""
             for i in range(0, N_TR):
                 repressor = False
@@ -25,6 +32,7 @@ class Genome:
             """Add N_REPORTER number of transcription factor genes"""
             for i in range(0, N_REPORTER):
                 self.genes.append( Gene(N_TR + i, has_dbd=False) )
+            #print "Genome", self.id, "has", self.genes.__len__(), "genes."
         else:
             self.genes = init_genes
     
@@ -44,7 +52,11 @@ class Genome:
                     if tokens.__len__() >= 4:
                         this_id = int(tokens[0])
                         this_has_dbd = int(tokens[1])
-                        this_repressor = tokens[2]
+                        this_repressor = int(tokens[2])
+                        if this_repressor == 0:
+                            this_repressor = False
+                        elif this_repressor == 1:
+                            this_repressor = True
                         this_urs = tokens[3]
                         #
                         # to-do: grab the PWM

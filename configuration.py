@@ -22,7 +22,7 @@ Most of these parameter values can be overrided by command-line values."""
    If the mutation model allows indels, then URS_LENGTH will be
    the mean expected length, but the URS length will vary
    for each individual gene."""
-URS_LEN = 100
+URS_LEN = 30
 
 """What is the initial length (# sites) in a new PWM?"""
 INIT_PWM_LEN = 3
@@ -36,13 +36,14 @@ N_GENOMES = 10
 N_TR = 2
 
 """How many reporter genes per genome?"""
-N_REPORTER = 2
+N_REPORTER = 3
 
 """Mean mutation rate"""
-MU = 0.8
+MU = 0.1
+ELITE_MU = 0.01
 
 """How many generations to run the genetic algorithm?"""
-MAX_GA_GENS = 3
+MAX_GA_GENS = 5000
 
 """When sampling configurations, how many i.i.d. samples should be drawn from the cumulative distribution?"""
 IID_SAMPLES = 1000
@@ -59,7 +60,7 @@ GOAL_PULSE_MAX = 2
 MAX_GD = 1
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
-MAX_TIME = 5
+MAX_TIME = 10
 
 def set_max_time(t):
     MAX_TIME = t
@@ -76,7 +77,7 @@ MINIMUM_ACTIVITY_LEVEL = 0.001
 MAXIMUM_ACTIVITY_LEVEL = 1.0
 
 """If RNA polymerase is active, then the expression level at time t+1 will be GROWTH_FACTOR times the expr. level at current time t."""
-GROWTH_FACTOR = 1.6
+GROWTH_FACTOR = 2.2
 DECAY_FACTOR = 1.4
 
 

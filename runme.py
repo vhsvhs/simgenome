@@ -5,15 +5,26 @@ from population import *
 from version import *
 from debug_tools import *
 
+def check_workspace(ap):
+    if False == os.path.exists(ap.getArg("--runid")):
+        os.system("mkdir " + ap.getArg("--runid"))
+    dirs = ["HISTORY", "LOGS", "PLOTS", "EXPR_PLOTS"]
+    for d in dirs:
+        if False == os.path.exists(ap.getArg("--runid") + "/" + d):
+            os.system("mkdir " + ap.getArg("--runid") + "/" + d)
+        elif False == ap.getOptionalArg("--continue"):
+            os.system("rm -rf " + ap.getArg("--runid") + "/" + d + "/*")
+
 def main():
     ap = ArgParser(sys.argv)
     if rank == 0:
         """Verify consistency of command-line arguments"""
-            
-        """Build a population"""
+        check_workspace(ap)
+        
+        """Build a population"""        
         population = Population()
         population.init(ap)
-         
+                  
         #
         # continue here: scan the population (genome, actually)
         # and adjust configuration parameters (like URS length)
