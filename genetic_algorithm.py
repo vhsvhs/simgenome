@@ -29,7 +29,7 @@ class Genetic_Algorithm:
                 
         """For each GA generation. . . ."""
         for i in range(0, MAX_GA_GENS):
-            GLOBAL_GEN_COUNTER = i
+            self.landscape.gen_counter = i
             now = datetime.now()
                         
             #prog = ProgressBar(0, N_GENOMES, 50, mode='dynamic', char='#')

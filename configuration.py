@@ -22,7 +22,7 @@ Most of these parameter values can be overrided by command-line values."""
    If the mutation model allows indels, then URS_LENGTH will be
    the mean expected length, but the URS length will vary
    for each individual gene."""
-URS_LEN = 30
+URS_LEN = 20
 
 """What is the initial length (# sites) in a new PWM?"""
 INIT_PWM_LEN = 3
@@ -36,17 +36,17 @@ N_GENOMES = 10
 N_TR = 2
 
 """How many reporter genes per genome?"""
-N_REPORTER = 3
+N_REPORTER = 1
 
 """Mean mutation rate"""
-MU = 0.1
+MU = 0.2
 ELITE_MU = 0.01
 
 """How many generations to run the genetic algorithm?"""
 MAX_GA_GENS = 5000
 
 """When sampling configurations, how many i.i.d. samples should be drawn from the cumulative distribution?"""
-IID_SAMPLES = 1000
+IID_SAMPLES = 2000
 
 """Each random fitness goal will involve GOAL_COMPLEXITY number of expected unique 
 gene expression pulses in time."""
@@ -60,7 +60,7 @@ GOAL_PULSE_MAX = 2
 MAX_GD = 1
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
-MAX_TIME = 10
+MAX_TIME = 3
 
 def set_max_time(t):
     MAX_TIME = t
@@ -79,7 +79,6 @@ MAXIMUM_ACTIVITY_LEVEL = 1.0
 """If RNA polymerase is active, then the expression level at time t+1 will be GROWTH_FACTOR times the expr. level at current time t."""
 GROWTH_FACTOR = 2.2
 DECAY_FACTOR = 1.4
-
 
 """This rate gets used in the function coopfunc (in Landscape) to
 control the rate of decay of the cooperative or competitive interactions

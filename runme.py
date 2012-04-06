@@ -4,6 +4,7 @@ from genetic_algorithm import *
 from population import *
 from version import *
 from debug_tools import *
+from cli import *
 
 def check_workspace(ap):
     if False == os.path.exists(ap.getArg("--runid")):
@@ -17,6 +18,8 @@ def check_workspace(ap):
 
 def main():
     ap = ArgParser(sys.argv)
+    read_cli(ap)
+    print ap.params["growth_rate"]
     if rank == 0:
         """Verify consistency of command-line arguments"""
         check_workspace(ap)
