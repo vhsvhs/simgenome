@@ -9,8 +9,8 @@ class Population:
     
     def init(self, ap):
         print "\n. Building a new population..."
-        for i in range(0, N_GENOMES):
-            """Fill the population with N_GENOMES copies of the seed genome."""
+        for i in range(0, ap.params["popsize"]):
+            """Fill the population with ap.params["popsize"] copies of the seed genome."""
             self.genomes[ i ] = Genome(i)
             print "\n+ Genome ", i
             self.genomes[ i ].init( ap )
@@ -18,7 +18,7 @@ class Population:
     def uncollapse(self, data):
         for gid in data:
             this_genome = Genome(gid)
-            this_genome.uncollapse(data[gid])
+            this_genome.uncollapse(data[gid]    )
             self.genomes[gid] = this_genome
     
     def collapse(self):
@@ -66,9 +66,9 @@ class Population:
 
         """Introduce mutations into (potentially) all genomes in the population"""
         for gid in self.genomes.keys():
-            mu = MU
+            mu = ap.params["mu"] 
             if self.genomes[gid].is_elite:
-                mu = ELITE_MU
+                mu = ap.params["elitemu"] 
             
             n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * mu)
             n_deletions = None
@@ -100,7 +100,7 @@ class Population:
             #
             #  to-do continue here: fix the PWM mutator
             #
-            #rand_tr_id = random.randint(0, N_TR-1)
+            #rand_tr_id = random.randint(0, ap.params["numtr"]-1)
             #self.genomes[gid].genes[rand_tr_id].pwm.randomize()
         if int(ap.getOptionalArg("--verbose")) > 2:
             print "\n"

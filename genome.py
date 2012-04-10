@@ -6,7 +6,7 @@ GLOBAL_T_COUNTER = 0
 
 class Genome:
     id = None
-    """genes 0 through N_TR-1 are TR genes, genes N_TR through N_REPORTER+N_TR-1 are reporter genes."""
+    """genes 0 through ap.params["numtr"]-1 are TR genes, genes ap.params["numtr"] through N_REPORTER+N_TR-1 are reporter genes."""
     genes = []
     
     """Data computed by the last call to Landscape.get_fitness."""
@@ -23,15 +23,15 @@ class Genome:
         init_genes = self.get_genes_from_file(ap)
         if init_genes == None:
             #print "Genome", self.id, "has", self.genes.__len__(), "genes."
-            """Add N_TR number of transcription factor genes"""
-            for i in range(0, N_TR):
+            """Add ap.params["numtr"] number of transcription factor genes"""
+            for i in range(0, ap.params["numtr"]):
                 repressor = False
                 if i%2:
                     repressor = True
-                self.genes.append( Gene(i, has_dbd=True, repressor=repressor) )
+                self.genes.append( Gene(i, ap.params["init_urs_len"], has_dbd=True, repressor=repressor) )
             """Add N_REPORTER number of transcription factor genes"""
             for i in range(0, N_REPORTER):
-                self.genes.append( Gene(N_TR + i, has_dbd=False) )
+                self.genes.append( Gene(ap.params["numtr"] + i, has_dbd=False) )
             #print "Genome", self.id, "has", self.genes.__len__(), "genes."
         else:
             self.genes = init_genes
@@ -39,6 +39,12 @@ class Genome:
     """Returns either a list of genes read from a file, OR returns None if the user
     did not specify to use genes from a file."""
     def get_genes_from_file(self, ap):
+        print "Getting genes from file..."
+        this_pwm = None
+        if ap.getOptionalArg("--pwmpath"):
+            pwmpath = ap.getOptionalArg("--pwmpath")
+            this_pwm = PWM()
+            this_pwm.read_from_file( pwmpath )
         if ap.getOptionalArg("--genepath"): 
             ret_genes = []
             genepath = ap.getOptionalArg("--genepath")
@@ -65,8 +71,7 @@ class Genome:
                         #    this_pwm = tokens[4]
                         #else:
                         #    this_pwm = None
-                        this_pwm = None
-                        this_gene = Gene(this_id, urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm) 
+                        this_gene = Gene(this_id, this_urs.__len__(), urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm) 
                         ret_genes.append(this_gene)
                         print "\n.", this_id, this_has_dbd, this_repressor, this_urs
             fin.close()
@@ -79,7 +84,7 @@ class Genome:
         gids = data[0].keys()
         gids.sort()
         for gid in gids:
-            this_gene = Gene(data[0][gid][0], data[0][gid][1], data[0][gid][2], data[0][gid][3], data[0][gid][4])
+            this_gene = Gene(data[0][gid][0], data[0][gid][1], data[0][gid][2], data[0][gid][3], data[0][gid][4], data[0][gid][5])
             self.genes.append( this_gene )
         self.gene_expr = data[1]
     

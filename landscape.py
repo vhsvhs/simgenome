@@ -73,35 +73,35 @@ class Time_Pattern:
     
     def init_random(self):
         last_time = 0
-        for i in range(0, GOAL_COMPLEXITY):
+        for i in range(0, ap.params["ngoals"]):
             """First, expression > 0.5"""
             last_time += random.randint(1, GOAL_PULSE_MAX)
-            if last_time > MAX_TIME:
-                last_time = MAX_TIME
+            if last_time > ap.params["maxtime"]:
+                last_time = ap.params["maxtime"]
             e = 0.5
-            rand_ri = random.randint(N_TR, N_REPORTER+N_TR-1)
+            rand_ri = random.randint(ap.params["numtr"], N_REPORTER+ap.params["numtr"]-1)
             r = RULE_TYPES[0] 
             self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
             """Next, expression at maximum"""     
             last_time += random.randint(1, GOAL_PULSE_MAX)
             e = 1.0
             r = RULE_TYPES[1]
-            if last_time > MAX_TIME:
-                last_time = MAX_TIME
+            if last_time > ap.params["maxtime"]:
+                last_time = ap.params["maxtime"]
             self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
             """Finally, expression < 0.5"""
             last_time += random.randint(1, GOAL_PULSE_MAX)
             e = 0.5
             r = RULE_TYPES[2]
-            if last_time > MAX_TIME:
-                last_time = MAX_TIME
+            if last_time > ap.params["maxtime"]:
+                last_time = ap.params["maxtime"]
             self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
     
     def init_basic_test(self):
         """This method is for debugging/testing only."""
-        time = MAX_TIME-1
+        time = ap.params["maxtime"]-1
         e = 0.5
-        rand_ri = random.randint(N_TR, N_REPORTER+N_TR-1) 
+        rand_ri = random.randint(ap.params["numtr"], N_REPORTER+ap.params["numtr"]-1) 
         r = RULE_TYPES[0] 
         self.rules.append( Fitness_Rule(time, e, rand_ri, r) )
     
@@ -131,7 +131,7 @@ class Landscape:
             self.init_random(genome)
         else:
             self.timepatterns = tp
-        self.set_gamma()
+        self.set_gamma(ap)
         
         for t in self.timepatterns:
             print t
@@ -166,7 +166,7 @@ class Landscape:
                             this_timepattern = Time_Pattern(this_basal_gene_id)
                             ret_timepatterns.append(this_timepattern)
                     
-                        if this_timepoint > MAX_TIME:
+                        if this_timepoint > ap.params["maxtime"]:
                             set_max_time(this_timepoint)
                                                 
                         this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type)
@@ -193,7 +193,7 @@ class Landscape:
     def init_random(self, genome):
         """Creates a random fitness goal, using genome as the seed."""    
         """First, select a basal TR to activate the goal."""
-        randid = random.randint(0, N_TR-1)
+        randid = random.randint(0, ap.params["numtr"]-1)
         #print "basal id = ", randid
         
         """Next, build a random pattern.
@@ -208,17 +208,17 @@ class Landscape:
         g ranges from -1 to +inifinity."""
         return 1 + g * math.exp( (-1)*(d**2)/V_RATE_OF_COOP_DECAY );
 
-    def set_gamma(self):
+    def set_gamma(self, ap):
         """Prec-calculates the cooperative/competitive binding interactions between all TFs."""
         # g is the binding coop term (see the coopfunc).
         # for now, g is all zeroes, so there is no cooperative binding.
         #
         # to-do: grab gamma values from the command-line, or radomly initialize them
         # from an a priori distribution.
-        g = zeros( (N_TR, N_TR), dtype=float)
-        self.gamma = zeros( (N_TR, N_TR, MAX_GD), dtype=float)
-        for i in range (0, N_TR):
-            for j in range(0, N_TR):
+        g = zeros( (ap.params["numtr"], ap.params["numtr"]), dtype=float)
+        self.gamma = zeros( (ap.params["numtr"], ap.params["numtr"], MAX_GD), dtype=float)
+        for i in range (0, ap.params["numtr"]):
+            for j in range(0, ap.params["numtr"]):
                 for d in range(0, MAX_GD):
                     self.gamma[i,j,d] = self.coopfunc( g[i,j], d)
     
@@ -244,7 +244,7 @@ class Landscape:
         """First, bild the r vector..."""
         self.r = []
         self.maxr = 0
-        for x in range(0, N_TR):
+        for x in range(0, ap.params["numtr"]):
             self.r.append( genome.genes[x].pwm.P.__len__() )
             if self.r[x] > self.maxr:
                 self.maxr = self.r[x]
@@ -260,7 +260,7 @@ class Landscape:
         for timepattern in self.timepatterns:
             genome.gene_expr[timepattern.basal_gene_id] = [MAXIMUM_ACTIVITY_LEVEL]
                 
-        for timeslice in range(0, MAX_TIME):
+        for timeslice in range(0, ap.params["maxtime"]):
             self.t_counter = timeslice
             # 1a. Ensure that basal genes remain activated
             for timepattern in self.timepatterns:
@@ -273,25 +273,35 @@ class Landscape:
             #        gene_expr[timepattern.basal_gene_id].append(MINIMUM_ACTIVITY_LEVEL)               
             
             
-            # 1b. Update TF expression levels...            
-            for tf in range(0, N_TR):
+            """ 1b. Update TF expression levels..."""            
+            for tf in range(0, ap.params["numtr"]):
                 tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice]
                 #print "landscape 270", tf, genome.genes[tf].id
                                        
             for gene in genome.genes:
-                #print "Gene", gene.id, "of", genome.genes.__len__()
-                # calculate the delta G of binding on the cis-region for every gene.
-                pe = self.get_expression(genome, gene, tf_expr_level, ap)
+                if timepattern.basal_gene_id != gene.id:
+                    """Calculate the delta G of binding on the cis-region for every gene."""
+                    pe = self.get_expression(genome, gene, tf_expr_level, ap)
+                    
+                    #expr_modifier = 20.0**pe - 1.0 
+                    expr_modifier = 1.0 + pe
+                    print "pe=", pe, "growth_mod=", expr_modifier
+                    if expr_modifier > ap.params["growth_rate"]:
+                        expr_modifier = ap.params["growth_rate"]
+                    new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
+                    genome.gene_expr[gene.id].append( new_expr_level )
+                else:
+                    pe = 1.0
+                    genome.gene_expr[gene.id].append( genome.gene_expr[gene.id][timeslice] )
                 
                 # if the delta G is high enough, then transcribe the gene.
-                if pe >= ACTIVATION_THRESHOLD:
-                    new_expr_level = genome.gene_expr[gene.id][timeslice] * ap.params["growth_rate"];
-                    genome.gene_expr[gene.id].append( new_expr_level )
-                else: # otherwise, decay the expression level of the gene.
-                    new_expr_level = genome.gene_expr[gene.id][timeslice] / ap.params["decay_rate"];
-                    genome.gene_expr[gene.id].append( new_expr_level )
+                #if pe >= ACTIVATION_THRESHOLD:
+
+                #else: # otherwise, decay the expression level of the gene.
+                #    new_expr_level = genome.gene_expr[gene.id][timeslice] / ap.params["decay_rate"];
+                #    genome.gene_expr[gene.id].append( new_expr_level )
             
-                # sanity check:
+                """ Prevent out of bounds expression. """
                 if genome.gene_expr[gene.id][timeslice+1] > MAXIMUM_ACTIVITY_LEVEL:
                     genome.gene_expr[gene.id][timeslice+1] = MAXIMUM_ACTIVITY_LEVEL
                 if genome.gene_expr[gene.id][timeslice+1] < MINIMUM_ACTIVITY_LEVEL:
@@ -306,7 +316,6 @@ class Landscape:
                     if gene.has_dbd == False:
                         marka = ""
                     print "gen.", generation, "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta 
-            
 
             #
             # to-do: if gene expression has not changed from the last timeslice
@@ -324,20 +333,20 @@ class Landscape:
     def get_expression(self, genome, gene, tf_expr_levels, ap):
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""
         pe = []        
-        ptables = ProbTable( N_TR, MAX_GD, gene.urs.__len__() )
-        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables)        
+        ptables = ProbTable( ap.params["numtr"], MAX_GD, gene.urs.__len__() )
+        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)        
         return self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)          
     
-    def calc_prob_tables(self, genome, gene, rel_tf_expr, ret):
+    def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
         """returns a ProbTable object. ret is the ProbTable that should be returned."""
         L = gene.urs.__len__()        
         for x in range(0, L): # foreach site in gene's upstream region
             sum_cpr = 0.0
-            for i in range(0, N_TR):   # foreach transcription factor
+            for i in range(0, ap.params["numtr"]):   # foreach transcription factor
                 pwm_tmp = genome.genes[i].pwm.prob_binding( x, gene.urs )
                 #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%pwm_tmp, "units."
                 sum_cpt = 0.0
-                for j in range(0, N_TR+1): # +1 to also consider the empty case
+                for j in range(0, ap.params["numtr"]+1): # +1 to also consider the empty case
                     for d in range(0, MAX_GD):                        
                         """ CASE 1: TF i's PWM is too wide to start binding at site x"""
                         if (L-x < self.r[i]): 
@@ -348,13 +357,13 @@ class Landscape:
                             continue
                             """CASE 2: TF i can start binding at site x
                             and TF i is identical to j."""
-                        elif (L-x >= self.r[i] and (j == i or j == N_TR) and d == 0): # // if TF i can bind here
+                        elif (L-x >= self.r[i] and (j == i or j == ap.params["numtr"]) and d == 0): # // if TF i can bind here
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp # basic case, no competition or cooperation
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
                             #print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
-                        elif (j < N_TR): # else, cooperative/competitive binding...
+                        elif (j < ap.params["numtr"]): # else, cooperative/competitive binding...
                             """ CASE 4: the distance between TFs i and j is too small."""
                             if (d < MIN_TF_SEPARATION):
                                 # we forbid TFs to bind this close together
@@ -377,7 +386,7 @@ class Landscape:
                             #print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
                         """CASE 6: there is no j:"""
-                        #elif (j == N_TR) or (i == j):
+                        #elif (j == ap.params["numtr"]) or (i == j):
                         #    ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp;
                         #   sum_cpt += ret.cpa[i,j,d,x]
                         #   sum_cpr += ret.cpa[i,j,d,x]
@@ -387,7 +396,7 @@ class Landscape:
             ret.cpr[x] = sum_cpr
         return ret
     
-    def sample_cdf(self, site, ptables):
+    def sample_cdf(self, site, ptables, ap):
         """Picks a random configuration starting at site, drawing IID from ptables.
         ptables.cpr must contain the cummulative marginal distributions.
         This method returns [i,j,d], where TF is binding to site, followed by distance
@@ -403,14 +412,14 @@ class Landscape:
         
         # debugging: as a test, just pick a random cell from the appropriate cpa
         # range, rather than picking an IID cell from the cpr-based range.
-        #i = random.randint(0, N_TR-1)
-        #j = random.randint(0, N_TR)
+        #i = random.randint(0, ap.params["numtr"]-1)
+        #j = random.randint(0, ap.params["numtr"])
         #d = random.randint(0, MAX_GD-1)
         
         
-        for i in range(0, N_TR):
+        for i in range(0, ap.params["numtr"]):
             reti = i
-            for j in range(0, N_TR+1):
+            for j in range(0, ap.params["numtr"]+1):
                 retj = j
                 for d in range(0, MAX_GD):
                     retd = d
@@ -444,15 +453,15 @@ class Landscape:
             this_config = {} # key = site, value = the TF bound starting at this site.
             site = 0
             while (site < gene.urs.__len__()):
-                [i, j, d] = self.sample_cdf(site, ptables)
+                [i, j, d] = self.sample_cdf(site, ptables, ap)
                 if False == configurations.__contains__(site):
                     configurations[site] = []
                 configurations[site].append( [i,j,d] )
-                if i < N_TR:
+                if i < ap.params["numtr"]:
                     this_config[site] = i
                     site += genome.genes[i].pwm.P.__len__()
                 site += d
-                if j < N_TR:
+                if j < ap.params["numtr"]:
                     this_config[site] = j
                     site += genome.genes[j].pwm.P.__len__()
                 
@@ -464,7 +473,7 @@ class Landscape:
                 
                 """Get the strength of TF binding at this site..."""
                 tf_specificity = genome.genes[tf].pwm.prob_binding(site, gene.urs)
-                #print "site", site, "tf_specificity", tf_specificity
+                #print "gene", gene.id, "site", site, "tf_specificity", tf_specificity
                 if genome.genes[tf].is_repressor:
                     sum_lambda_rep += tf_specificity
                 else:
@@ -478,24 +487,24 @@ class Landscape:
             
             k_act = sum_lambda_act
             k_rep = sum_lambda_rep
-            this_pe = (1/( 1+50*math.exp(-1*DELTA_G_SCALAR*(k_act-k_rep) ) ))
+            this_pe = (1/( 1+PWM_LEN_SCALAR*math.exp(-1*DELTA_G_SCALAR*(k_act-k_rep) ) ))
             pe_sum += this_pe
-            #print "k_act", k_act, "k_rep", k_rep, "pe_sum", pe_sum
+            #print "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
         if ap.getOptionalArg("--verbose") > 2:
             self.print_configuration(configurations, genome, gene, ap)
         return (pe_sum / IID_SAMPLES)
     
     
     def print_configuration(self, configs, genome, gene, ap):
-        foutpath = ap.getArg("--runid") + "/EXPR_PLOTS/gen" + self.gen_counter.__str__() + ".gid" + genome.id.__str__() + ".txt"
+        foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/gen" + self.gen_counter.__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
         
         if self.t_counter == 0:
-            fout.write(". GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
+            fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
         else:
-            fout.write(". GENE " + gene.id.__str__() + "\n")
+            fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\n")
         
-        fout.write("\n. URS binding at generation " + self.gen_counter.__str__() + " timeslice " + self.t_counter.__str__() + "\n" )        
+        #fout.write("\n. URS binding at generation " + self.gen_counter.__str__() + " timeslice " + self.t_counter.__str__() + "\n" )        
         """configs is array of arrays, [site, tf_i, tf_j, distance between i and j]"""
         sites = configs.keys()
         sites.sort()
@@ -506,9 +515,9 @@ class Landscape:
                     tf_count[ c[0] ] = 0
                 tf_count[ c[0] ] += 1.0 / configs[site].__len__()
 
-            line = "site: " + site.__str__()
+            line = "site " + site.__str__()
             for tf in tf_count:
-                line += " \ttf: " + tf.__str__() + " %.3f"%tf_count[tf]
+                line += " \t" + tf.__str__() + " (%.3f)"%tf_count[tf]
             fout.write(line + "\n")
             #print line
         fout.write("\n")

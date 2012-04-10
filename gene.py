@@ -8,14 +8,14 @@ class Gene:
     id = None
     is_repressor = False # True means it's an activator
         
-    def __init__(self, id, urs = None, has_dbd = False, repressor = False, pwm = None):
+    def __init__(self, id, urs_len, urs = None, has_dbd = False, repressor = False, pwm = None):
         """1. id"""
         self.id = id
         
         """2. urs"""
         if urs == None:
             """Create a random URS"""
-            for i in range(0, URS_LEN):
+            for i in range(0, urs_len):
                 """Sample a random character from the alphabet, where all chars are equally probable."""
                 self.urs += random.sample(ALPHABET, 1)[0]
         else:
@@ -33,8 +33,8 @@ class Gene:
         elif self.has_dbd:
             self.pwm = PWM()
             #self.pwm.make_flat() # initialize all PWMs to be non-specific
-            self.pwm.randomize()
+            self.pwm.randomize(ap)
 
     def collapse(self):
-        return [self.id, self.urs, self.has_dbd, self.is_repressor, self.pwm]
+        return [self.id, self.urs.__len__(), self.urs, self.has_dbd, self.is_repressor, self.pwm]
 

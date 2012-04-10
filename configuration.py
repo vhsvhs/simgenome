@@ -15,6 +15,9 @@ import re
 import sys
 #from tools import *
 
+POPPICKLES = "POP_HISTORY"
+EXPR_PLOTS = "EXPR_HISTORY"
+
 """The values in this configuration file will be used as defaults.
 Most of these parameter values can be overrided by command-line values."""
 
@@ -62,9 +65,6 @@ MAX_GD = 1
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
 MAX_TIME = 3
 
-def set_max_time(t):
-    MAX_TIME = t
-
 """Minimum distance between transcription factors bound to the same upstream regulatory sequence."""
 MIN_TF_SEPARATION = 0
 
@@ -72,13 +72,18 @@ MIN_TF_SEPARATION = 0
 gene.  Else, the expression level of the downstream gene will begin to decay."""
 ACTIVATION_THRESHOLD = 0.1
 
+"""Inversely proportion to URS length. Higher values make k_act higher, which makes it easer for genes to be expressed."""
+DELTA_G_SCALAR = 0.15
+PWM_LEN_SCALAR = 100
+
+
 """Genes are never truly 'off'.  The minimum expression level is MINIMUM_ACTIVITY_LEVEL."""
 MINIMUM_ACTIVITY_LEVEL = 0.001
 MAXIMUM_ACTIVITY_LEVEL = 1.0
 
 """If RNA polymerase is active, then the expression level at time t+1 will be GROWTH_FACTOR times the expr. level at current time t."""
-GROWTH_FACTOR = 2.2
-DECAY_FACTOR = 1.4
+MAX_TRANSCRIPTION_RATE = 2.2
+MAX_DECAY_RATE = 1.4
 
 """This rate gets used in the function coopfunc (in Landscape) to
 control the rate of decay of the cooperative or competitive interactions
@@ -88,5 +93,4 @@ V_RATE_OF_COOP_DECAY = 80
 """The scalar used to convert information to Kd.... k = 1/(e^(aI)), where a is alpha and I is the binding strength (in bits)"""
 INFO_ALPHA = 0.01
 
-"""Inversely proportion to URS length."""
-DELTA_G_SCALAR = 0.1
+

@@ -3,7 +3,7 @@ from configuration import *
 #
 # Write CRAN scripts and plot PDFs.
 #
-def plot_expression(genome, output_filename_seed, title, xlab, ylab):
+def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
     """plots the time vs. expression for all genes in one individual genome"""
     """genome must contain valid data in genome.gene_expr"""
     maxx = None
@@ -29,7 +29,7 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab):
     maxx = None
     string = ""
     string += "t <-c("
-    for t in range(1, MAX_TIME):
+    for t in range(1, ap.params["maxtime"]):
         if maxx == None:
             maxx = t
         elif t > maxx:
@@ -43,7 +43,7 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab):
     maxy = None
     for gid in series:
         string = "y" + gid.__str__() + "<-c("
-        for t in range(1, MAX_TIME):
+        for t in range(1, ap.params["maxtime"]):
             this_expr = genome.gene_expr[gid][t]
             if miny == None:
                 miny = this_expr

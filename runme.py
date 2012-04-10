@@ -9,7 +9,7 @@ from cli import *
 def check_workspace(ap):
     if False == os.path.exists(ap.getArg("--runid")):
         os.system("mkdir " + ap.getArg("--runid"))
-    dirs = ["HISTORY", "LOGS", "PLOTS", "EXPR_PLOTS"]
+    dirs = [POPPICKLES, "LOGS", "PLOTS", EXPR_PLOTS]
     for d in dirs:
         if False == os.path.exists(ap.getArg("--runid") + "/" + d):
             os.system("mkdir " + ap.getArg("--runid") + "/" + d)

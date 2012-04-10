@@ -15,10 +15,10 @@ class PWM:
             str += "\n"
         return str
     
-    def randomize(self):
+    def randomize(self, ap):
         """generate a random P matrix with length len"""
         self.P = []
-        for i in range(0, INIT_PWM_LEN):
+        for i in range(0, ap.params["init_pwm_len"]):
             self.P.append( {} )
             sump = 0.0
             shuffled_alphabet = ALPHABET
@@ -28,11 +28,27 @@ class PWM:
                 self.P[i][c] = thisp
                 sump += thisp
     
-    def make_flat(self):
+    def read_from_file(self, path):
+        self.P = []
+        fin = open(path, "r")
+        i = -1
+        for l in fin.readlines():
+            if l.__len__() > 2 and False == l.__contains__("#"):
+                i += 1
+                tokens = l.split()
+                cc = 0
+                self.P.append( {} )
+                print tokens
+                for c in ALPHABET:
+                    self.P[i][c] = float(tokens[cc])
+                    cc += 1
+        fin.close()
+    
+    def make_flat(self, ap):
         """flattens the P matrix to be non-specific, with length len"""
         flat_p = 1.0 / ALPHABET.__len__()
         self.P = []
-        for i in range(0, INIT_PWM_LEN):
+        for i in range(0, ap.params["init_pwm_len"]):
             self.P.append( {} )
             for c in ALPHABET:
                 self.P[i][c] = flat_p
@@ -47,19 +63,23 @@ class PWM:
         a = ALPHABET.__len__()
         part = urs[pos:pos+self.P.__len__()] # the partial URS
         #print "pos=", pos, "part = ", part
-        res1 = 1.0        
+        res1 = 0.0        
         # In Kevin Bullaughey's original Rescape code he assumed 
         # the affinity of a TF is the sum of the affinity to both
         # strand at this location.
         # But in my code, I'm only dealing with single stranded DNA.
         for k in range(0, self.P.__len__() ):
-            res1 *= self.P[k][ part[k] ]
+            #if self.P[k][ part[k] ] == 0.0:
+            #    continue
+            #else:
+            res1 += self.P[k][ part[k] ]
             #print "res1=", res1
         # this is what Kevin does:
         #res1 *= a**( self.P.__len__() )
         
         #... but here's what I do, to normalize by the background expectation
-        res1 = res1 / 0.25**( self.P.__len__() )
+        #res1 = res1 / 0.25**( self.P.__len__() )
+        res1 = res1 / 0.25
         
         #print "res1=", res1
         return res1

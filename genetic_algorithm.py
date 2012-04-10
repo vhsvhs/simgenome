@@ -31,9 +31,7 @@ class Genetic_Algorithm:
         for i in range(0, MAX_GA_GENS):
             self.landscape.gen_counter = i
             now = datetime.now()
-                        
-            #prog = ProgressBar(0, N_GENOMES, 50, mode='dynamic', char='#')
-        
+                                
             """gid_fitness[genome ID] = [fitness at generation i]"""
             gid_fitness = {}
 
@@ -61,23 +59,31 @@ class Genetic_Algorithm:
             if int(ap.getOptionalArg("--verbose")) > 2:
                 pop_data = self.population.collapse()
                 pop_data_pickle = pickle.dumps( pop_data )
-                fout = open(ap.getArg("--runid") + "/HISTORY/population.gen" + i.__str__() + ".pickle", "w")
+                fout = open(ap.getArg("--runid") + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle", "w")
                 fout.write(pop_data_pickle)
                 fout.close()
             self.gen_gid_fitness.append( gid_fitness )
             maxgid = self.find_max_fit_gid(gid_fitness)
-            filenameseed = ap.getArg("--runid") + "/EXPR_PLOTS/expression.gen" + i.__str__() + ".gid" + maxgid.__str__() 
-            plot_expression( self.population.genomes[maxgid], filenameseed, filenameseed, "time", "expression")
+            filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + maxgid.__str__() 
+            plot_expression( self.population.genomes[maxgid], filenameseed, filenameseed, "time", "expression", ap)
+            
+            [max_f, min_f, mean_f, median_f, std_f] = self.get_fitness_stats(gid_fitness)
             
             if int(ap.getOptionalArg("--verbose")) > 2:
                 timedelta = datetime.now() - now
                 print "\n................................................\n" 
                 print "\n. Generation", i, "required", timedelta, "to compute."
                 print "\n. popsize=", self.population.genomes.__len__()
-                line = "gen " + i.__str__() + "\t" + self.print_fitness_stats(gid_fitness)
+                line = "gen " + i.__str__() + "\t" + "\tmaxf=%.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + "\tstdf= %.3f"%std_f 
+                print line
                 log_generation(ap, line)
                 #print "\n. effective popsize=", self.population.effective_popsize()
                 print "\n................................................"
+            
+            """Check for convergence on terminal conditions."""
+            if mean_f == 1.0:
+                print "The population arrived at an optima.  Goodbye."
+                exit(1)
             
             if i < MAX_GA_GENS:
                 [min_fitness, max_fitness, sum_fitness] = self.population.get_minmax_fitness(gid_fitness)
@@ -134,7 +140,7 @@ class Genetic_Algorithm:
             self.runsim_slave(rank, comm, ap)
             
  
-    def print_fitness_stats(self, gid_fitness):
+    def get_fitness_stats(self, gid_fitness):
         """gid_fitness is a hashtable, key = genome.id, value = fitness for that genome."""
         f_vals = gid_fitness.values()
         max_f = max(f_vals)
@@ -142,7 +148,5 @@ class Genetic_Algorithm:
         mean_f = mean(f_vals)
         median_f = mean(f_vals)
         std_f = std(f_vals)
-        line = "\tmaxf=%.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + "\tstdf= %.3f"%std_f 
-        print line
-        return line
+        return [max_f, min_f, mean_f, median_f, std_f]
         
