@@ -6,7 +6,6 @@ class Gene:
     has_dbd = False # False = gene is reporter, True = gene is regulatory gene
     pwm = None
     id = None
-    is_repressor = False # True means it's an activator
         
     def __init__(self, id, urs_len, urs = None, has_dbd = False, repressor = False, pwm = None):
         """1. id"""
@@ -33,7 +32,7 @@ class Gene:
         elif self.has_dbd:
             self.pwm = PWM()
             #self.pwm.make_flat() # initialize all PWMs to be non-specific
-            self.pwm.randomize(ap)
+            self.pwm.randomize()
 
     def collapse(self):
         return [self.id, self.urs.__len__(), self.urs, self.has_dbd, self.is_repressor, self.pwm]

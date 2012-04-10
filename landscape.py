@@ -233,7 +233,7 @@ class Landscape:
                 max_expr_error += 1.0
         #print expr_error
         #print max_expr_error
-        return math.exp(-25.0 * expr_error)
+        return math.exp(FITNESS_SCALAR * expr_error)
         #return (max_expr_error - expr_error) / max_expr_error
                     
     
@@ -256,9 +256,11 @@ class Landscape:
             
         """ tf_expr_level[gene ID] = current expression level"""
         """ tf_expr_level is used as short-term variable inside the loop "for timeslice..." """
+        list_of_basal_gids = []
         tf_expr_level = {}
         for timepattern in self.timepatterns:
             genome.gene_expr[timepattern.basal_gene_id] = [MAXIMUM_ACTIVITY_LEVEL]
+            list_of_basal_gids.append( timepattern.basal_gene_id )
                 
         for timeslice in range(0, ap.params["maxtime"]):
             self.t_counter = timeslice
@@ -279,15 +281,15 @@ class Landscape:
                 #print "landscape 270", tf, genome.genes[tf].id
                                        
             for gene in genome.genes:
-                if timepattern.basal_gene_id != gene.id:
+                if False == list_of_basal_gids.__contains__(gene.id):
                     """Calculate the delta G of binding on the cis-region for every gene."""
                     pe = self.get_expression(genome, gene, tf_expr_level, ap)
                     
                     #expr_modifier = 20.0**pe - 1.0 
-                    expr_modifier = 1.0 + pe
-                    print "pe=", pe, "growth_mod=", expr_modifier
-                    if expr_modifier > ap.params["growth_rate"]:
-                        expr_modifier = ap.params["growth_rate"]
+                    expr_modifier = 2.0 * pe
+                    #print "pe=", pe, "growth_mod=", expr_modifier
+                    #if expr_modifier > ap.params["growth_rate"]:
+                    #    expr_modifier = ap.params["growth_rate"]
                     new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
                     genome.gene_expr[gene.id].append( new_expr_level )
                 else:
@@ -334,7 +336,9 @@ class Landscape:
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""
         pe = []        
         ptables = ProbTable( ap.params["numtr"], MAX_GD, gene.urs.__len__() )
-        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)        
+        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)   
+        #print "PTABLE for gene", gene.id
+        #print ptables   
         return self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)          
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
@@ -473,7 +477,7 @@ class Landscape:
                 
                 """Get the strength of TF binding at this site..."""
                 tf_specificity = genome.genes[tf].pwm.prob_binding(site, gene.urs)
-                #print "gene", gene.id, "site", site, "tf_specificity", tf_specificity
+                #print "tf", tf, "binds gene", gene.id, "site", site, "tf_specificity", tf_specificity
                 if genome.genes[tf].is_repressor:
                     sum_lambda_rep += tf_specificity
                 else:
@@ -487,9 +491,9 @@ class Landscape:
             
             k_act = sum_lambda_act
             k_rep = sum_lambda_rep
-            this_pe = (1/( 1+PWM_LEN_SCALAR*math.exp(-1*DELTA_G_SCALAR*(k_act-k_rep) ) ))
+            this_pe = (1/( 1+math.exp(-1*PE_SCALAR*(k_act-k_rep) ) ))
             pe_sum += this_pe
-            #print "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
+            #print "gene", gene.id, "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
         if ap.getOptionalArg("--verbose") > 2:
             self.print_configuration(configurations, genome, gene, ap)
         return (pe_sum / IID_SAMPLES)

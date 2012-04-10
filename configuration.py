@@ -73,13 +73,14 @@ gene.  Else, the expression level of the downstream gene will begin to decay."""
 ACTIVATION_THRESHOLD = 0.1
 
 """Inversely proportion to URS length. Higher values make k_act higher, which makes it easer for genes to be expressed."""
-DELTA_G_SCALAR = 0.15
-PWM_LEN_SCALAR = 100
-
+PE_SCALAR = 0.05
 
 """Genes are never truly 'off'.  The minimum expression level is MINIMUM_ACTIVITY_LEVEL."""
 MINIMUM_ACTIVITY_LEVEL = 0.001
 MAXIMUM_ACTIVITY_LEVEL = 1.0
+
+"""Larger values make the fitness function sharper around optimal expression, smaller values spread the function's hills further out over poor expression."""
+FITNESS_SCALAR = -3.0
 
 """If RNA polymerase is active, then the expression level at time t+1 will be GROWTH_FACTOR times the expr. level at current time t."""
 MAX_TRANSCRIPTION_RATE = 2.2

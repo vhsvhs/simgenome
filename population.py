@@ -100,8 +100,10 @@ class Population:
             #
             #  to-do continue here: fix the PWM mutator
             #
-            #rand_tr_id = random.randint(0, ap.params["numtr"]-1)
-            #self.genomes[gid].genes[rand_tr_id].pwm.randomize()
+            rand_roll = random.random()
+            if rand_roll < mu:
+                rand_tr_id = random.randint(0, ap.params["numtr"]-1)
+                self.genomes[gid].genes[rand_tr_id].pwm.randomize()
         if int(ap.getOptionalArg("--verbose")) > 2:
             print "\n"
                 

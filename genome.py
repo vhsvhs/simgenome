@@ -64,13 +64,6 @@ class Genome:
                         elif this_repressor == 1:
                             this_repressor = True
                         this_urs = tokens[3]
-                        #
-                        # to-do: grab the PWM
-                        #
-                        #if this_has_dbd == 0:
-                        #    this_pwm = tokens[4]
-                        #else:
-                        #    this_pwm = None
                         this_gene = Gene(this_id, this_urs.__len__(), urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm) 
                         ret_genes.append(this_gene)
                         print "\n.", this_id, this_has_dbd, this_repressor, this_urs

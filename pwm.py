@@ -15,10 +15,10 @@ class PWM:
             str += "\n"
         return str
     
-    def randomize(self, ap):
+    def randomize(self):
         """generate a random P matrix with length len"""
         self.P = []
-        for i in range(0, ap.params["init_pwm_len"]):
+        for i in range(0, 4):
             self.P.append( {} )
             sump = 0.0
             shuffled_alphabet = ALPHABET
