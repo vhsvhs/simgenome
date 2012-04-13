@@ -1,0 +1,7 @@
+# ID, has_dbd (0 or 1), is_repressor (0 or 1), URS
+0 1 0 AAAAAAAA
+1 1 1 TTTTTTTT
+2 1 0 AAAAAAAA
+3 1 1 TTTTTTTT
+4 0 0 CCCCCCCC
+

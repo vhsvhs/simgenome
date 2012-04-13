@@ -1,0 +1,1 @@
+mpirun -np 1 python runme.py --patternpath ./examples/3genes_rules.txt --genepath ./examples/3genes.txt --verbose 8 --runid 3genes.4.6.2012 --growth_rate 6.0 --devay_rate 4.0 --popsize 15 --maxtime 5 --numtr 1
