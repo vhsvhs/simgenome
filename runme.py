@@ -27,16 +27,13 @@ def main():
         """Build a population"""        
         population = Population()
         population.init(ap)
-                  
-        #
-        # continue here: scan the population (genome, actually)
-        # and adjust configuration parameters (like URS length)
-        # based on what the user specified.
-        #
-        
+                          
         """Build a random fitness landscape"""
         landscape = Landscape()
         landscape.init(ap, genome = population.genomes[0])
+            
+        """Check for consistency with all parameters."""
+        check_consistency(ap, population, landscape)
             
         """Broadcast the population and landscape to slaves"""
         pop_data = population.collapse()

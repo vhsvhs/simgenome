@@ -167,7 +167,7 @@ class Landscape:
                             ret_timepatterns.append(this_timepattern)
                     
                         if this_timepoint > ap.params["maxtime"]:
-                            set_max_time(this_timepoint)
+                            ap.params["maxtime"] = this_timepoint
                                                 
                         this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type)
                         ret_timepatterns[ this_timepattern_id ].rules.append( this_rule )
@@ -428,7 +428,7 @@ class Landscape:
                 for d in range(0, MAX_GD):
                     retd = d
                     sump += ptables.cpa[i,j,d,site]
-                    #print "tf", i, "tf", j, "d", d, "sump", sump
+                    #print "site", site, "tf", i, "tf", j, "d", d, "sump", sump
                     if sump > randp:
                         break
                 if sump > randp:

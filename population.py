@@ -12,7 +12,7 @@ class Population:
         for i in range(0, ap.params["popsize"]):
             """Fill the population with ap.params["popsize"] copies of the seed genome."""
             self.genomes[ i ] = Genome(i)
-            print "\n+ Genome ", i
+            print "+ Genome ", i
             self.genomes[ i ].init( ap )
     
     def uncollapse(self, data):

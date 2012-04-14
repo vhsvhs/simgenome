@@ -66,3 +66,14 @@ def read_cli(ap):
         ap.params["init_urs_len"] = int(x)
     else:
         ap.params["init_urs_len"] = URS_LEN
+
+
+def check_consistency(ap, population, landscape):
+    for tp in landscape.timepatterns:
+        if tp.basal_gene_id > population.genomes[0].genes.__len__() - 1:
+            print "Ooops. One of your rules uses basal gene", tp.basal_gene_id, "but your genome only contains genes 0 through", (population.genomes[0].genes.__len__() - 1)
+            exit(1)
+        for rule in tp.rules:
+            if rule.reporter_id > population.genomes[0].genes.__len__() - 1:
+                print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome only contains", population.genomes[0].genes.__len__(), "genes."
+                exit(1)

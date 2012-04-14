@@ -38,7 +38,7 @@ class PWM:
                 tokens = l.split()
                 cc = 0
                 self.P.append( {} )
-                print tokens
+                #print tokens
                 for c in ALPHABET:
                     self.P[i][c] = float(tokens[cc])
                     cc += 1

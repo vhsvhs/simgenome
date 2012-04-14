@@ -39,7 +39,7 @@ class Genome:
     """Returns either a list of genes read from a file, OR returns None if the user
     did not specify to use genes from a file."""
     def get_genes_from_file(self, ap):
-        print "Getting genes from file..."
+        #print "Getting genes from file..."
         this_pwm = None
         if ap.getOptionalArg("--pwmpath"):
             pwmpath = ap.getOptionalArg("--pwmpath")
@@ -49,7 +49,7 @@ class Genome:
             ret_genes = []
             genepath = ap.getOptionalArg("--genepath")
             fin = open(genepath, "r")
-            print "\n. Reading genes from", genepath
+            #print "\n. Reading genes from", genepath
             for l in fin.readlines():
                 if l.startswith("#"):
                     continue
@@ -66,8 +66,13 @@ class Genome:
                         this_urs = tokens[3]
                         this_gene = Gene(this_id, this_urs.__len__(), urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm) 
                         ret_genes.append(this_gene)
-                        print "\n.", this_id, this_has_dbd, this_repressor, this_urs
+                        #print "\n.", this_id, this_has_dbd, this_repressor, this_urs
             fin.close()
+            count_tf = 0
+            for gid in ret_genes:
+                if gid.has_dbd:
+                    count_tf += 1
+            ap.params["numtr"] = count_tf
             return ret_genes
         else:
             return None

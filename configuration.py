@@ -73,7 +73,7 @@ gene.  Else, the expression level of the downstream gene will begin to decay."""
 ACTIVATION_THRESHOLD = 0.1
 
 """Inversely proportion to URS length. Higher values make k_act higher, which makes it easer for genes to be expressed."""
-PE_SCALAR = 0.05
+PE_SCALAR = 0.1
 
 """Genes are never truly 'off'.  The minimum expression level is MINIMUM_ACTIVITY_LEVEL."""
 MINIMUM_ACTIVITY_LEVEL = 0.001

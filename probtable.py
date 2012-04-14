@@ -18,8 +18,6 @@ class ProbTable:
     def __str__(self):        
         ret = ""
         ret += "CPA\nsite\tTF\tTF\td\tVALUE\n"
-        
-        
         dims = self.cpa.shape
         for x in range(0, dims[3]):
             for i in range(0, dims[0]):
