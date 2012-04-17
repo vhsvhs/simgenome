@@ -41,10 +41,6 @@ class Genome:
     def get_genes_from_file(self, ap):
         #print "Getting genes from file..."
         this_pwm = None
-        if ap.getOptionalArg("--pwmpath"):
-            pwmpath = ap.getOptionalArg("--pwmpath")
-            this_pwm = PWM()
-            this_pwm.read_from_file( pwmpath )
         if ap.getOptionalArg("--genepath"): 
             ret_genes = []
             genepath = ap.getOptionalArg("--genepath")
@@ -57,6 +53,10 @@ class Genome:
                     tokens = l.split()
                     if tokens.__len__() >= 4:
                         this_id = int(tokens[0])
+                        if ap.getOptionalArg("--pwmpath"):
+                            pwmpath = ap.getOptionalArg("--pwmpath")
+                            this_pwm = PWM()
+                            this_pwm.read_from_file( pwmpath, this_id )
                         this_has_dbd = int(tokens[1])
                         this_repressor = int(tokens[2])
                         if this_repressor == 0:

@@ -28,20 +28,47 @@ class PWM:
                 self.P[i][c] = thisp
                 sump += thisp
     
-    def read_from_file(self, path):
+    def mutate(self, ap):
+        rand_site = random.randint(0, self.P.__len__()-1)
+        rand_state = random.randint(0,3)
+        
+        d = ap.params["pwmmu"]
+        new_p = (self.P[rand_site][ ALPHABET[rand_state] ] + d)%1.0
+
+        sum_states = 0.0
+        for c in ALPHABET:
+            #print self.P[rand_site][c]
+            sum_states += self.P[rand_site][c]
+        for c in ALPHABET:
+            if c == rand_state:
+                self.P[rand_site][c] = new_p
+            else:
+                self.P[rand_site][c] /= sum_states
+        print self.P
+    
+    def read_from_file(self, path, id):
         self.P = []
         fin = open(path, "r")
         i = -1
+        found_our_id = False
         for l in fin.readlines():
-            if l.__len__() > 2 and False == l.__contains__("#"):
-                i += 1
+            if l.startswith("pwm"):
                 tokens = l.split()
-                cc = 0
-                self.P.append( {} )
-                #print tokens
-                for c in ALPHABET:
-                    self.P[i][c] = float(tokens[cc])
-                    cc += 1
+                if int(tokens[1]) == id:
+                    found_our_id = True
+                if int(tokens[1]) > id:
+                    found_our_id = False
+                continue
+            if found_our_id == True:
+                if l.__len__() > 2 and False == l.__contains__("#"):
+                    i += 1
+                    tokens = l.split()
+                    cc = 0
+                    self.P.append( {} )
+                    #print tokens
+                    for c in ALPHABET:
+                        self.P[i][c] = float(tokens[cc])
+                        cc += 1
         fin.close()
     
     def make_flat(self, ap):
@@ -79,7 +106,7 @@ class PWM:
         
         #... but here's what I do, to normalize by the background expectation
         #res1 = res1 / 0.25**( self.P.__len__() )
-        res1 = res1 / 0.25
+        #res1 = res1 / 0.25
         
         #print "res1=", res1
         return res1

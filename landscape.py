@@ -241,13 +241,15 @@ class Landscape:
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
         Returns a floating-point value."""
         
-        """First, bild the r vector..."""
+        """First, build the r vector..."""
         self.r = []
         self.maxr = 0
         for x in range(0, ap.params["numtr"]):
             self.r.append( genome.genes[x].pwm.P.__len__() )
             if self.r[x] > self.maxr:
                 self.maxr = self.r[x]
+        """Deal with the no-occupancy case"""
+        self.r.append(1)
         
         """ gene_expr[gene ID][timeslice] = expression level of gene at timeslice"""
         genome.gene_expr = {}
@@ -343,59 +345,68 @@ class Landscape:
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
         """returns a ProbTable object. ret is the ProbTable that should be returned."""
+        if int(ap.getOptionalArg("--verbose")) > 100:
+            print "\n\n. CALC_PROB_TABLES gene", gene.id
         L = gene.urs.__len__()        
         for x in range(0, L): # foreach site in gene's upstream region
             sum_cpr = 0.0
             for i in range(0, ap.params["numtr"]):   # foreach transcription factor
                 pwm_tmp = genome.genes[i].pwm.prob_binding( x, gene.urs )
-                #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%pwm_tmp, "units."
+                #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%pwm_tmp, "bits."
                 sum_cpt = 0.0
                 for j in range(0, ap.params["numtr"]+1): # +1 to also consider the empty case
+                    #print i, j, x
                     for d in range(0, MAX_GD):                        
-                        """ CASE 1: TF i's PWM is too wide to start binding at site x"""
                         if (L-x < self.r[i]): 
+                            """ CASE 1: TF i's PWM is too wide to start binding at site x"""
                             ret.cpa[i,j,d,x] = 0 # P @ x = 0
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
-                            #print "case 1:", i, j, d, x, ret.cpa[i,j,d,x], self.r[i]
+                            if int(ap.getOptionalArg("--verbose")) > 100:
+                                print "case 1:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
+                        elif (L-x >= self.r[i] and (j == i or j == ap.params["numtr"]) and d == 0): # // if TF i can bind here
                             """CASE 2: TF i can start binding at site x
                             and TF i is identical to j."""
-                        elif (L-x >= self.r[i] and (j == i or j == ap.params["numtr"]) and d == 0): # // if TF i can bind here
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp # basic case, no competition or cooperation
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
-                            #print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
+                            if int(ap.getOptionalArg("--verbose")) > 100:
+                                print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
                         elif (j < ap.params["numtr"]): # else, cooperative/competitive binding...
-                            """ CASE 4: the distance between TFs i and j is too small."""
                             if (d < MIN_TF_SEPARATION):
+                                """ CASE 4: the distance between TFs i and j is too small."""
                                 # we forbid TFs to bind this close together
                                 ret.cpa[i,j,d,x] = 0
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
-                                #print "case 4:", i, j, d, x, ret.cpa[i,j,d,x]
+                                if int(ap.getOptionalArg("--verbose")) > 100:
+                                    print "case 4:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
+                            elif (x+1 - self.r[i] - d - self.r[j] < 0):
                                 """CASE 3: TF i and j cannot both fit on the sequence."""
-                            elif (x+1 - self.r[i] - d - self.r[j-1] < 0):
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
-                                #print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
+                                if int(ap.getOptionalArg("--verbose")) > 100:
+                                    print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
                             """CASE 5: TFs i and j are different AND they can both fit on the URS..."""
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d]
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
-                            #print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
+                            if int(ap.getOptionalArg("--verbose")) > 100:
+                                print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
-                        """CASE 6: there is no j:"""
-                        #elif (j == ap.params["numtr"]) or (i == j):
-                        #    ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp;
-                        #   sum_cpt += ret.cpa[i,j,d,x]
-                        #   sum_cpr += ret.cpa[i,j,d,x]
-                        #   #print "case 6:", i, j, d, x, ret.cpa[i,j,d,x]
-                        #   continue
+                        elif (j == ap.params["numtr"]) or (i == j):
+                            """CASE 6: there is no j:"""
+                            ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp;
+                            sum_cpt += ret.cpa[i,j,d,x]
+                            sum_cpr += ret.cpa[i,j,d,x]
+                            if int(ap.getOptionalArg("--verbose")) > 100:
+                                print "case 6:", i, j, d, x, ret.cpa[i,j,d,x]
+                            continue
                 ret.cpt[i,x] = sum_cpt
             ret.cpr[x] = sum_cpr
         return ret
@@ -428,7 +439,7 @@ class Landscape:
                 for d in range(0, MAX_GD):
                     retd = d
                     sump += ptables.cpa[i,j,d,site]
-                    #print "site", site, "tf", i, "tf", j, "d", d, "sump", sump
+                    #print "site", site, "tf", i, "tf", j, "d", d, "sump", sump, "randp", randp
                     if sump > randp:
                         break
                 if sump > randp:
@@ -438,9 +449,9 @@ class Landscape:
         return [reti, retj, retd]
         
         
-    def i_to_k(self, i):
-        """Convert information bits to Kd"""
-        return 1/(math.exp(INFO_ALPHA*i))
+    #def i_to_k(self, i):
+    #    """Convert information bits to Kd"""
+    #    return 1/(math.exp(INFO_ALPHA*i))
     
     def prob_expr(self, genome, ptables, gene, tf_expr_levels, ap, lam=None):
         """Returns a floating-point value corresponding to the expression level of gene,
@@ -458,30 +469,40 @@ class Landscape:
             site = 0
             while (site < gene.urs.__len__()):
                 [i, j, d] = self.sample_cdf(site, ptables, ap)
+                #print i, j, d
                 if False == configurations.__contains__(site):
                     configurations[site] = []
                 configurations[site].append( [i,j,d] )
-                if i < ap.params["numtr"]:
-                    this_config[site] = i
+                this_config[site] = i
+                #print "site", site
+                if i < ap.params["numtr"]-1:
                     site += genome.genes[i].pwm.P.__len__()
+                else:
+                    site += 1 # for the non-occuped case
                 site += d
-                if j < ap.params["numtr"]:
-                    this_config[site] = j
+                
+                if False == configurations.__contains__(site):
+                    configurations[site] = []
+                this_config[site] = j
+                #print "site", site
+                if j < ap.params["numtr"]-1:
                     site += genome.genes[j].pwm.P.__len__()
+                else:
+                    site += 1
                 
             """"2. Calculate the binding energy of the configuration."""
             sum_lambda_act = 0.0
             sum_lambda_rep = 0.0
             for site in this_config:
                 tf = this_config[site]
-                
-                """Get the strength of TF binding at this site..."""
-                tf_specificity = genome.genes[tf].pwm.prob_binding(site, gene.urs)
-                #print "tf", tf, "binds gene", gene.id, "site", site, "tf_specificity", tf_specificity
-                if genome.genes[tf].is_repressor:
-                    sum_lambda_rep += tf_specificity
-                else:
-                    sum_lambda_act += tf_specificity
+                if tf != ap.params["numtr"]: # there will be no binding energy for the empty configuration:
+                    """Get the strength of TF binding at this site..."""
+                    tf_specificity = genome.genes[tf].pwm.prob_binding(site, gene.urs)
+                    #print "tf", tf, "binds gene", gene.id, "site", site, "tf_specificity", tf_specificity
+                    if genome.genes[tf].is_repressor:
+                        sum_lambda_rep += tf_specificity
+                    else:
+                        sum_lambda_act += tf_specificity
             
             """ 3. the probability of this configuration equals:
             # this is what Kevin did:
@@ -502,11 +523,7 @@ class Landscape:
     def print_configuration(self, configs, genome, gene, ap):
         foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/gen" + self.gen_counter.__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
-        
-        if self.t_counter == 0:
-            fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
-        else:
-            fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\n")
+        fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
         
         #fout.write("\n. URS binding at generation " + self.gen_counter.__str__() + " timeslice " + self.t_counter.__str__() + "\n" )        
         """configs is array of arrays, [site, tf_i, tf_j, distance between i and j]"""
@@ -521,7 +538,10 @@ class Landscape:
 
             line = "site " + site.__str__()
             for tf in tf_count:
-                line += " \t" + tf.__str__() + " (%.3f)"%tf_count[tf]
+                pe = 0.0
+                if tf < ap.params["numtr"]:
+                    pe = genome.genes[tf].pwm.prob_binding(site, gene.urs)
+                line += " \t" + tf.__str__() + " (%.3f"%tf_count[tf] + " %.3f)"%pe
             fout.write(line + "\n")
             #print line
         fout.write("\n")

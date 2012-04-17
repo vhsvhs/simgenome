@@ -49,15 +49,18 @@ class Population:
     def effective_popsize(self):
         return self.genomes.__len__()
     
-    def mark_elite(self, gid_fitness, max_fitness, min_fitness, ap):
+    def mark_elite(self, fitness_gid, max_fitness, min_fitness, ap):
         if max_fitness == min_fitness:
             return
         """Mark the elite individuals."""
-        for gid in gid_fitness:
-            if gid_fitness[gid] == max_fitness:
-                self.genomes[gid].is_elite = True
-            else:
-                self.genomes[gid].is_elite = False
+        count_elite = 0
+        max_elite = self.genomes.__len__() * 1.0 / ELITE_PROPORTION
+        fkeys = fitness_gid.keys()
+        fkeys.sort()
+        for fitness in fkeys:
+            for gid in fitness_gid[fitness]:
+                if count_elite < max_elite:
+                    self.genomes[gid].is_elite = True
     
     def do_mutations(self, ap):
         if int(ap.getOptionalArg("--verbose")) > 2:
@@ -96,21 +99,21 @@ class Population:
                 self.genomes[gid].genes[rand_gene].urs = new_urs
                 #print new_urs
         
-            """This is a stupid PWM mutator, for now."""
-            #
-            #  to-do continue here: fix the PWM mutator
-            #
             rand_roll = random.random()
             if rand_roll < mu:
                 rand_tr_id = random.randint(0, ap.params["numtr"]-1)
-                self.genomes[gid].genes[rand_tr_id].pwm.randomize()
+                print "mutating PWM ", rand_tr_id
+                print "old PWM=", self.genomes[gid].genes[rand_tr_id].pwm.P.__str__()
+                self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
         if int(ap.getOptionalArg("--verbose")) > 2:
             print "\n"
                 
                     
     def fitness_cdf_sampler(self, min, max, sum, gid_fitness):
         if sum == 0:
-            return random.sample(gid_fitness, 1)[0]
+            x = random.sample(gid_fitness, 1)[0]
+            #print "CDF sample: random", x, "from", max
+            return x
         else:
             randp = random.random() * sum
             gids = gid_fitness.keys()
@@ -119,13 +122,21 @@ class Population:
             for i in gids:
                 randpsum += gid_fitness[i] - min
                 if randpsum > randp:
+                    print "CDF sample", i, "from", max
                     return i
+
 
     def get_minmax_fitness(self, gid_fitness):
         """First, find max and min fitness."""
         min_fitness = 1.0
         max_fitness = 0.0
+        reverse_hash = {} # key = fitness, value = array of 1 or more IDs.
         for gid in gid_fitness:
+            this_fitness = gid_fitness[gid]
+            if reverse_hash.__contains__(this_fitness):
+                reverse_hash[this_fitness].append( gid )
+            else:
+                reverse_hash[this_fitness] = [gid]     
             if gid_fitness[gid] < min_fitness:
                 min_fitness = gid_fitness[gid]
             elif gid_fitness[gid] > max_fitness:
@@ -133,7 +144,7 @@ class Population:
         sum_fitness = 0.0
         for gid in gid_fitness:
             sum_fitness += (gid_fitness[gid] - min_fitness)
-        return [min_fitness, max_fitness, sum_fitness]
+        return [min_fitness, max_fitness, sum_fitness, reverse_hash]
         
     def do_reproduction(self, gid_fitness, min_fitness, max_fitness, sum_fitness, ap):
         if int(ap.getOptionalArg("--verbose")) > 2:

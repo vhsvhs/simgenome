@@ -62,6 +62,7 @@ class Genetic_Algorithm:
                 fout = open(ap.getArg("--runid") + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle", "w")
                 fout.write(pop_data_pickle)
                 fout.close()
+                        
             self.gen_gid_fitness.append( gid_fitness )
             maxgid = self.find_max_fit_gid(gid_fitness)
             filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + maxgid.__str__() 
@@ -85,10 +86,10 @@ class Genetic_Algorithm:
                 print "The population arrived at an optima.  Goodbye."
                 exit(1)
             
-            if i < MAX_GA_GENS:
-                [min_fitness, max_fitness, sum_fitness] = self.population.get_minmax_fitness(gid_fitness)
+            if i < MAX_GA_GENS:                
+                [min_fitness, max_fitness, sum_fitness, fitness_gid] = self.population.get_minmax_fitness(gid_fitness)
                 """Mark the elite individuals..."""
-                self.population.mark_elite(gid_fitness, max_fitness, min_fitness, ap)
+                self.population.mark_elite(fitness_gid, max_fitness, min_fitness, ap)
                 """Mutate the population"""
                 self.population.do_mutations(ap)
                 """Reproduce the population based on pre-mutation fitness"""

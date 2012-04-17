@@ -42,9 +42,10 @@ N_TR = 2
 N_REPORTER = 1
 
 """Mean mutation rate"""
-MU = 0.2
+MU = 0.1
 ELITE_MU = 0.01
-
+ELITE_PROPORTION = 0.5
+PWM_MU = MU
 """How many generations to run the genetic algorithm?"""
 MAX_GA_GENS = 5000
 
@@ -68,12 +69,8 @@ MAX_TIME = 3
 """Minimum distance between transcription factors bound to the same upstream regulatory sequence."""
 MIN_TF_SEPARATION = 0
 
-"""If the method get_expression returns a value greater than ACTIVATION_THRESHOLD then activation will begin on the downstream 
-gene.  Else, the expression level of the downstream gene will begin to decay."""
-ACTIVATION_THRESHOLD = 0.1
-
 """Inversely proportion to URS length. Higher values make k_act higher, which makes it easer for genes to be expressed."""
-PE_SCALAR = 0.1
+PE_SCALAR = 1.0
 
 """Genes are never truly 'off'.  The minimum expression level is MINIMUM_ACTIVITY_LEVEL."""
 MINIMUM_ACTIVITY_LEVEL = 0.001
@@ -91,7 +88,7 @@ control the rate of decay of the cooperative or competitive interactions
 between TFs."""
 V_RATE_OF_COOP_DECAY = 80
 
-"""The scalar used to convert information to Kd.... k = 1/(e^(aI)), where a is alpha and I is the binding strength (in bits)"""
-INFO_ALPHA = 0.01
+#"""The scalar used to convert information to Kd.... k = 1/(e^(aI)), where a is alpha and I is the binding strength (in bits)"""
+#INFO_ALPHA = 0.01
 
 

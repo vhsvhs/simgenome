@@ -55,6 +55,12 @@ def read_cli(ap):
     else:
         ap.params["elitemu"] = ELITE_MU
         
+    x = ap.getOptionalArg("--pwmmu")
+    if x != False:
+        ap.params["pwmmu"] = float(x)
+    else:
+        ap.params["pwmmu"] = PWM_MU
+        
     x = ap.getOptionalArg("--init_pwm_len")
     if x != False:
         ap.params["init_pwm_len"] = int(x)
