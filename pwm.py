@@ -44,7 +44,7 @@ class PWM:
                 self.P[rand_site][c] = new_p
             else:
                 self.P[rand_site][c] /= sum_states
-        print self.P
+        #print self.P
     
     def read_from_file(self, path, id):
         self.P = []

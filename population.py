@@ -56,7 +56,8 @@ class Population:
         count_elite = 0
         max_elite = self.genomes.__len__() * ELITE_PROPORTION
         fkeys = fitness_gid.keys()
-        fkeys.sort().reverse()
+        fkeys.sort()
+        fkeys.reverse()
         for fitness in fkeys:
             for gid in fitness_gid[fitness]:
                 if count_elite < max_elite:
@@ -79,7 +80,7 @@ class Population:
             n_duplications = None
             
             if int(ap.getOptionalArg("--verbose")) > 2:                
-                print "\t", n_point_mutations, "point mutations to individual", gid
+                print "\t.", n_point_mutations, "cis mutations to individual", gid
             
             for i in range(0, n_point_mutations):
                 # pick a random gene
@@ -103,8 +104,8 @@ class Population:
             rand_roll = random.random()
             if rand_roll < mu:
                 rand_tr_id = random.randint(0, ap.params["numtr"]-1)
-                print "mutating PWM ", rand_tr_id
-                print "old PWM=", self.genomes[gid].genes[rand_tr_id].pwm.P.__str__()
+                print "\t. mutating PWM ", rand_tr_id, "in individual", gid
+                #print "old PWM=", self.genomes[gid].genes[rand_tr_id].pwm.P.__str__()
                 self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
         if int(ap.getOptionalArg("--verbose")) > 2:
             print "\n"
@@ -123,7 +124,7 @@ class Population:
             for i in gids:
                 randpsum += gid_fitness[i] - min
                 if randpsum > randp:
-                    print "CDF sample", i, "from", max
+                    #print "CDF sample", i, "from", max
                     return i
 
 
@@ -153,9 +154,8 @@ class Population:
             for gid in gid_fitness:
                 marka = ""
                 if self.genomes[gid].is_elite:
-                    marka = "+"
+                    marka = "(elite)"
                 print "\tID", gid, "f= %.3f"%gid_fitness[gid], marka
-            #print gid_fitness
         
         new_genomes = {}
         for child_gid in gid_fitness:
@@ -166,7 +166,7 @@ class Population:
             parent1 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
             parent2 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
             if int(ap.getOptionalArg("--verbose")) > 2:
-                print "\tchild", child_gid, ":", parent1, "X", parent2
+                print "\tnew child", child_gid, ":", parent1, "X", parent2
                 
             """Cross the parents"""
             for geneid in range(0, self.genomes[parent1].genes.__len__()):

@@ -29,7 +29,7 @@ class Genome:
                 self.genes.append( Gene(i, ap.params["init_urs_len"], has_dbd=True, repressor=repressor) )
             """Add N_REPORTER number of transcription factor genes"""
             for i in range(0, N_REPORTER):
-                self.genes.append( Gene(ap.params["numtr"] + i, has_dbd=False) )
+                self.genes.append( Gene(ap.params["numtr"] + i, ap.params["init_urs_len"], has_dbd=False) )
             #print "Genome", self.id, "has", self.genes.__len__(), "genes."
         else:
             self.genes = init_genes
