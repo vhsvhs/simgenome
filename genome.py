@@ -18,9 +18,7 @@ class Genome:
         self.gene_expr = {}
         self.is_elite = False
     
-    def init(self, ap):
-        """init_genes will be used for self.genes, unless it's None"""
-        init_genes = self.get_genes_from_file(ap)
+    def init(self, ap, init_genes=None):
         if init_genes == None:
             #print "Genome", self.id, "has", self.genes.__len__(), "genes."
             """Add ap.params["numtr"] number of transcription factor genes"""
@@ -35,49 +33,7 @@ class Genome:
             #print "Genome", self.id, "has", self.genes.__len__(), "genes."
         else:
             self.genes = init_genes
-    
-    """Returns either a list of genes read from a file, OR returns None if the user
-    did not specify to use genes from a file."""
-    def get_genes_from_file(self, ap):
-        #print "Getting genes from file..."
-        this_pwm = None
-        if ap.getOptionalArg("--genepath"): 
-            ret_genes = []
-            genepath = ap.getOptionalArg("--genepath")
-            fin = open(genepath, "r")
-            #print "\n. Reading genes from", genepath
-            for l in fin.readlines():
-                if l.startswith("#"):
-                    continue
-                else:
-                    tokens = l.split()
-                    if tokens.__len__() >= 4:
-                        this_id = int(tokens[0])
-                        if ap.getOptionalArg("--pwmpath"):
-                            pwmpath = ap.getOptionalArg("--pwmpath")
-                            this_pwm = PWM()
-                            this_pwm.read_from_file( pwmpath, this_id )
-                        this_has_dbd = int(tokens[1])
-                        this_repressor = int(tokens[2])
-                        if this_repressor == 0:
-                            this_repressor = False
-                        elif this_repressor == 1:
-                            this_repressor = True
-                        this_urs = tokens[3]
-                        this_gene = Gene(this_id, this_urs.__len__(), urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm) 
-                        ret_genes.append(this_gene)
-                        #print "\n.", this_id, this_has_dbd, this_repressor, this_urs
-            fin.close()
-            count_tf = 0
-            for gid in ret_genes:
-                if gid.has_dbd:
-                    count_tf += 1
-            ap.params["numtr"] = count_tf
-            return ret_genes
-        else:
-            return None
         
-    
     def uncollapse(self, data):
         gids = data[0].keys()
         gids.sort()

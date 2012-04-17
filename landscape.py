@@ -125,8 +125,7 @@ class Landscape:
         self.gamma = None
         self.r = None
     
-    def init(self, ap, genome=None):
-        tp = self.get_timepatterns_from_file(ap)
+    def init(self, ap, genome=None, tp=None):
         if tp == None:
             self.init_random(genome)
         else:
@@ -135,53 +134,15 @@ class Landscape:
         
         for t in self.timepatterns:
             print t
-    
-    def get_timepatterns_from_file(self, ap):
-        if ap.getOptionalArg("--patternpath"):
-            ret_timepatterns = []
-            patternpath = ap.getOptionalArg("--patternpath")
-            fin = open(patternpath, "r")
-            for l in fin.readlines():
-                if l.startswith("#"):
-                    continue
-                else:
-                    tokens = l.split()
-                    if tokens.__len__() >= 6:
-                        this_timepattern_id = int(tokens[0])
-                        this_basal_gene_id = int(tokens[1])
-                        this_timepoint = int(tokens[2])
-                        this_expr_level = float(tokens[3])
-                        this_reporter_gene_id = int(tokens[4])
-                        this_rule_type = tokens[5]
-                        if this_rule_type == "ge":
-                            this_rule_type = operator.ge
-                        elif this_rule_type == "eq":
-                            this_rule_type = operator.eq
-                        elif this_rule_type == "le":
-                            this_rule_type = operator.le
-                        else:
-                            this_rule_type = this_rule_type = operator.ge
-
-                        if ret_timepatterns.__len__() <= this_timepattern_id:
-                            this_timepattern = Time_Pattern(this_basal_gene_id)
-                            ret_timepatterns.append(this_timepattern)
-                    
-                        if this_timepoint > ap.params["maxtime"]:
-                            ap.params["maxtime"] = this_timepoint
-                                                
-                        this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type)
-                        ret_timepatterns[ this_timepattern_id ].rules.append( this_rule )
-            return ret_timepatterns
-            fin.close()
-    
-    def uncollapse(self, data):
+        
+    def uncollapse(self, data, ap):
         #print "debug 142"
         for d in data:
             #print "debug 143, time pattern for basal gene id", d
             this_timepattern = Time_Pattern(d)
             this_timepattern.uncollapse( data[d] )
             self.timepatterns.append( this_timepattern )
-            self.set_gamma()
+            self.set_gamma(ap)
     
     def collapse(self):
         data = {}

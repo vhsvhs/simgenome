@@ -19,21 +19,24 @@ def check_workspace(ap):
 def main():
     ap = ArgParser(sys.argv)
     read_cli(ap)
-    print ap.params["growth_rate"]
+    
+    cli_timepatterns = get_timepatterns_from_file(ap)
+    cli_genes = get_genes_from_file(ap)
+    
     if rank == 0:
         """Verify consistency of command-line arguments"""
         check_workspace(ap)
         
         """Build a population"""        
         population = Population()
-        population.init(ap)
+        population.init(ap, init_genes=cli_genes)
                           
         """Build a random fitness landscape"""
         landscape = Landscape()
-        landscape.init(ap, genome = population.genomes[0])
+        landscape.init(ap, genome = population.genomes[0], tp=cli_timepatterns)
             
         """Check for consistency with all parameters."""
-        check_consistency(ap, population, landscape)
+        check_world_consistency(ap, population, landscape)
             
         """Broadcast the population and landscape to slaves"""
         pop_data = population.collapse()
@@ -51,7 +54,7 @@ def main():
         population.uncollapse(pop_data)
         land_data = pickle.loads( land_data_pickle ) 
         landscape = Landscape()
-        landscape.uncollapse(land_data)
+        landscape.uncollapse(land_data, ap)
 
         #print "debug test:", rank, ":", population.genomes[0].genes[0].urs
     

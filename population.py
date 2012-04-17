@@ -7,18 +7,18 @@ class Population:
     def __init__(self):
         self.genomes = {}
     
-    def init(self, ap):
+    def init(self, ap, init_genes=None):
         print "\n. Building a new population..."
         for i in range(0, ap.params["popsize"]):
             """Fill the population with ap.params["popsize"] copies of the seed genome."""
             self.genomes[ i ] = Genome(i)
             print "+ Genome ", i
-            self.genomes[ i ].init( ap )
+            self.genomes[ i ].init( ap, init_genes=init_genes)
     
     def uncollapse(self, data):
         for gid in data:
             this_genome = Genome(gid)
-            this_genome.uncollapse(data[gid]    )
+            this_genome.uncollapse(data[gid])
             self.genomes[gid] = this_genome
     
     def collapse(self):
@@ -54,13 +54,14 @@ class Population:
             return
         """Mark the elite individuals."""
         count_elite = 0
-        max_elite = self.genomes.__len__() * 1.0 / ELITE_PROPORTION
+        max_elite = self.genomes.__len__() * ELITE_PROPORTION
         fkeys = fitness_gid.keys()
-        fkeys.sort()
+        fkeys.sort().reverse()
         for fitness in fkeys:
             for gid in fitness_gid[fitness]:
                 if count_elite < max_elite:
                     self.genomes[gid].is_elite = True
+                    count_elite += 1
     
     def do_mutations(self, ap):
         if int(ap.getOptionalArg("--verbose")) > 2:

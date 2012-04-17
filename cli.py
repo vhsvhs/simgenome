@@ -73,8 +73,8 @@ def read_cli(ap):
     else:
         ap.params["init_urs_len"] = URS_LEN
 
-
-def check_consistency(ap, population, landscape):
+def check_world_consistency(ap, population, landscape):
+    """Check for out-of-bounds genes"""
     for tp in landscape.timepatterns:
         if tp.basal_gene_id > population.genomes[0].genes.__len__() - 1:
             print "Ooops. One of your rules uses basal gene", tp.basal_gene_id, "but your genome only contains genes 0 through", (population.genomes[0].genes.__len__() - 1)
@@ -83,3 +83,82 @@ def check_consistency(ap, population, landscape):
             if rule.reporter_id > population.genomes[0].genes.__len__() - 1:
                 print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome only contains", population.genomes[0].genes.__len__(), "genes."
                 exit(1)
+
+def get_timepatterns_from_file(ap):
+    if ap.getOptionalArg("--patternpath"):
+        ret_timepatterns = []
+        patternpath = ap.getOptionalArg("--patternpath")
+        fin = open(patternpath, "r")
+        for l in fin.readlines():
+            if l.startswith("#"):
+                continue
+            else:
+                tokens = l.split()
+                if tokens.__len__() >= 6:
+                    this_timepattern_id = int(tokens[0])
+                    this_basal_gene_id = int(tokens[1])
+                    this_timepoint = int(tokens[2])
+                    this_expr_level = float(tokens[3])
+                    this_reporter_gene_id = int(tokens[4])
+                    this_rule_type = tokens[5]
+                    if this_rule_type == "ge":
+                        this_rule_type = operator.ge
+                    elif this_rule_type == "eq":
+                        this_rule_type = operator.eq
+                    elif this_rule_type == "le":
+                        this_rule_type = operator.le
+                    else:
+                        this_rule_type = this_rule_type = operator.ge
+
+                    if ret_timepatterns.__len__() <= this_timepattern_id:
+                        this_timepattern = Time_Pattern(this_basal_gene_id)
+                        ret_timepatterns.append(this_timepattern)
+                
+                    if this_timepoint > ap.params["maxtime"]:
+                        ap.params["maxtime"] = this_timepoint
+                                            
+                    this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type)
+                    ret_timepatterns[ this_timepattern_id ].rules.append( this_rule )
+        return ret_timepatterns
+        fin.close()
+
+"""Returns either a list of genes read from a file, OR returns None if the user
+did not specify to use genes from a file."""
+def get_genes_from_file(ap):
+    #print "Getting genes from file..."
+    this_pwm = None
+    if ap.getOptionalArg("--genepath"): 
+        ret_genes = []
+        genepath = ap.getOptionalArg("--genepath")
+        fin = open(genepath, "r")
+        #print "\n. Reading genes from", genepath
+        for l in fin.readlines():
+            if l.startswith("#"):
+                continue
+            else:
+                tokens = l.split()
+                if tokens.__len__() >= 4:
+                    this_id = int(tokens[0])
+                    if ap.getOptionalArg("--pwmpath"):
+                        pwmpath = ap.getOptionalArg("--pwmpath")
+                        this_pwm = PWM()
+                        this_pwm.read_from_file( pwmpath, this_id )
+                    this_has_dbd = int(tokens[1])
+                    this_repressor = int(tokens[2])
+                    if this_repressor == 0:
+                        this_repressor = False
+                    elif this_repressor == 1:
+                        this_repressor = True
+                    this_urs = tokens[3]
+                    this_gene = Gene(this_id, this_urs.__len__(), urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm) 
+                    ret_genes.append(this_gene)
+                    #print "\n.", this_id, this_has_dbd, this_repressor, this_urs
+        fin.close()
+        count_tf = 0
+        for gid in ret_genes:
+            if gid.has_dbd:
+                count_tf += 1
+        ap.params["numtr"] = count_tf
+        return ret_genes
+    else:
+        return None
