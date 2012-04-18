@@ -22,10 +22,10 @@ EXPR_PLOTS = "EXPR_HISTORY"
 Most of these parameter values can be overrided by command-line values."""
 
 """URS_LEN = nucleotide length of upstream regulatory regions.
-   If the mutation model allows indels, then URS_LENGTH will be
+   If the mutation model allows indels, then INIT_URS_LEN will be
    the mean expected length, but the URS length will vary
    for each individual gene."""
-URS_LEN = 20
+INIT_URS_LEN = 20
 
 """What is the initial length (# sites) in a new PWM?"""
 INIT_PWM_LEN = 3
@@ -44,7 +44,7 @@ N_REPORTER = 1
 """Mean mutation rate"""
 MU = 0.1
 ELITE_MU = 0.01
-ELITE_PROPORTION = 0.5
+ELITE_PROPORTION = 0.2
 PWM_MU = MU
 """How many generations to run the genetic algorithm?"""
 MAX_GA_GENS = 5000

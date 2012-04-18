@@ -74,12 +74,16 @@ class Genetic_Algorithm:
                 timedelta = datetime.now() - now
                 print "\n................................................\n" 
                 print "\n. Generation", i, "required", timedelta, "to compute."
-                print "\n. popsize=", self.population.genomes.__len__()
-                line = "gen " + i.__str__() + "\t" + "\tmaxf=%.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + "\tstdf= %.3f"%std_f 
-                print line
-                log_generation(ap, line)
+                print ""
+                print "\t. population size =\t", self.population.genomes.__len__()
+                print "\t. maximum fitness =\t%.3f"%max_f
+                print "\t. minimum fitness =\t%.3f"%min_f
+                print "\t. mean fitness =\t%.3f"%mean_f
+                print "\t. median fitness =\t%.3f"%median_f
+                print "\t. s.d. fitness =\t%.3f"%std_f
                 #print "\n. effective popsize=", self.population.effective_popsize()
-                print "\n................................................"
+                line = "gen " + i.__str__() + "\t" + "\tmaxf=%.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + "\tstdf= %.3f"%std_f 
+                log_generation(ap, line)
             
             """Check for convergence on terminal conditions."""
             if mean_f == 1.0:
@@ -90,10 +94,11 @@ class Genetic_Algorithm:
                 [min_fitness, max_fitness, sum_fitness, fitness_gid] = self.population.get_minmax_fitness(gid_fitness)
                 """Mark the elite individuals..."""
                 self.population.mark_elite(fitness_gid, max_fitness, min_fitness, ap)
-                """Mutate the population"""
-                self.population.do_mutations(ap)
+                self.population.print_fitness(ap, gid_fitness)
                 """Reproduce the population based on pre-mutation fitness"""
                 self.population.do_reproduction(gid_fitness, min_fitness, max_fitness, sum_fitness, ap)
+                """Mutate the population"""
+                self.population.do_mutations(ap)
                 """Broadcast the population to MPI slaves."""
                 pop_data = self.population.collapse()
                 pop_data_pickle = pickle.dumps( pop_data )

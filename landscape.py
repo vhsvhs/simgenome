@@ -127,8 +127,10 @@ class Landscape:
     
     def init(self, ap, genome=None, tp=None):
         if tp == None:
+            print "\n. Building a random fitness landscape."
             self.init_random(genome)
         else:
+            print "\n. Creating a fitness landscape based on", ap.getOptionalArg("--patternpath")
             self.timepatterns = tp
         self.set_gamma(ap)
         

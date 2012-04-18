@@ -66,6 +66,12 @@ def read_cli(ap):
         ap.params["pwmmu"] = float(x)
     else:
         ap.params["pwmmu"] = PWM_MU
+
+    x = ap.getOptionalArg("--eliteproportion")
+    if x != False:
+        ap.params["eliteproportion"] = float(x)
+    else:
+        ap.params["eliteproportion"] = ELITE_PROPORTION
         
     x = ap.getOptionalArg("--init_pwm_len")
     if x != False:
@@ -73,11 +79,11 @@ def read_cli(ap):
     else:
         ap.params["init_pwm_len"] = INIT_PWM_LEN
         
-    x = ap.getOptionalArg("--urs_len")
+    x = ap.getOptionalArg("--init_urs_len")
     if x != False:
         ap.params["init_urs_len"] = int(x)
     else:
-        ap.params["init_urs_len"] = URS_LEN
+        ap.params["init_urs_len"] = INIT_URS_LEN
 
     x = ap.getOptionalArg("--pe_scalar")
     if x != False:
@@ -139,12 +145,10 @@ def get_timepatterns_from_file(ap):
 did not specify to use genes from a file."""
 def get_genes_from_file(ap):
     #print "Getting genes from file..."
-    this_pwm = None
-    if ap.getOptionalArg("--genepath"): 
+    if ap.getOptionalArg("--urspath"): 
         ret_genes = []
-        genepath = ap.getOptionalArg("--genepath")
-        fin = open(genepath, "r")
-        #print "\n. Reading genes from", genepath
+        urspath = ap.getOptionalArg("--urspath")
+        fin = open(urspath, "r")
         for l in fin.readlines():
             if l.startswith("#"):
                 continue
@@ -152,6 +156,7 @@ def get_genes_from_file(ap):
                 tokens = l.split()
                 if tokens.__len__() >= 4:
                     this_id = int(tokens[0])
+                    this_pwm = None
                     if ap.getOptionalArg("--pwmpath"):
                         pwmpath = ap.getOptionalArg("--pwmpath")
                         this_pwm = PWM()

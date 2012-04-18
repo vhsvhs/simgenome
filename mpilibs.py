@@ -37,7 +37,7 @@ def mpi_check():
     comm.Barrier()
     
     if rank == 0:    
-        print tally
+        #print tally
         if tally == comm.Get_size()-1:
             return
         else:

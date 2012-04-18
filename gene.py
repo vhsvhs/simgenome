@@ -27,11 +27,10 @@ class Gene:
         self.is_repressor = repressor
 
         """5. pwm"""
-        if (self.has_dbd and pwm != None):
+        if (self.has_dbd == True and pwm != None):
             self.pwm = pwm
-        elif self.has_dbd:
+        elif self.has_dbd == True:
             self.pwm = PWM()
-            #self.pwm.make_flat() # initialize all PWMs to be non-specific
             self.pwm.randomize()
 
     def collapse(self):

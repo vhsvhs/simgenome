@@ -8,11 +8,14 @@ class Population:
         self.genomes = {}
     
     def init(self, ap, init_genes=None):
-        print "\n. Building a new population..."
+        if init_genes == None:
+            print "\n. Building a random population..."
+        else:
+            print "\n. Creating a population, specified by", ap.getOptionalArg("--urspath"), "and",ap.getOptionalArg("--pwmpath") 
         for i in range(0, ap.params["popsize"]):
             """Fill the population with ap.params["popsize"] copies of the seed genome."""
-            self.genomes[ i ] = Genome(i)
             print "+ Genome ", i
+            self.genomes[ i ] = Genome(i)
             self.genomes[ i ].init( ap, init_genes=init_genes)
     
     def uncollapse(self, data):
@@ -63,68 +66,78 @@ class Population:
                 if count_elite < max_elite:
                     self.genomes[gid].is_elite = True
                     count_elite += 1
+                else:
+                    self.genomes[gid].is_elite = False
+    
+    def print_fitness(self, ap, gid_fitness):
+        if int(ap.getOptionalArg("--verbose")) > 2:
+            print "\n................................................\n"
+            for gid in gid_fitness:
+                marka = ""
+                if self.genomes[gid].is_elite:
+                    marka = "(elite)"
+                print "\t. ID", gid, "f= %.3f"%gid_fitness[gid], marka
+            print "\n................................................"
     
     def do_mutations(self, ap):
         if int(ap.getOptionalArg("--verbose")) > 2:
             print "\n. The population is mutating. . .\n"
             
-
         """Introduce mutations into (potentially) all genomes in the population"""
         for gid in self.genomes.keys():
             mu = ap.params["mu"] 
-            if self.genomes[gid].is_elite:
+            if self.genomes[gid].is_elite == True:
                 mu = ap.params["elitemu"] 
-            
-            n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * mu)
-            n_deletions = None
-            n_duplications = None
-            
-            if int(ap.getOptionalArg("--verbose")) > 2:                
-                print "\t.", n_point_mutations, "cis mutations to individual", gid
-            
-            for i in range(0, n_point_mutations):
-                # pick a random gene
-                rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
-                # pick a random site
-                rand_site = random.randint(0, self.genomes[gid].genes[rand_gene].urs.__len__()-1)
-                # mutate!
-                curr_state = self.genomes[gid].genes[rand_gene].urs[rand_site]
-                ALPHABET.remove(curr_state)
-                new_state = random.choice( ALPHABET )
-                ALPHABET.append(curr_state)
-                new_urs = ""
-                for j in range(0, self.genomes[gid].genes[rand_gene].urs.__len__()):
-                    if j == rand_site:
-                        new_urs += new_state.__str__()
-                    else:
-                        new_urs += self.genomes[gid].genes[rand_gene].urs[j]
-                self.genomes[gid].genes[rand_gene].urs = new_urs
-                #print new_urs
-        
-            rand_roll = random.random()
-            if rand_roll < mu:
-                rand_tr_id = random.randint(0, ap.params["numtr"]-1)
-                print "\t. mutating PWM ", rand_tr_id, "in individual", gid
-                #print "old PWM=", self.genomes[gid].genes[rand_tr_id].pwm.P.__str__()
-                self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
+                
+            if mu > 0.0:
+                """How many mutations should we make?"""
+                n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * mu)
+                n_deletions = None
+                n_duplications = None
+                if int(ap.getOptionalArg("--verbose")) > 2:                
+                    print "\t.", n_point_mutations, "cis mutations to individual", gid
+                """URS mutations...."""
+                for i in range(0, n_point_mutations):
+                    """Pick a random gene"""
+                    rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
+                    """Pick a random site"""
+                    rand_site = random.randint(0, self.genomes[gid].genes[rand_gene].urs.__len__()-1)
+                    """Mutate!"""
+                    curr_state = self.genomes[gid].genes[rand_gene].urs[rand_site]
+                    ALPHABET.remove(curr_state)
+                    new_state = random.choice( ALPHABET )
+                    ALPHABET.append(curr_state)
+                    new_urs = ""
+                    for j in range(0, self.genomes[gid].genes[rand_gene].urs.__len__()):
+                        if j == rand_site:
+                            new_urs += new_state.__str__()
+                        else:
+                            new_urs += self.genomes[gid].genes[rand_gene].urs[j]
+                    self.genomes[gid].genes[rand_gene].urs = new_urs
+                """PWM mutations..."""
+                rand_roll = random.random()
+                if rand_roll < mu:
+                    rand_tr_id = random.randint(0, ap.params["numtr"]-1)
+                    print "\t+ mutating PWM ", rand_tr_id, "in individual", gid
+                    self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
         if int(ap.getOptionalArg("--verbose")) > 2:
             print "\n"
                 
                     
     def fitness_cdf_sampler(self, min, max, sum, gid_fitness):
         if sum == 0:
+            """In this cases, all individuals have the same fitness. So pick one randomly"""
             x = random.sample(gid_fitness, 1)[0]
-            #print "CDF sample: random", x, "from", max
             return x
         else:
             randp = random.random() * sum
             gids = gid_fitness.keys()
             gids.sort()
+            gids.reverse()
             randpsum = 0.0
             for i in gids:
                 randpsum += gid_fitness[i] - min
                 if randpsum > randp:
-                    #print "CDF sample", i, "from", max
                     return i
 
 
@@ -148,35 +161,38 @@ class Population:
             sum_fitness += (gid_fitness[gid] - min_fitness)
         return [min_fitness, max_fitness, sum_fitness, reverse_hash]
         
-    def do_reproduction(self, gid_fitness, min_fitness, max_fitness, sum_fitness, ap):
+    def do_reproduction(self, gid_fitness, min_fitness, max_fitness, sum_fitness, ap):        
         if int(ap.getOptionalArg("--verbose")) > 2:
-            print "\n. The population is reproducing selectively based on fitness. . .\n"
-            for gid in gid_fitness:
-                marka = ""
-                if self.genomes[gid].is_elite:
-                    marka = "(elite)"
-                print "\tID", gid, "f= %.3f"%gid_fitness[gid], marka
+            print "\n. The population is reproducing, selectively based on fitness. . .\n"
         
         new_genomes = {}
+        """For now we assume the new population has the same size as its parent population."""
+        
         for child_gid in gid_fitness:
-            """Here the new population has the same size as its parent population."""
             new_genomes[child_gid] = Genome(child_gid) 
-            
-            """Select two parents, by selecting from the fitness CDF."""
-            parent1 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
-            parent2 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
-            if int(ap.getOptionalArg("--verbose")) > 2:
-                print "\tnew child", child_gid, ":", parent1, "X", parent2
-                
-            """Cross the parents"""
-            for geneid in range(0, self.genomes[parent1].genes.__len__()):
-                """Flip a coin; heads the child gets parent1's copy of this gene, tails the child gets parent2's copy."""
-                gene_copy = None
-                if random.randint(0,1):
-                    gene_copy = self.genomes[parent1].genes[geneid]
-                else:
-                    gene_copy = self.genomes[parent2].genes[geneid]
-                new_genomes[child_gid].genes.append( gene_copy )
+                        
+            if self.genomes[child_gid].is_elite:
+                if int(ap.getOptionalArg("--verbose")) > 2:
+                    print "\t+ new child", child_gid, "=", child_gid, "cloned."
+                """If parent1 is elite, then pass it on -- uncrossed -- into the next generation."""
+                for geneid in range(0, self.genomes[child_gid].genes.__len__()):    
+                    gene_copy = self.genomes[child_gid].genes[geneid]
+                    new_genomes[child_gid].genes.append( gene_copy )
+                    new_genomes[child_gid].is_elite = True
+            else:
+                """Select the parents from the fitness CDF."""
+                parent1 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness) 
+                parent2 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
+                if int(ap.getOptionalArg("--verbose")) > 2:
+                    print "\t+ new child", child_gid, "=", parent1, "X", parent2
+                for geneid in range(0, self.genomes[parent1].genes.__len__()):
+                    """Flip a coin; heads the child gets parent1's copy of this gene, tails the child gets parent2's copy."""
+                    gene_copy = None
+                    if random.randint(0,1):
+                        gene_copy = self.genomes[parent1].genes[geneid]
+                    else:
+                        gene_copy = self.genomes[parent2].genes[geneid]
+                    new_genomes[child_gid].genes.append( gene_copy )
             
         """Save the new children genomes."""
         self.genomes = new_genomes
