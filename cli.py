@@ -79,6 +79,13 @@ def read_cli(ap):
     else:
         ap.params["init_urs_len"] = URS_LEN
 
+    x = ap.getOptionalArg("--pe_scalar")
+    if x != False:
+        ap.params["pe_scalar"] = float(x)
+    else:
+        ap.params["pe_scalar"] = PE_SCALAR
+
+
 def check_world_consistency(ap, population, landscape):
     """Check for out-of-bounds genes"""
     for tp in landscape.timepatterns:

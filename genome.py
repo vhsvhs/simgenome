@@ -20,7 +20,6 @@ class Genome:
     
     def init(self, ap, init_genes=None):
         if init_genes == None:
-            #print "Genome", self.id, "has", self.genes.__len__(), "genes."
             """Add ap.params["numtr"] number of transcription factor genes"""
             for i in range(0, ap.params["numtr"]):
                 repressor = False
@@ -28,7 +27,7 @@ class Genome:
                     repressor = True
                 self.genes.append( Gene(i, ap.params["init_urs_len"], has_dbd=True, repressor=repressor) )
             """Add N_REPORTER number of transcription factor genes"""
-            for i in range(0, N_REPORTER):
+            for i in range(0, ap.params["numreporter"]):
                 self.genes.append( Gene(ap.params["numtr"] + i, ap.params["init_urs_len"], has_dbd=False) )
             #print "Genome", self.id, "has", self.genes.__len__(), "genes."
         else:

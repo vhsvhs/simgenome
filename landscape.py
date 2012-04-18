@@ -473,7 +473,7 @@ class Landscape:
             
             k_act = sum_lambda_act
             k_rep = sum_lambda_rep
-            this_pe = (1/( 1+math.exp(-1*PE_SCALAR*(k_act-k_rep) ) ))
+            this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(k_act-k_rep) ) ))
             pe_sum += this_pe
             #print "gene", gene.id, "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
         if ap.getOptionalArg("--verbose") > 2:
