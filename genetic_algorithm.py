@@ -82,7 +82,7 @@ class Genetic_Algorithm:
                 print "\t. median fitness =\t%.3f"%median_f
                 print "\t. s.d. fitness =\t%.3f"%std_f
                 #print "\n. effective popsize=", self.population.effective_popsize()
-                line = "gen " + i.__str__() + "\t" + "\tmaxf=%.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + "\tstdf= %.3f"%std_f 
+                line = "gen " + i.__str__() + "\t" + "\tmaxf= %.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + "\tstdf= %.3f"%std_f 
                 log_generation(ap, line)
             
             """Check for convergence on terminal conditions."""
@@ -90,7 +90,19 @@ class Genetic_Algorithm:
                 print "The population arrived at an optima.  Goodbye."
                 exit(1)
             
-            if i < MAX_GA_GENS:                
+            if i < MAX_GA_GENS:
+                #"""Debugging code..."""
+                #"""Debugging code..."""
+                #for gid in self.population.genomes:
+                #    for gene in self.population.genomes[gid].genes:
+                #        print "98:", gid, gene.id, gene.urs
+                
+                #
+                # continue here:
+                # somewhere between 98 and 116, the URS for elite individuals
+                # is NOT being copied. . . rather, it's being mutated.
+                #
+                
                 [min_fitness, max_fitness, sum_fitness, fitness_gid] = self.population.get_minmax_fitness(gid_fitness)
                 """Mark the elite individuals..."""
                 self.population.mark_elite(fitness_gid, max_fitness, min_fitness, ap)
@@ -104,6 +116,11 @@ class Genetic_Algorithm:
                 pop_data_pickle = pickle.dumps( pop_data )
                 for slave in range(1, comm.Get_size()):
                     comm.send(pop_data_pickle, dest=slave, tag=11)
+                    
+                #"""Debugging code..."""
+                #for gid in self.population.genomes:
+                #    for gene in self.population.genomes[gid].genes:
+                #        print "116:", gid, gene.id, gene.urs
 
 
     def runsim_slave(self, rank, comm, ap):

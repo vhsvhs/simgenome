@@ -1,9 +1,6 @@
 from configuration import *
 from gene import *
 
-GLOBAL_GEN_COUNTER = 0
-GLOBAL_T_COUNTER = 0
-
 class Genome:
     id = None
     """genes 0 through ap.params["numtr"]-1 are TR genes, genes ap.params["numtr"] through N_REPORTER+N_TR-1 are reporter genes."""

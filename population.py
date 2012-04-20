@@ -84,11 +84,13 @@ class Population:
             print "\n. The population is mutating. . .\n"
             
         """Introduce mutations into (potentially) all genomes in the population"""
-        for gid in self.genomes.keys():
+        for gid in self.genomes:
             mu = ap.params["mu"] 
             if self.genomes[gid].is_elite == True:
                 mu = ap.params["elitemu"] 
                 
+            #print "debug population.py 92 - ID", gid, "mu", mu
+            
             if mu > 0.0:
                 """How many mutations should we make?"""
                 n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * mu)
@@ -169,30 +171,32 @@ class Population:
         """For now we assume the new population has the same size as its parent population."""
         
         for child_gid in gid_fitness:
-            new_genomes[child_gid] = Genome(child_gid) 
-                        
-            if self.genomes[child_gid].is_elite:
+            new_genomes[child_gid] = Genome(child_gid)                         
+            if self.genomes[child_gid].is_elite == True:
                 if int(ap.getOptionalArg("--verbose")) > 2:
                     print "\t+ new child", child_gid, "=", child_gid, "cloned."
-                """If parent1 is elite, then pass it on -- uncrossed -- into the next generation."""
-                for geneid in range(0, self.genomes[child_gid].genes.__len__()):    
-                    gene_copy = self.genomes[child_gid].genes[geneid]
-                    new_genomes[child_gid].genes.append( gene_copy )
-                    new_genomes[child_gid].is_elite = True
+                new_genomes[child_gid].is_elite = True
+                new_genomes[child_gid].init(ap, init_genes = self.genomes[child_gid].genes)
             else:
                 """Select the parents from the fitness CDF."""
                 parent1 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness) 
                 parent2 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
                 if int(ap.getOptionalArg("--verbose")) > 2:
                     print "\t+ new child", child_gid, "=", parent1, "X", parent2
+                new_genomes[child_gid].is_elite = False
+                new_genes = []
                 for geneid in range(0, self.genomes[parent1].genes.__len__()):
                     """Flip a coin; heads the child gets parent1's copy of this gene, tails the child gets parent2's copy."""
-                    gene_copy = None
                     if random.randint(0,1):
-                        gene_copy = self.genomes[parent1].genes[geneid]
+                        parentgene = self.genomes[parent1].genes[geneid]
                     else:
-                        gene_copy = self.genomes[parent2].genes[geneid]
-                    new_genomes[child_gid].genes.append( gene_copy )
+                        parentgene = self.genomes[parent2].genes[geneid]
+                    copypwm = None
+                    if parentgene.has_dbd:
+                        copypwm = PWM(copyfrom=parentgene.pwm)
+                    gene_copy = Gene(geneid, parentgene.urs.__len__(), urs=parentgene.urs, has_dbd=parentgene.has_dbd, repressor=parentgene.is_repressor,pwm=copypwm)
+                    new_genes.append( gene_copy )
+                new_genomes[child_gid].init(ap, init_genes=new_genes)
             
         """Save the new children genomes."""
         self.genomes = new_genomes

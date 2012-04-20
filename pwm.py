@@ -3,8 +3,13 @@ from configuration import *
 class PWM:
     P = None # index = site, value = hashtable, where key = char, value = bits
     
-    def __init__(self):
+    def __init__(self, copyfrom=None):
         self.P = []
+        if copyfrom != None:
+            for i in range(0, copyfrom.P.__len__()):
+                self.P.append({})
+                for c in ALPHABET:
+                    self.P[i][c] = copyfrom.P[i][c]
         
     def __str__(self):
         str = ""

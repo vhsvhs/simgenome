@@ -1,8 +1,6 @@
 from configuration import *
 
-#
-# Write CRAN scripts and plot PDFs.
-#
+"""Write CRAN scripts and plot PDFs."""
 def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
     """plots the time vs. expression for all genes in one individual genome"""
     """genome must contain valid data in genome.gene_expr"""
@@ -15,7 +13,6 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
 
     # the ingredients for our CRAN script:
     plotstring = ""
-    pointsstring = ""
     legendstring = "legend(\"bottomright\", c("
     for gid in series:
         legendstring += "\"" + gid.__str__() + "\","
@@ -27,20 +24,21 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
     legendstring += "), pch=15);\n"
 
     maxx = None
-    string = ""
-    string += "t <-c("
+    tstring = ""
+    tstring += "t <-c("
     for t in range(1, ap.params["maxtime"]):
         if maxx == None:
             maxx = t
         elif t > maxx:
             maxx = t
-        string += t.__str__() + ","   
-    string = re.sub(",$", "", string)
-    string += ");\n"
-    pointsstring = string
+        tstring += t.__str__() + ","   
+    tstring = re.sub(",$", "", tstring)
+    tstring += ");\n"
 
     miny = None
     maxy = None
+    tr_pointsstring = ""
+    rep_pointsstring = ""
     for gid in series:
         string = "y" + gid.__str__() + "<-c("
         for t in range(1, ap.params["maxtime"]):
@@ -57,7 +55,13 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
         string = re.sub(",$", "", string)
         string += ");\n"
         string += "points(t,y" + gid.__str__() + ", type='l', col='" + (gid+1).__str__() + "', lwd=3);\n"
-        pointsstring += string
+        if gid < ap.params["numtr"]:
+            tr_pointsstring += string
+        else:
+            rep_pointsstring += string
+    
+    tr_colostring = "palette( rainbow(" + (ap.params["numtr"] + ap.params["numreporter"]).__str__() + ", start=0, end=4/6));\n"
+    rep_colostring = "palette( rainbow(" + ap.params["numreporter"].__str__() + ", start=2/6, end=4/6));\n"
     
     plotstring = "xlimits <-c(0.0," + maxx.__str__() + ");\n"
     plotstring += "ylimits <-c(" + miny.__str__() + "," + maxy.__str__() + ");\n"
@@ -65,8 +69,12 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
     
     fout_cran = open(output_filename_seed + ".cran", "w")
     fout_cran.write("pdf('" + output_filename_seed + ".pdf', width=7, height=4);\n")
+    fout_cran.write(tstring)
     fout_cran.write(plotstring)
-    fout_cran.write(pointsstring)
+    fout_cran.write(tr_colostring)
+    fout_cran.write(tr_pointsstring)
+    #fout_cran.write(rep_colostring)
+    fout_cran.write(rep_pointsstring)
     fout_cran.write(legendstring)
     fout_cran.write("dev.off();\n")
     fout_cran.close()
