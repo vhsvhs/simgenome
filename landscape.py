@@ -425,7 +425,7 @@ class Landscape:
         min_r = min( self.r )
         configurations = {}
         """configurations: key = site, value = array of arrays, [i,j,d] samples"""
-        for sample in range(0, IID_SAMPLES):
+        for sample in range(0, ap.params["iid_samples"]):
             
             """"1. build a configuration c_k, by sampling cells from ptables.cpa"""          
             this_config = {} # key = site, value = the TF bound starting at this site.
@@ -480,11 +480,13 @@ class Landscape:
             #print "gene", gene.id, "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
         if ap.getOptionalArg("--verbose") > 2:
             self.print_configuration(configurations, genome, gene, ap)
-        return (pe_sum / IID_SAMPLES)
+        return (pe_sum / ap.params["iid_samples"])
     
     
+    """configs is a hashtable of configurations...
+        configs[site] = array of triples [gene i, gene j, distance]"""
     def print_configuration(self, configs, genome, gene, ap):
-        foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/gen" + self.gen_counter.__str__() + ".gid" + genome.id.__str__() + ".txt"
+        foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/config.gen" + self.gen_counter.__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
         
@@ -497,7 +499,7 @@ class Landscape:
             for c in configs[site]:
                 if False == tf_count.__contains__( c[0] ):
                     tf_count[ c[0] ] = 0
-                tf_count[ c[0] ] += 1.0 / configs[site].__len__()
+                tf_count[ c[0] ] += 1.0 / ap.params["iid_samples"]
 
             line = "site " + site.__str__()
             for tf in tf_count:

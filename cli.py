@@ -12,6 +12,12 @@ def read_cli(ap):
         ap.params["growth_rate"] = float(x)
     else:
         ap.params["growth_rate"] = MAX_TRANSCRIPTION_RATE
+
+    x = ap.getOptionalArg("--iid_samples")
+    if x != False:
+        ap.params["iid_samples"] = int(x)
+    else:
+        ap.params["iid_samples"] = IID_SAMPLES
         
     x = ap.getOptionalArg("--decay_rate")
     if x != False:
