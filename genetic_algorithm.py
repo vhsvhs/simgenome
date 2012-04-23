@@ -42,17 +42,13 @@ class Genetic_Algorithm:
             for gid in self.population.genomes.keys():
                 """. .  .but only compute for the individuals that have been assigned to my MPI slice."""
                 if my_items.__contains__(gid):
-                    #print "Genome", gid, "has", self.population.genomes[gid].genes.__len__(), "genes."
                     gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], i , ap)
-                    #prog.increment_progress()
-            
-            #prog.finish()
-            
+
             """Wait for data from slaves."""
             for slave in range(1, comm.Get_size()):
-                [their_genomes, their_gid_fitness] = comm.recv(source=slave, tag=11)
-                for gid in their_genomes.keys():
-                    self.population.genomes[gid] = their_genomes[gid]
+                their_gid_fitness = comm.recv(source=slave, tag=11)
+                print "debug genetic_algorithm 56 - Master recieved from slave", slave, ":", their_gid_fitness
+                for gid in their_gid_fitness.keys():
                     gid_fitness[gid] = their_gid_fitness[gid]
             
             """Post-fitness. . .print stats, record data, etc."""
@@ -90,24 +86,12 @@ class Genetic_Algorithm:
                 print "The population arrived at an optima.  Goodbye."
                 exit(1)
             
-            if i < MAX_GA_GENS:
-                #"""Debugging code..."""
-                #"""Debugging code..."""
-                #for gid in self.population.genomes:
-                #    for gene in self.population.genomes[gid].genes:
-                #        print "98:", gid, gene.id, gene.urs
-                
-                #
-                # continue here:
-                # somewhere between 98 and 116, the URS for elite individuals
-                # is NOT being copied. . . rather, it's being mutated.
-                #
-                
+            if i < MAX_GA_GENS:                
                 [min_fitness, max_fitness, sum_fitness, fitness_gid] = self.population.get_minmax_fitness(gid_fitness)
                 """Mark the elite individuals..."""
                 self.population.mark_elite(fitness_gid, max_fitness, min_fitness, ap)
                 self.population.print_fitness(ap, gid_fitness)
-                """Reproduce the population based on pre-mutation fitness"""
+                """Reproduce the population based on pre-mutation fitness"""                
                 self.population.do_reproduction(gid_fitness, min_fitness, max_fitness, sum_fitness, ap)
                 """Mutate the population"""
                 self.population.do_mutations(ap)
@@ -117,17 +101,13 @@ class Genetic_Algorithm:
                 for slave in range(1, comm.Get_size()):
                     comm.send(pop_data_pickle, dest=slave, tag=11)
                     
-                #"""Debugging code..."""
-                #for gid in self.population.genomes:
-                #    for gene in self.population.genomes[gid].genes:
-                #        print "116:", gid, gene.id, gene.urs
-
 
     def runsim_slave(self, rank, comm, ap):
         self.gen_gid_fitness = []
         
         """For each GA generation. . . ."""
-        for i in range(0, MAX_GA_GENS):        
+        for i in range(0, MAX_GA_GENS):
+            self.landscape.gen_counter = i 
             """gid_fitness[genome ID] = [fitness at generation i]"""
             gid_fitness = {}
 
@@ -143,7 +123,7 @@ class Genetic_Algorithm:
             my_genomes = {}
             for gid in my_items:
                 my_genomes[gid] = self.population.genomes[gid]
-            comm.send([my_genomes, gid_fitness], dest=0, tag=11)  
+            comm.send(gid_fitness, dest=0, tag=11)  
             
             if i < MAX_GA_GENS:
                 """Get updated data from master."""

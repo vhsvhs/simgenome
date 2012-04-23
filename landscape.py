@@ -485,7 +485,7 @@ class Landscape:
     
     """configs is a hashtable of configurations...
         configs[site] = array of triples [gene i, gene j, distance]"""
-    def print_configuration(self, configs, genome, gene, ap):
+    def print_configuration(self, configs, genome, gene, ap):        
         foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/config.gen" + self.gen_counter.__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
@@ -501,12 +501,15 @@ class Landscape:
                     tf_count[ c[0] ] = 0
                 tf_count[ c[0] ] += 1.0 / ap.params["iid_samples"]
 
-            line = "site " + site.__str__()
+            line = "site " + site.__str__() + " :"
             for tf in tf_count:
                 pe = 0.0
                 if tf < ap.params["numtr"]:
                     pe = genome.genes[tf].pwm.prob_binding(site, gene.urs)
-                line += " \t" + tf.__str__() + " (%.3f"%tf_count[tf] + " %.3f)"%pe
+                tf_type = "[+]"
+                if genome.genes[tf].is_repressor:
+                    tf_type = "[-]"
+                line += " \t" + tf.__str__() + " " + tf_type + " %.3f"%tf_count[tf] + " %.3f"%pe
             fout.write(line + "\n")
             #print line
         fout.write("\n")
