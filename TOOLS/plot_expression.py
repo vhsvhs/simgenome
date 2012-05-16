@@ -18,6 +18,9 @@ if MAX_EDGE_WIDTH == False:
 EXP_MODIFIER = float( ap.getOptionalArg("--exp_modifier") )
 if EXP_MODIFIER == False:
     EXP_MODIFIER = 0.06
+WEIGHT_CUTOFF = float( ap.getOptionalArg("--weight_cutoff") )
+if WEIGHT_CUTOFF == False:
+    WEIGHT_CUTOFF = 0.05
 ##########################################################################
 
 def hex_to_rgb(value):
@@ -77,12 +80,12 @@ def build_graph(epath):
                     t = tokens[i+1]
                     p = float(tokens[i+2])
                     b = float(tokens[i+3])
-                    print p*b
+                    #print p*b
                     this_w = math.exp(EXP_MODIFIER*p*b) - 1
                     if False == G.nodes().__contains__(this_tf):
                         G.add_node(this_tf, type=t)
                         #G[this_tf]['type'] = t
-                    if this_w > 0.05:
+                    if this_w > WEIGHT_CUTOFF:
                         if False == G.has_edge(this_tf, this_gene):
                             #print "Adding edge", this_tf, this_gene
                             G.add_edge(this_tf, this_gene)
@@ -124,7 +127,8 @@ def draw_network(epath):
                     edge_sum += G[e[0]][e[1]]["weight"]
         if edge_sum < 0:
             edge_sum = 0
-        color = rgb_to_hex( float_to_rgb(edge_sum, 20) )
+        #color = rgb_to_hex( float_to_rgb(edge_sum, 20) )
+        color = "white"
         #print edge_sum, "color=", color
         nx.draw_networkx_nodes(G,pos, nodelist=[ n ], node_color=color, node_size=1000)
     for e in G.edges():

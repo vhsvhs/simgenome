@@ -118,12 +118,12 @@ class Landscape:
     gamma = None
     r = None
     t_counter = 0
-    gen_counter = 0
     
-    def __init__(self):
+    def __init__(self, ap):
         self.timepatterns = []
         self.gamma = None
         self.r = None
+        self.t_counter = ap.params["generation"]
     
     def init(self, ap, genome=None, tp=None):
         if tp == None:
@@ -200,7 +200,7 @@ class Landscape:
         #return (max_expr_error - expr_error) / max_expr_error
                     
     
-    def get_fitness(self, genome, generation, ap):
+    def get_fitness(self, genome, ap):
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
         Returns a floating-point value."""
         
@@ -275,14 +275,14 @@ class Landscape:
                     genome.gene_expr[gene.id][timeslice+1] = MINIMUM_ACTIVITY_LEVEL
             
                 # print report to screen
-                if int(ap.getOptionalArg("--verbose")) > 2:
+                if int(ap.getOptionalArg("--verbose")) > 5:
                     expr_delta = 0.0
                     #if timeslice > 1:
                     expr_delta = genome.gene_expr[ gene.id ][timeslice+1] - genome.gene_expr[ gene.id ][timeslice]
-                    marka = "*"
+                    marka = "[tf]"
                     if gene.has_dbd == False:
-                        marka = ""
-                    print "gen.", generation, "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta 
+                        marka = "[re]"
+                    print "gen.", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta 
 
             #
             # to-do: if gene expression has not changed from the last timeslice
@@ -290,11 +290,8 @@ class Landscape:
             #
             print ""
 
-        #
-        # to-do: assess fitness of genome, using gene_expr
-        #
         fitness = self.fitness_helper(genome.gene_expr)
-        print "\n. At gen.", generation, ", individual", genome.id, "has fitness %.5f"%fitness, "\n"
+        print "\n. At gen.", ap.params["generation"], ", individual", genome.id, "has fitness %.5f"%fitness, "\n"
         return fitness
     
     def get_expression(self, genome, gene, tf_expr_levels, ap):
@@ -478,7 +475,7 @@ class Landscape:
             this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(k_act-k_rep) ) ))
             pe_sum += this_pe
             #print "gene", gene.id, "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
-        if ap.getOptionalArg("--verbose") > 2:
+        if ap.getOptionalArg("--verbose") > 3:
             self.print_configuration(configurations, genome, gene, ap)
         return (pe_sum / ap.params["iid_samples"])
     
@@ -486,11 +483,10 @@ class Landscape:
     """configs is a hashtable of configurations...
         configs[site] = array of triples [gene i, gene j, distance]"""
     def print_configuration(self, configs, genome, gene, ap):        
-        foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/config.gen" + self.gen_counter.__str__() + ".gid" + genome.id.__str__() + ".txt"
+        foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
-        
-        #fout.write("\n. URS binding at generation " + self.gen_counter.__str__() + " timeslice " + self.t_counter.__str__() + "\n" )        
+            
         """configs is array of arrays, [site, tf_i, tf_j, distance between i and j]"""
         sites = configs.keys()
         sites.sort()

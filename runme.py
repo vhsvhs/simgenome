@@ -13,50 +13,34 @@ def check_workspace(ap):
     for d in dirs:
         if False == os.path.exists(ap.getArg("--runid") + "/" + d):
             os.system("mkdir " + ap.getArg("--runid") + "/" + d)
-        elif False == ap.getOptionalArg("--continue"):
-            os.system("rm -rf " + ap.getArg("--runid") + "/" + d + "/*")
 
 def main():
     ap = ArgParser(sys.argv)
     read_cli(ap)
-    
-    cli_timepatterns = get_timepatterns_from_file(ap)
-    cli_genes = get_genes_from_file(ap)
-    
-    if rank == 0:
-        """Verify consistency of command-line arguments"""
-        check_workspace(ap)
-        
-        """Build a population"""        
-        population = Population()
+
+    """Build a population"""    
+    population = Population()
+    popath = ap.getOptionalArg("--pop_path")
+    """--pop_path should always be specified with --start_generation"""
+    if popath != False:
+        population.init_from_pickle(popath)
+    else:
+        cli_genes = get_genes_from_file(ap)
         population.init(ap, init_genes=cli_genes)
-                          
-        """Build a random fitness landscape"""
-        landscape = Landscape()
-        landscape.init(ap, genome = population.genomes[0], tp=cli_timepatterns)
-            
+                      
+    """Build a fitness landscape"""
+    landscape = Landscape(ap)
+    cli_timepatterns = get_timepatterns_from_file(ap)
+    landscape.init(ap, genome = population.genomes[0], tp=cli_timepatterns)
+        
+    if rank == 0:
+        """Verify existence of necessary folders."""
+        check_workspace(ap)
+
         """Check for consistency with all parameters."""
         check_world_consistency(ap, population, landscape)
-            
-        """Broadcast the population and landscape to slaves"""
-        pop_data = population.collapse()
-        pop_data_pickle = pickle.dumps( pop_data )
-        land_data = landscape.collapse()
-        land_data_pickle = pickle.dumps( land_data )
-        for slave in range(1, comm.Get_size()):
-            comm.send([pop_data_pickle, land_data_pickle], dest=slave, tag=11)
-        #print "debug test:", rank, ":", population.genomes[0].genes[0].urs
-    else:
-        """Recieve the population and landscape from master"""
-        [pop_data_pickle, land_data_pickle] = comm.recv(source=0, tag=11)
-        pop_data = pickle.loads( pop_data_pickle ) 
-        population = Population()
-        population.uncollapse(pop_data)
-        land_data = pickle.loads( land_data_pickle ) 
-        landscape = Landscape()
-        landscape.uncollapse(land_data, ap)
-
-        #print "debug test:", rank, ":", population.genomes[0].genes[0].urs
+                 
+    comm.Barrier()
     
     """Setup the genetic algorithm, using the population and landscape"""
     ga = Genetic_Algorithm(ap)

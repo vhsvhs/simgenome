@@ -1,1 +1,23 @@
-TEST
+VERBOSITY LEVELS.
+(Configured at the command-line using --verbose N)
+
+
+1:
+. Writes the R script to plot_expression.
+. Prints generation stats: time to completion, max/min/mean/median/sd fitness.
+
+2:
+. Pickles the population, writes population.gen.X.pickle.
+. Prints ID fitnesses, elites, and F1 crosses.
+
+3:
+. Invokes the method 'print_configuration', which writes config.gen.X.gid.Y.txt
+
+4:
+. Invokes R to plot_expression.
+
+5:
+. Prints timeslice information to stdout.
+
+100:
+. Prints debugging information.  This is *very* verbose.

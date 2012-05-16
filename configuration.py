@@ -44,13 +44,14 @@ N_REPORTER = 1
 """Mean mutation rate"""
 MU = 0.1
 ELITE_MU = 0.01
-ELITE_PROPORTION = 0.2
+ELITE_PROPORTION = 0.3
 PWM_MU = MU
 """How many generations to run the genetic algorithm?"""
 MAX_GA_GENS = 5000
+INIT_GEN = 0
 
 """When sampling configurations, how many i.i.d. samples should be drawn from the cumulative distribution?"""
-IID_SAMPLES = 2000
+IID_SAMPLES = 4000
 
 """Each random fitness goal will involve GOAL_COMPLEXITY number of expected unique 
 gene expression pulses in time."""

@@ -97,6 +97,11 @@ def read_cli(ap):
     else:
         ap.params["pe_scalar"] = PE_SCALAR
 
+    x = ap.getOptionalArg("--start_generation")
+    if x != False:
+        ap.params["generation"] = int(x)
+    else:
+        ap.params["generation"] = INIT_GEN
 
 def check_world_consistency(ap, population, landscape):
     """Check for out-of-bounds genes"""
@@ -110,7 +115,9 @@ def check_world_consistency(ap, population, landscape):
                 exit(1)
 
 def get_timepatterns_from_file(ap):
-    if ap.getOptionalArg("--patternpath"):
+    if False == ap.getOptionalArg("--patternpath"):
+        return None
+    else:
         ret_timepatterns = []
         patternpath = ap.getOptionalArg("--patternpath")
         fin = open(patternpath, "r")
@@ -151,7 +158,9 @@ def get_timepatterns_from_file(ap):
 did not specify to use genes from a file."""
 def get_genes_from_file(ap):
     #print "Getting genes from file..."
-    if ap.getOptionalArg("--urspath"): 
+    if False == ap.getOptionalArg("--urspath"): 
+        return None
+    else:
         ret_genes = []
         urspath = ap.getOptionalArg("--urspath")
         fin = open(urspath, "r")
@@ -189,5 +198,3 @@ def get_genes_from_file(ap):
         ap.params["numtr"] = count_tf
         ap.params["numreporter"] = count_reporter
         return ret_genes
-    else:
-        return None

@@ -18,6 +18,12 @@ class Population:
             self.genomes[ i ] = Genome(i)
             self.genomes[ i ].init( ap, init_genes=init_genes)
     
+    def init_from_pickle(self, picklepath):
+        fin = open(picklepath, "r")
+        pop_data = pickle.load( fin )
+        fin.close()
+        self.uncollapse(pop_data) 
+    
     def uncollapse(self, data):
         for gid in data:
             this_genome = Genome(gid)
@@ -29,7 +35,7 @@ class Population:
         for gid in self.genomes.keys():
             data[gid] = self.genomes[gid].collapse()
         return data
-    
+        
     def list_genome_ids(self):
         l = self.genomes.keys()
         l.sort()
@@ -57,7 +63,7 @@ class Population:
             return
         """Mark the elite individuals."""
         count_elite = 0
-        max_elite = self.genomes.__len__() * ELITE_PROPORTION
+        max_elite = self.genomes.__len__() * ap.params["eliteproportion"]
         fkeys = fitness_gid.keys()
         fkeys.sort()
         fkeys.reverse()
@@ -205,7 +211,4 @@ class Population:
         for j in range(0, self.genomes[idx].genes.__len__()):
             if self.genomes[idx].genes[j].urs.__contains__( self.genomes[idy].genes[j].urs ):
                 print "Genomes", idx, "and", idy, "differ in URS on gene", j
-    
-
-    
     

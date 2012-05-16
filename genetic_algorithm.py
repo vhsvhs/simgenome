@@ -8,12 +8,13 @@ class Genetic_Algorithm:
     population = None
     landscape = None    
     simid = None
-    gen_gid_fitness = None
+    gen_gid_fitness = None #gen_gid_fitness is used only by master, not slaves.
         
     def __init__(self, ap):
         id = ap.getOptionalArg("--runid")
         if id != False:
             self.simid == id 
+        self.gen_gid_fitness = []
     
     def find_max_fit_gid(self, gid_fitness):
         maxf = 0.0
@@ -24,12 +25,10 @@ class Genetic_Algorithm:
                 maxgid = gid
         return maxgid
     
-    def runsim_master(self, comm, ap):
-        self.gen_gid_fitness = []
-                
+    def runsim_master(self, comm, ap):                
         """For each GA generation. . . ."""
-        for i in range(0, MAX_GA_GENS):
-            self.landscape.gen_counter = i
+        for i in range(ap.params["generation"], ap.params["generation"]+MAX_GA_GENS):
+            ap.params["generation"] = i
             now = datetime.now()
                                 
             """gid_fitness[genome ID] = [fitness at generation i]"""
@@ -42,7 +41,11 @@ class Genetic_Algorithm:
             for gid in self.population.genomes.keys():
                 """. .  .but only compute for the individuals that have been assigned to my MPI slice."""
                 if my_items.__contains__(gid):
-                    gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], i , ap)
+                    gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], ap)
+                    if ap.getOptionalArg("--verbose") > 1:
+                        """And plot the expression."""
+                        filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
+                        plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "lifespan time", "expression", ap)
 
             """Wait for data from slaves."""
             for slave in range(1, comm.Get_size()):
@@ -60,13 +63,10 @@ class Genetic_Algorithm:
                 fout.close()
                         
             self.gen_gid_fitness.append( gid_fitness )
-            maxgid = self.find_max_fit_gid(gid_fitness)
-            filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + maxgid.__str__() 
-            plot_expression( self.population.genomes[maxgid], filenameseed, filenameseed, "time", "expression", ap)
             
             [max_f, min_f, mean_f, median_f, std_f] = self.get_fitness_stats(gid_fitness)
             
-            if int(ap.getOptionalArg("--verbose")) > 2:
+            if int(ap.getOptionalArg("--verbose")) > 1:
                 timedelta = datetime.now() - now
                 print "\n................................................\n" 
                 print "\n. Generation", i, "required", timedelta, "to compute."
@@ -103,11 +103,10 @@ class Genetic_Algorithm:
                     
 
     def runsim_slave(self, rank, comm, ap):
-        self.gen_gid_fitness = []
-        
         """For each GA generation. . . ."""
-        for i in range(0, MAX_GA_GENS):
-            self.landscape.gen_counter = i 
+        for i in range(ap.params["generation"], ap.params["generation"]+MAX_GA_GENS):
+            ap.params["generation"] = i
+            
             """gid_fitness[genome ID] = [fitness at generation i]"""
             gid_fitness = {}
 
@@ -116,13 +115,13 @@ class Genetic_Algorithm:
         
             """Calculate fitness for every individual."""
             for gid in my_items:
-                gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], i , ap)
-                #prog.increment_progress()
+                gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], ap)
+                if ap.getOptionalArg("--verbose") > 1:
+                    """And plot the expression."""
+                    filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
+                    plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "time", "expression", ap)
                         
             """Send data to master."""
-            my_genomes = {}
-            for gid in my_items:
-                my_genomes[gid] = self.population.genomes[gid]
             comm.send(gid_fitness, dest=0, tag=11)  
             
             if i < MAX_GA_GENS:
