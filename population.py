@@ -9,12 +9,14 @@ class Population:
     
     def init(self, ap, init_genes=None):
         if init_genes == None:
-            print "\n. Building a random population..."
+            if comm.Get_rank() == 0:
+                print "\n. Building a random population..."
         else:
-            print "\n. Creating a population, specified by", ap.getOptionalArg("--urspath"), "and",ap.getOptionalArg("--pwmpath") 
+            if comm.Get_rank() == 0:
+                print "\n. Creating a population, specified by", ap.getOptionalArg("--urspath"), "and",ap.getOptionalArg("--pwmpath") 
         for i in range(0, ap.params["popsize"]):
             """Fill the population with ap.params["popsize"] copies of the seed genome."""
-            print "+ Genome ", i
+            #print "+ Genome ", i
             self.genomes[ i ] = Genome(i)
             self.genomes[ i ].init( ap, init_genes=init_genes)
     

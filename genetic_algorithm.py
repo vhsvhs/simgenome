@@ -50,7 +50,8 @@ class Genetic_Algorithm:
             """Wait for data from slaves."""
             for slave in range(1, comm.Get_size()):
                 their_gid_fitness = comm.recv(source=slave, tag=11)
-                print "debug genetic_algorithm 56 - Master recieved from slave", slave, ":", their_gid_fitness
+                if int(ap.getOptionalArg("--verbose")) > 100:
+                    print "debug genetic_algorithm 56 - Master recieved from slave", slave, ":", their_gid_fitness
                 for gid in their_gid_fitness.keys():
                     gid_fitness[gid] = their_gid_fitness[gid]
             

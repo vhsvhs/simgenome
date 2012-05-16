@@ -127,15 +127,18 @@ class Landscape:
     
     def init(self, ap, genome=None, tp=None):
         if tp == None:
-            print "\n. Building a random fitness landscape."
+            if comm.Get_rank() == 0:
+                print "\n. Building a random fitness landscape."
             self.init_random(genome)
         else:
-            print "\n. Creating a fitness landscape based on", ap.getOptionalArg("--patternpath")
+            if comm.Get_rank() == 0:
+                print "\n. Creating a fitness landscape based on", ap.getOptionalArg("--patternpath")
             self.timepatterns = tp
         self.set_gamma(ap)
         
-        for t in self.timepatterns:
-            print t
+        if comm.Get_rank() == 0:
+            for t in self.timepatterns:
+                print t
         
     def uncollapse(self, data, ap):
         #print "debug 142"
@@ -288,10 +291,12 @@ class Landscape:
             # to-do: if gene expression has not changed from the last timeslice
             #    then we've reached equilibrium, so stop cycling through time slices.
             #
-            print ""
+            if int(ap.getOptionalArg("--verbose")) > 5:
+                print ""
 
         fitness = self.fitness_helper(genome.gene_expr)
-        print "\n. At gen.", ap.params["generation"], ", individual", genome.id, "has fitness %.5f"%fitness, "\n"
+        if int(ap.getOptionalArg("--verbose")) > 5:
+            print "\n. At gen.", ap.params["generation"], ", individual", genome.id, "has fitness %.5f"%fitness, "\n"
         return fitness
     
     def get_expression(self, genome, gene, tf_expr_levels, ap):

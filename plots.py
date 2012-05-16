@@ -79,5 +79,5 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
     fout_cran.write("dev.off();\n")
     fout_cran.close()
     
-    if ap.getOptionalArg("--verbose") > 4:
+    if int(ap.getOptionalArg("--verbose")) > 4:
         os.system("r --no-save < " + output_filename_seed + ".cran")

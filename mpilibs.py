@@ -17,7 +17,9 @@ def mpi_check():
         data = comm.recv(source=0, tag=11)
         #print "Rank ", rank, "got it.", data
 
-    print "\n. MPI process", rank, "of", comm.Get_size()-1, "is alive."
+    nodename = MPI.Get_processor_name()
+
+    print "\n. MPI process", rank, "of", comm.Get_size()-1, "is alive on", nodename
 
     #print "My rank is", rank
     if rank == 0:
