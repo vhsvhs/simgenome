@@ -2,17 +2,21 @@ try:
    import cPickle as pickle
 except:
    import pickle
-from datetime import datetime
-import math
-from mpilibs import *
-from numpy import *
-import operator
-from operator import mul, add
-import os
-from progressbar import *
-import random
-import re
-import sys
+try:
+    from datetime import datetime
+    import math
+    from mpilibs import *
+    from numpy import *
+    import operator
+    from operator import mul, add
+    import os
+    from progressbar import *
+    import random
+    import re
+    import sys
+except ImportError:
+    print "\n. Sorry, I had a problem importing one (or more) Python libraries."
+    exit()
 #from tools import *
 
 POPPICKLES = "POP_HISTORY"

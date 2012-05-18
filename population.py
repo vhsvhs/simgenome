@@ -104,7 +104,7 @@ class Population:
                 n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * mu)
                 n_deletions = None
                 n_duplications = None
-                if int(ap.getOptionalArg("--verbose")) > 2:                
+                if int(ap.getOptionalArg("--verbose")) >= 2:                
                     print "\t.", n_point_mutations, "cis mutations to individual", gid
                 """URS mutations...."""
                 for i in range(0, n_point_mutations):
@@ -128,7 +128,8 @@ class Population:
                 rand_roll = random.random()
                 if rand_roll < mu:
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
-                    print "\t+ mutating PWM ", rand_tr_id, "in individual", gid
+                    if int(ap.getOptionalArg("--verbose")) >= 2:
+                        print "\t+ mutating PWM ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
         if int(ap.getOptionalArg("--verbose")) > 2:
             print "\n"

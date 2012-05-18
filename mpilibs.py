@@ -19,7 +19,7 @@ def mpi_check():
 
     nodename = MPI.Get_processor_name()
 
-    print "\n. MPI process", rank, "of", comm.Get_size()-1, "is alive on", nodename
+    print ". MPI process", rank, "of", comm.Get_size(), "is alive on", nodename
 
     #print "My rank is", rank
     if rank == 0:
@@ -47,23 +47,29 @@ def mpi_check():
             exit(1)
 
 
-
-def is_my_item(i, l, r):
+def is_my_item_core(i, l, r, s):
     """i = the item ID in a list (l) of all item IDs. r is my MPI rank."""
-    chunk_size = int( l.__len__() / comm.Get_size() )
-    start = chunk_size * r
+    chunk_size = int( l.__len__() / (s-1 ) )
+    start = chunk_size * (r-1)
     end = start + chunk_size
-    remainder = l.__len__() - comm.Get_size() * chunk_size
+    remainder = l.__len__() - (s-1) * chunk_size
     if i < end and i >= start:
         return True
-    elif (r == comm.Get_size()-1) and (i >= l.__len__()-remainder):
+    elif (r == s-2) and (i >= l.__len__()-remainder):
         return True
     else:
         return False
+
+def is_my_item(i, l, r):
+    if comm.Get_size() == 1:
+        return True
+    else:
+        return is_my_item_core(i, l, r, comm.Get_size())
     
 def list_my_items(l, r):
     my_items = []
     for i in range(0, l.__len__()):
         if is_my_item(i, l, r):
             my_items.append(i)
+        #print "debug mpilibs 68", r, my_items
     return my_items

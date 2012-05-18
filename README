@@ -1,23 +1,42 @@
-VERBOSITY LEVELS.
-(Configured at the command-line using --verbose N)
+#
+# Sim Genome README
+#
+# Victor Hanson-Smith
+# victorhansonsmith@gmail.com
+# 2012
+#
+
+** MPI NOTES
+
+Sim Genome uses a master-slave architecture with MPI.  The master process is 0, and the slave processes are 1 through N-1.
+At the top of each generation, all slaves self identify a subset of the individuals in the population, and then proceed
+to calculate the fitness of those individuals.  Upon completion of fitness calculations, each slave send a hashtable (key = individual ID,
+value = fitness score) to the master.  The master incorporates these hashtables into a single hashtable.  The master then uses
+this hashtable to mutate and reproduce the population, selectively based on individual's fitness scores.  The master then
+broadcasts the updated population to all the slaves.  All processes then iterate to the next generation.
+
+For best load-balancing, using a population size M and N MPI processes, ensure that M is a multiple of N-1.
+For example, with a population size of 128, good values for N include 5, 9, 17, 33, 65, and 129.
 
 
-1:
+** VERBOSITY NOTES (use --verbose N)
+
+N= 1:
 . Writes the R script to plot_expression.
 . Prints generation stats: time to completion, max/min/mean/median/sd fitness.
 
-2:
+N= 2:
 . Pickles the population, writes population.gen.X.pickle.
 . Prints ID fitnesses, elites, and F1 crosses.
 
-3:
+N= 3:
 . Invokes the method 'print_configuration', which writes config.gen.X.gid.Y.txt
 
-4:
+N= 4:
 . Invokes R to plot_expression.
 
-5:
+N= 5:
 . Prints timeslice information to stdout.
 
-100:
+N= 100:
 . Prints debugging information.  This is *very* verbose.

@@ -18,6 +18,14 @@ def main():
     ap = ArgParser(sys.argv)
     read_cli(ap)
 
+    l = []
+    for s in range(0, ap.params["popsize"]):
+        l.append( s )
+    lmi = list_my_items(l, comm.Get_rank() )
+    
+    # for debugging:
+    print "runme.py 27, proc.", comm.Get_rank(), "-", lmi.__len__(), "items:", lmi 
+
     """Build a population"""    
     population = Population()
     popath = ap.getOptionalArg("--pop_path")
