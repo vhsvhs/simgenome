@@ -44,25 +44,6 @@ class Genetic_Algorithm:
             """gid_fitness[genome ID] = [fitness at generation i]"""
             gid_fitness = {}
 
-#############################
-#            old code, because master now does no computation, only dispatch management
-#
-#            """Find my items."""
-#            my_items = list_my_items(self.population.list_genome_ids(), 0)
-#        
-#            """Calculate fitness for every individual."""
-#            for gid in self.population.genomes.keys():
-#                """. .  .but only compute for the individuals that have been assigned to my MPI slice."""
-#                if my_items.__contains__(gid):
-#                    gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], ap)
-#                    if ap.getOptionalArg("--verbose") > 1:
-#                        """And plot the expression."""
-#                        filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
-#                        plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "lifespan time", "expression", ap)
-#############################
-
-
-
             """Wait for data from slaves."""
             for slave in range(1, comm.Get_size()):
                 their_gid_fitness = comm.recv(source=slave, tag=11)

@@ -12,6 +12,7 @@ lines = fin.readlines()
 fin.close()
 
 maxx = None
+maxy = None
 genstring = ""
 genstring += "g <-c("
 maxfstring = "maxf <-c("
@@ -24,6 +25,8 @@ for l in lines:
         if maxx < gen:
             maxx = gen
         maxf = float(tokens[3])
+        if maxy < maxf:
+            maxy = maxf
         minf = float(tokens[5])
         meanf = float(tokens[7])
         
@@ -41,7 +44,7 @@ minfstring += ");\n"
 meanfstring = re.sub(",$", "", meanfstring)
 meanfstring += ");\n"
 
-plotstring = "plot(c(0.0," + maxx.__str__() + "), c(0,1.0), type='n', main='" + title + "', xlab='" + xlab + "', ylab='" + ylab + "');\n"
+plotstring = "plot(c(0.0," + maxx.__str__() + "), c(0," + maxy.__str__() + "), type='n', main='" + title + "', xlab='" + xlab + "', ylab='" + ylab + "');\n"
 
 pointsstring = "points(g,maxf,type='l', col='black', lwd=1.3);\n"
 pointsstring += "points(g,minf,type='l', col='black', lwd=1.3);\n"

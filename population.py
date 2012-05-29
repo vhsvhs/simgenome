@@ -21,6 +21,8 @@ class Population:
             self.genomes[ i ].init( ap, init_genes=init_genes)
     
     def init_from_pickle(self, picklepath):
+        if comm.Get_rank() == 0:
+            print "\n.Restoring the population at", picklepath
         fin = open(picklepath, "r")
         pop_data = pickle.load( fin )
         fin.close()
