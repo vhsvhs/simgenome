@@ -1,8 +1,7 @@
 from configuration import *
 
-"""Write CRAN scripts and plot PDFs."""
 def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
-    """plots the time vs. expression for all genes in one individual genome"""
+    """This method uses R to plot the time vs. expression for all genes in one individual genome"""
     """genome must contain valid data in genome.gene_expr"""
     maxx = None
     maxy = None
@@ -35,7 +34,7 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
     tstring = re.sub(",$", "", tstring)
     tstring += ");\n"
 
-    miny = None
+    miny = 0.0
     maxy = None
     tr_pointsstring = ""
     rep_pointsstring = ""
@@ -43,10 +42,10 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
         string = "y" + gid.__str__() + "<-c("
         for t in range(1, ap.params["maxtime"]):
             this_expr = genome.gene_expr[gid][t]
-            if miny == None:
-                miny = this_expr
-            elif this_expr < miny:
-                miny = this_expr
+            #if miny == None:
+            #    miny = this_expr
+            #elif this_expr < miny:
+            #    miny = this_expr
             if maxy == None:
                 maxy = this_expr
             elif this_expr > maxy:

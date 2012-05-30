@@ -39,7 +39,6 @@ def mpi_check():
     comm.Barrier()
     
     if rank == 0:    
-        #print tally
         if tally == comm.Get_size()-1:
             return
         else:
@@ -61,15 +60,18 @@ def is_my_item_core(i, l, r, s):
         return False
 
 def is_my_item(i, l, r):
+    """i = the item ID, l = the list of all item IDs, and r = my MPI rank.
+        This method returns True if i should be processed by r."""
     if comm.Get_size() == 1:
         return True
     else:
         return is_my_item_core(i, l, r, comm.Get_size())
     
 def list_my_items(l, r):
+    """l is a list of all item IDs, r = my MPI rank.
+        This method returns a list of all the items within l that belong to r."""
     my_items = []
     for i in range(0, l.__len__()):
         if is_my_item(i, l, r):
             my_items.append(i)
-        #print "debug mpilibs 68", r, my_items
     return my_items

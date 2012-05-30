@@ -1,1 +1,1 @@
-VERSIONSTRING = "version 0.1, April 18th, 2012"
+VERSIONSTRING = "version 0.11, May 30, 2012"

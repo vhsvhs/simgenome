@@ -16,7 +16,6 @@ class Population:
                 print "\n. Creating a population, specified by", ap.getOptionalArg("--urspath"), "and",ap.getOptionalArg("--pwmpath") 
         for i in range(0, ap.params["popsize"]):
             """Fill the population with ap.params["popsize"] copies of the seed genome."""
-            #print "+ Genome ", i
             self.genomes[ i ] = Genome(i)
             self.genomes[ i ].init( ap, init_genes=init_genes)
     
@@ -174,6 +173,7 @@ class Population:
             sum_fitness += (gid_fitness[gid] - min_fitness)
         return [min_fitness, max_fitness, sum_fitness, reverse_hash]
         
+        
     def do_reproduction(self, gid_fitness, min_fitness, max_fitness, sum_fitness, ap):        
         if int(ap.getOptionalArg("--verbose")) > 2:
             print "\n. The population is reproducing, selectively based on fitness. . .\n"
@@ -183,8 +183,6 @@ class Population:
         
         for child_gid in gid_fitness:
             new_genomes[child_gid] = Genome(child_gid)                         
-        
-            """First, deal with the elites...."""
             if self.genomes[child_gid].is_elite == True:
                 if int(ap.getOptionalArg("--verbose")) > 2:
                     print "\t+ new child", child_gid, "=", child_gid, "cloned."

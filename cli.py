@@ -6,7 +6,7 @@ from version import *
 from debug_tools import *
 
 def read_cli(ap):
-    """Read the CLI args and set global parameters"""
+    """This method reads the command-line interface arguments and sets global parameters"""
     x = ap.getOptionalArg("--growth_rate")
     if x != False:
         ap.params["growth_rate"] = float(x)
@@ -160,10 +160,10 @@ def get_timepatterns_from_file(ap):
         return ret_timepatterns
         fin.close()
 
-"""Returns either a list of genes read from a file, OR returns None if the user
-did not specify to use genes from a file."""
+
 def get_genes_from_file(ap):
-    #print "Getting genes from file..."
+    """Returns either a list of genes read from a file,
+    or returns None if the user did not specify to use genes from a file."""
     if False == ap.getOptionalArg("--urspath"): 
         return None
     else:

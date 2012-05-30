@@ -2,10 +2,11 @@ from configuration import *
 from pwm import *
 
 class Gene:
-    urs = ""        # upstream regulatory sequence
+    urs = ""        # "urs" stands for upstream regulatory sequence
     has_dbd = False # False = gene is reporter, True = gene is regulatory gene
-    pwm = None
+    pwm = None      # "pwm" stands for position specific weight matrix.
     id = None
+    is_repressor = False
         
     def __init__(self, id, urs_len, urs = None, has_dbd = False, repressor = False, pwm = None):
         """1. id"""

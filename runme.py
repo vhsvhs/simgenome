@@ -23,13 +23,10 @@ def main():
         l.append( s )
     lmi = list_my_items(l, comm.Get_rank() )
     
-    # for debugging:
-    # print "runme.py 27, proc.", comm.Get_rank(), "-", lmi.__len__(), "items:", lmi 
-
     """Build a population"""    
     population = Population()
     popath = ap.getOptionalArg("--pop_path")
-    """--pop_path should always be specified with --start_generation"""
+    """--pop_path should always be specified in combination with --start_generation"""
     if popath != False:
         population.init_from_pickle(popath)
     else:

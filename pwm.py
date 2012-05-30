@@ -96,22 +96,19 @@ class PWM:
         part = urs[pos:pos+self.P.__len__()] # the partial URS
         #print "pos=", pos, "part = ", part
         res1 = 0.0        
-        # In Kevin Bullaughey's original Rescape code he assumed 
-        # the affinity of a TF is the sum of the affinity to both
-        # strand at this location.
-        # But in my code, I'm only dealing with single stranded DNA.
+        
+        """In Kevin Bullaughey's original Rescape code he assumed 
+            the affinity of a TF is the sum of the affinity to both
+            strand at this location.
+            But in my code, I'm only dealing with single stranded DNA."""
         for k in range(0, self.P.__len__() ):
             #if self.P[k][ part[k] ] == 0.0:
             #    continue
             #else:
             res1 += self.P[k][ part[k] ]
             #print "res1=", res1
-        # this is what Kevin does:
+        
+        """In contrast, this is what Kevin's code does:"""
         #res1 *= a**( self.P.__len__() )
         
-        #... but here's what I do, to normalize by the background expectation
-        #res1 = res1 / 0.25**( self.P.__len__() )
-        #res1 = res1 / 0.25
-        
-        #print "res1=", res1
         return res1

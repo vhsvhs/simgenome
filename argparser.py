@@ -5,9 +5,9 @@ class ArgParser:
         self.args = cliArgs
         self.params = {}
     
-    # use this method to grab REQUIRED command-line parameters
-    # flag = the command line flag.  For example: "--model".
     def getArg(self, flag):
+        """ Use this method to grab REQUIRED command-line parameters
+        flag = the command line flag.  For example: "--model"."""
         if self.args.__contains__(flag):
             i = self.args.index(flag)
             return self.args[i+1]
@@ -27,8 +27,9 @@ class ArgParser:
             self.args.append(flag)
             self.args.append(content)
             
-    # use this method to grab OPTIONAL command-line parameters.
+    
     def getOptionalArg(self, flag):
+        """Use this method to grab OPTIONAL command-line parameters."""
         if self.args.__contains__(flag):
             i = self.args.index(flag)
             return self.args[i+1]
@@ -37,9 +38,9 @@ class ArgParser:
     
     def doesContainArg(self, flag):
         return self.args.__contains__(flag)
-    
-    # use this method to grab OPTIONAL command-line toggles (boolean on/off switches)
+
     def getOptionalToggle(self, flag):
+        """Use this method to grab OPTIONAL command-line toggles (boolean on/off switches)"""
         if self.args.__contains__(flag):
             return True
         else:

@@ -93,7 +93,5 @@ control the rate of decay of the cooperative or competitive interactions
 between TFs."""
 V_RATE_OF_COOP_DECAY = 80
 
-#"""The scalar used to convert information to Kd.... k = 1/(e^(aI)), where a is alpha and I is the binding strength (in bits)"""
-#INFO_ALPHA = 0.01
 
 

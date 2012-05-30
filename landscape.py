@@ -9,11 +9,15 @@ operator.f( observed expression, optimal expression)
 where 'f' is the operator function."""
 RULE_TYPES = [operator.ge, operator.eq, operator.le]
 
+
 class Fitness_Rule:
+    """Each Fitness_RUle object defines a particular expression gate that
+    must be achieved for maximal fitness.  See the class Time_Pattern, in which
+    multiple Fitness_Rule instances are combined to define an overall fitness landscape."""
     timepoint = None
     expression_level = None
     reporter_id = None
-    rule_type = None # points to a boolean operator function.
+    rule_type = None # See RULE_TYPES
 
     def __init__(self, t, e, id, r):
         self.timepoint = t
@@ -45,12 +49,7 @@ class Time_Pattern:
     """Each instance of the class Time_Pattern defines a unique set of temporal expression patterns
     for a subset of reporter genes in each genome.  See the parent class, Landscape, for how to
     calculate the fitness of a given Time_Pattern.  This class can be initialized with an a priori
-    desired expression pattern, or the pattern can be randomly initialized.
-    
-    The optimal pattern is defined using the following information, for example:
-        reporter x, above or equal to 50% expression @ timepoint A, max expression at timepoint B, below 50% expression @ timepoint C.
-        reporter y, 0% expression @ timepoint A, 0% expression at timepoint C, above or equal to 50% at timepoint D."""
-
+    desired expression pattern, or the pattern can be randomly initialized."""
     basal_gene_id = None
     rules = []
     
@@ -61,17 +60,16 @@ class Time_Pattern:
     def collapse(self):
         data = []
         for r in self.rules:
-            #print "debug 72, rule"
             data.append( r.collapse() )
         return data
     
     def uncollapse(self, data):
         for rule in data:
-            #print "debug 78, rule"
             this_rule = Fitness_Rule(rule[0], rule[1], rule[2], rule[3])
             self.rules.append( this_rule )
     
     def init_random(self):
+        """This method generates a random set of Fitness_Rule objects."""
         last_time = 0
         for i in range(0, ap.params["ngoals"]):
             """First, expression > 0.5"""
@@ -113,7 +111,10 @@ class Time_Pattern:
         return ret
     
 class Landscape:
-    """An array of Time_Patterns"""
+    """The Landscape class holds an array of Time_Pattern objects.  Each Time_Pattern can express
+    different overlapping expression patterns.  For example, one Time_Pattern can define the expression
+    pattern needed for cell lifecycle, while a second Time_Pattern can define the expression
+    patterns for a stress response."""
     timepatterns = []
     gamma = None
     r = None
@@ -141,9 +142,7 @@ class Landscape:
                 print t
         
     def uncollapse(self, data, ap):
-        #print "debug 142"
         for d in data:
-            #print "debug 143, time pattern for basal gene id", d
             this_timepattern = Time_Pattern(d)
             this_timepattern.uncollapse( data[d] )
             self.timepatterns.append( this_timepattern )
@@ -152,7 +151,6 @@ class Landscape:
     def collapse(self):
         data = {}
         for t in self.timepatterns:
-            #print "debug 153, timepattern for basal gene id", t.basal_gene_id
             data[ t.basal_gene_id ] = t.collapse()
         return data
 
@@ -160,7 +158,6 @@ class Landscape:
         """Creates a random fitness goal, using genome as the seed."""    
         """First, select a basal TR to activate the goal."""
         randid = random.randint(0, ap.params["numtr"]-1)
-        #print "basal id = ", randid
         
         """Next, build a random pattern.
         For now, the random Landscape contains only one time pattern."""
@@ -197,10 +194,7 @@ class Landscape:
                 if False == rule.rule_type(obs_expr, rule.expression_level):
                     expr_error += abs(obs_expr - rule.expression_level)
                 max_expr_error += 1.0
-        #print expr_error
-        #print max_expr_error
         return math.exp(FITNESS_SCALAR * expr_error)
-        #return (max_expr_error - expr_error) / max_expr_error
                     
     
     def get_fitness(self, genome, ap):
@@ -217,12 +211,12 @@ class Landscape:
         """Deal with the no-occupancy case"""
         self.r.append(1)
         
+        """Next, initialize expression levels, using either epigenetically inherited levels,
+        or -- as default -- setting expression to zero."""
         if ap.params["enable_epigenetics"] == False or genome.gene_expr.__len__() < 1:
             for gene in genome.genes:
                 genome.gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL]
         
-        """ tf_expr_level[gene ID] = current expression level"""
-        """ tf_expr_level is used as short-term variable inside the loop "for timeslice..." """
         list_of_basal_gids = []
         tf_expr_level = {}
         for timepattern in self.timepatterns:
@@ -232,15 +226,17 @@ class Landscape:
         """Print a report to the screen."""
         for gene in genome.genes:
             if int(ap.getOptionalArg("--verbose")) > 5:
-                marka = "[tf]"
-                if gene.has_dbd == False:
-                    marka = "[re]"
+                marka = "      "
+                if gene.has_dbd and gene.is_repressor == False:
+                    marka = "[act.]"
+                elif gene.has_dbd and gene.is_repressor:
+                    marka = "[rep.]"
                 print "gen.", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tact: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][0]
         print ""
         
         for timeslice in range(0, ap.params["maxtime"]):
             self.t_counter = timeslice
-            # 1a. Ensure that basal genes remain activated
+            """Ensure that constitutively active (basal) genes remain activated."""
             for timepattern in self.timepatterns:
                 if genome.gene_expr[timepattern.basal_gene_id][timeslice] < MAXIMUM_ACTIVITY_LEVEL:
                     genome.gene_expr[timepattern.basal_gene_id][timeslice] = MAXIMUM_ACTIVITY_LEVEL
@@ -251,7 +247,7 @@ class Landscape:
             #        gene_expr[timepattern.basal_gene_id].append(MINIMUM_ACTIVITY_LEVEL)               
             
             
-            """ 1b. Update TF expression levels..."""            
+            """ Update TF expression levels..."""            
             for tf in range(0, ap.params["numtr"]):
                 tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice]
                                        
@@ -259,8 +255,6 @@ class Landscape:
                 if False == list_of_basal_gids.__contains__(gene.id):
                     """Calculate the delta G of binding on the cis-region for every gene."""
                     pe = self.get_expression(genome, gene, tf_expr_level, ap)
-                    
-                    #expr_modifier = 20.0**pe - 1.0 
                     expr_modifier = 2.0 * pe
                     new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
                     genome.gene_expr[gene.id].append( new_expr_level )
@@ -268,7 +262,7 @@ class Landscape:
                     pe = 1.0
                     genome.gene_expr[gene.id].append( genome.gene_expr[gene.id][timeslice] )
                             
-                """ Prevent out of bounds expression. """
+                """ Prevent out-of-bounds expression. """
                 if genome.gene_expr[gene.id][timeslice+1] > MAXIMUM_ACTIVITY_LEVEL:
                     genome.gene_expr[gene.id][timeslice+1] = MAXIMUM_ACTIVITY_LEVEL
                 if genome.gene_expr[gene.id][timeslice+1] < MINIMUM_ACTIVITY_LEVEL:
@@ -277,11 +271,12 @@ class Landscape:
                 """Print a report to the screen."""
                 if int(ap.getOptionalArg("--verbose")) > 5:
                     expr_delta = 0.0
-                    #if timeslice > 1:
                     expr_delta = genome.gene_expr[ gene.id ][timeslice+1] - genome.gene_expr[ gene.id ][timeslice]
-                    marka = "[tf]"
-                    if gene.has_dbd == False:
-                        marka = "[re]"
+                    marka = "      "
+                    if gene.has_dbd and gene.is_repressor == False:
+                        marka = "[act.]"
+                    elif gene.has_dbd and gene.is_repressor:
+                        marka = "[rep.]"
                     print "gen.", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta 
 
             #
@@ -300,13 +295,11 @@ class Landscape:
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""
         pe = []        
         ptables = ProbTable( ap.params["numtr"], MAX_GD, gene.urs.__len__() )
-        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)   
-        #print "PTABLE for gene", gene.id
-        #print ptables   
+        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)     
         return self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)          
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
-        """returns a ProbTable object. ret is the ProbTable that should be returned."""
+        """returns a ProbTable object, named ret."""
         if int(ap.getOptionalArg("--verbose")) > 100:
             print "\n\n. CALC_PROB_TABLES gene", gene.id
         L = gene.urs.__len__()        
@@ -380,14 +373,12 @@ class Landscape:
         d, and then TF j binds."""
         
         randp = random.uniform(0.0, ptables.cpr[site])
-        #print "sample_cdf for site", site, "cpr sum =", ptables.cpr[site], "rand=", randp
-        # now determine which TF and d value randp corresponds to.
         sump = 0.0
         reti = 0
         retj = 0
         retd = 0
         
-        # debugging: as a test, just pick a random cell from the appropriate cpa
+        # for debugging: as a test, just pick a random cell from the appropriate cpa
         # range, rather than picking an IID cell from the cpr-based range.
         #i = random.randint(0, ap.params["numtr"]-1)
         #j = random.randint(0, ap.params["numtr"])
@@ -410,10 +401,6 @@ class Landscape:
                 break
         return [reti, retj, retd]
         
-        
-    #def i_to_k(self, i):
-    #    """Convert information bits to Kd"""
-    #    return 1/(math.exp(INFO_ALPHA*i))
     
     def prob_expr(self, genome, ptables, gene, tf_expr_levels, ap, lam=None):
         """Returns a floating-point value corresponding to the expression level of gene,
@@ -482,9 +469,9 @@ class Landscape:
         return (pe_sum / ap.params["iid_samples"])
     
     
-    """configs is a hashtable of configurations...
-        configs[site] = array of triples [gene i, gene j, distance]"""
     def print_configuration(self, configs, genome, gene, ap):        
+        """configs is a hashtable of configurations...
+            configs[site] = array of triples [gene i, gene j, distance]"""
         foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
@@ -509,7 +496,6 @@ class Landscape:
                     tf_type = "[-]"
                 line += " \t" + tf.__str__() + " " + tf_type + " %.3f"%tf_count[tf] + " %.3f"%pe
             fout.write(line + "\n")
-            #print line
         fout.write("\n")
         fout.close()
 
