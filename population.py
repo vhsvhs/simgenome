@@ -183,11 +183,13 @@ class Population:
         
         for child_gid in gid_fitness:
             new_genomes[child_gid] = Genome(child_gid)                         
+        
+            """First, deal with the elites...."""
             if self.genomes[child_gid].is_elite == True:
                 if int(ap.getOptionalArg("--verbose")) > 2:
                     print "\t+ new child", child_gid, "=", child_gid, "cloned."
                 new_genomes[child_gid].is_elite = True
-                new_genomes[child_gid].init(ap, init_genes = self.genomes[child_gid].genes)
+                new_genomes[child_gid].init(ap, init_genes = self.genomes[child_gid].genes, init_expression=self.genomes[child_gid].gene_expr)
             else:
                 """Select the parents from the fitness CDF."""
                 parent1 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness) 
@@ -207,8 +209,7 @@ class Population:
                         copypwm = PWM(copyfrom=parentgene.pwm)
                     gene_copy = Gene(geneid, parentgene.urs.__len__(), urs=parentgene.urs, has_dbd=parentgene.has_dbd, repressor=parentgene.is_repressor,pwm=copypwm)
                     new_genes.append( gene_copy )
-                new_genomes[child_gid].init(ap, init_genes=new_genes)
-            
+                new_genomes[child_gid].init(ap, init_genes=new_genes, init_expression=self.genomes[parent1].gene_expr)
         """Save the new children genomes."""
         self.genomes = new_genomes
             

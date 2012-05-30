@@ -8,13 +8,13 @@ class Genetic_Algorithm:
     population = None
     landscape = None    
     simid = None
-    gen_gid_fitness = None #gen_gid_fitness is used only by master, not slaves.
+    #gen_gid_fitness = None #gen_gid_fitness is used only by master, not slaves.
         
     def __init__(self, ap):
         id = ap.getOptionalArg("--runid")
         if id != False:
             self.simid == id 
-        self.gen_gid_fitness = []
+        #self.gen_gid_fitness = []
     
     def find_max_fit_gid(self, gid_fitness):
         maxf = 0.0
@@ -41,19 +41,19 @@ class Genetic_Algorithm:
             ap.params["generation"] = i
             time_start_gen = datetime.utcnow()
                                             
-            """gid_fitness[genome ID] = [fitness at generation i]"""
             gid_fitness = {}
 
-            """Wait for data from slaves."""
+            """Wait for data from slaves. . ."""
             for slave in range(1, comm.Get_size()):
-                their_gid_fitness = comm.recv(source=slave, tag=11)
+                [their_gid_fitness, their_gid_terminal_expression] = comm.recv(source=slave, tag=11)
                 if slave == 1:
                     time_end_calc = datetime.utcnow()
                 if int(ap.getOptionalArg("--verbose")) > 100:
-                    print "debug genetic_algorithm 56 - Master received from slave", slave, ":", their_gid_fitness
+                    print "\n. genetic_algorithm.py line 56 - Master received from slave", slave, ":\ngid_fitness:", their_gid_fitness, "\ngid_terminal_expression:", their_gid_terminal_expression
                 for gid in their_gid_fitness.keys():
                     gid_fitness[gid] = their_gid_fitness[gid]
-                #print "gen", i, "slave", slave, "cleared."
+                    if ap.params["enable_epigenetics"] == True:
+                        self.population.genomes[gid].gene_expr = their_gid_terminal_expression[gid]
             
             time_end_gather = datetime.utcnow()
             
@@ -65,7 +65,7 @@ class Genetic_Algorithm:
                 fout.write(pop_data_pickle)
                 fout.close()
                         
-            self.gen_gid_fitness.append( gid_fitness )
+            #self.gen_gid_fitness.append( gid_fitness )
             
             [max_f, min_f, mean_f, median_f, std_f] = self.get_fitness_stats(gid_fitness)
             
@@ -138,7 +138,7 @@ class Genetic_Algorithm:
             
             """gid_fitness[genome ID] = [fitness at generation i]"""
             gid_fitness = {}
-
+            
             """Find my items."""
             my_items = list_my_items(self.population.list_genome_ids(), rank)
         
@@ -149,9 +149,20 @@ class Genetic_Algorithm:
                     """And plot the expression."""
                     filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
                     plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "time", "expression", ap)
-                        
+            
+            """Save the expression at the last timeslice, to be inherited by childern."""
+            gid_terminal_expression = {}
+            if ap.params["enable_epigenetics"] == True:
+                last_timeslice = ap.params["maxtime"]
+                for gid in my_items:
+                    gid_terminal_expression[gid] = {}
+                    for geneid in range(0, self.population.genomes[gid].genes.__len__()):
+                        gid_terminal_expression[gid][geneid] = [self.population.genomes[gid].gene_expr[geneid][last_timeslice]]
+                if int(ap.getOptionalArg("--verbose")) > 100:
+                    print "\n. debug -- genetic_algorithm 155:", gid_terminal_expression
+                                    
             """Send data to master."""
-            comm.send(gid_fitness, dest=0, tag=11)  
+            comm.send( [gid_fitness, gid_terminal_expression], dest=0, tag=11)  
             
             if i < MAX_GA_GENS:
                 """Get updated data from master."""

@@ -24,7 +24,7 @@ def main():
     lmi = list_my_items(l, comm.Get_rank() )
     
     # for debugging:
-    print "runme.py 27, proc.", comm.Get_rank(), "-", lmi.__len__(), "items:", lmi 
+    # print "runme.py 27, proc.", comm.Get_rank(), "-", lmi.__len__(), "items:", lmi 
 
     """Build a population"""    
     population = Population()

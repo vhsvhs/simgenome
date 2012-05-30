@@ -19,7 +19,7 @@ def mpi_check():
 
     nodename = MPI.Get_processor_name()
 
-    print ". MPI process", rank, "of", comm.Get_size(), "is alive on", nodename
+    print "\n. MPI process", rank, "of", comm.Get_size(), "is alive on", nodename
 
     #print "My rank is", rank
     if rank == 0:

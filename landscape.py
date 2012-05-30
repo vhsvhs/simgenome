@@ -206,7 +206,7 @@ class Landscape:
     def get_fitness(self, genome, ap):
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
         Returns a floating-point value."""
-        
+                
         """First, build the r vector..."""
         self.r = []
         self.maxr = 0
@@ -217,11 +217,10 @@ class Landscape:
         """Deal with the no-occupancy case"""
         self.r.append(1)
         
-        """ gene_expr[gene ID][timeslice] = expression level of gene at timeslice"""
-        genome.gene_expr = {}
-        for gene in genome.genes:
-            genome.gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL] # all genes begin with zero
-            
+        if ap.params["enable_epigenetics"] == False or genome.gene_expr.__len__() < 1:
+            for gene in genome.genes:
+                genome.gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL]
+        
         """ tf_expr_level[gene ID] = current expression level"""
         """ tf_expr_level is used as short-term variable inside the loop "for timeslice..." """
         list_of_basal_gids = []
@@ -229,7 +228,16 @@ class Landscape:
         for timepattern in self.timepatterns:
             genome.gene_expr[timepattern.basal_gene_id] = [MAXIMUM_ACTIVITY_LEVEL]
             list_of_basal_gids.append( timepattern.basal_gene_id )
-                
+        
+        """Print a report to the screen."""
+        for gene in genome.genes:
+            if int(ap.getOptionalArg("--verbose")) > 5:
+                marka = "[tf]"
+                if gene.has_dbd == False:
+                    marka = "[re]"
+                print "gen.", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tact: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][0]
+        print ""
+        
         for timeslice in range(0, ap.params["maxtime"]):
             self.t_counter = timeslice
             # 1a. Ensure that basal genes remain activated
@@ -246,7 +254,6 @@ class Landscape:
             """ 1b. Update TF expression levels..."""            
             for tf in range(0, ap.params["numtr"]):
                 tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice]
-                #print "landscape 270", tf, genome.genes[tf].id
                                        
             for gene in genome.genes:
                 if False == list_of_basal_gids.__contains__(gene.id):
@@ -255,29 +262,19 @@ class Landscape:
                     
                     #expr_modifier = 20.0**pe - 1.0 
                     expr_modifier = 2.0 * pe
-                    #print "pe=", pe, "growth_mod=", expr_modifier
-                    #if expr_modifier > ap.params["growth_rate"]:
-                    #    expr_modifier = ap.params["growth_rate"]
                     new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
                     genome.gene_expr[gene.id].append( new_expr_level )
                 else:
                     pe = 1.0
                     genome.gene_expr[gene.id].append( genome.gene_expr[gene.id][timeslice] )
-                
-                # if the delta G is high enough, then transcribe the gene.
-                #if pe >= ACTIVATION_THRESHOLD:
-
-                #else: # otherwise, decay the expression level of the gene.
-                #    new_expr_level = genome.gene_expr[gene.id][timeslice] / ap.params["decay_rate"];
-                #    genome.gene_expr[gene.id].append( new_expr_level )
-            
+                            
                 """ Prevent out of bounds expression. """
                 if genome.gene_expr[gene.id][timeslice+1] > MAXIMUM_ACTIVITY_LEVEL:
                     genome.gene_expr[gene.id][timeslice+1] = MAXIMUM_ACTIVITY_LEVEL
                 if genome.gene_expr[gene.id][timeslice+1] < MINIMUM_ACTIVITY_LEVEL:
                     genome.gene_expr[gene.id][timeslice+1] = MINIMUM_ACTIVITY_LEVEL
             
-                # print report to screen
+                """Print a report to the screen."""
                 if int(ap.getOptionalArg("--verbose")) > 5:
                     expr_delta = 0.0
                     #if timeslice > 1:

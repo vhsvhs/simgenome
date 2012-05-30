@@ -103,6 +103,12 @@ def read_cli(ap):
     else:
         ap.params["generation"] = INIT_GEN
 
+    x = ap.getOptionalArg("--enable_heritable_expression")
+    if x != False:
+        ap.params["enable_epigenetics"] = True
+    else:
+        ap.params["enable_epigenetics"] = False
+
 def check_world_consistency(ap, population, landscape):
     """Check for out-of-bounds genes"""
     for tp in landscape.timepatterns:

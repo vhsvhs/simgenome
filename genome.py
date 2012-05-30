@@ -15,7 +15,7 @@ class Genome:
         self.gene_expr = {}
         self.is_elite = False
     
-    def init(self, ap, init_genes=None):
+    def init(self, ap, init_genes=None, init_expression=None):
         if init_genes == None:
             """Add ap.params["numtr"] number of transcription factor genes"""
             for i in range(0, ap.params["numtr"]):
@@ -28,6 +28,8 @@ class Genome:
                 self.genes.append( Gene(ap.params["numtr"] + i, ap.params["init_urs_len"], has_dbd=False) )
         else:
             self.genes = init_genes
+        if ap.params["enable_epigenetics"] == True and init_expression != None:
+            self.gene_expr = init_expression
         
     def uncollapse(self, data):
         gids = data[0].keys()
