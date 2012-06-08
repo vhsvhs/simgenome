@@ -2,14 +2,17 @@ from configuration import *
 
 class PWM:
     P = None # index = site, value = hashtable, where key = char, value = bits
+    rangesites = []
     
     def __init__(self, copyfrom=None):
         self.P = []
+        self.rangesites = []
         if copyfrom != None:
             for i in range(0, copyfrom.P.__len__()):
                 self.P.append({})
                 for c in ALPHABET:
                     self.P[i][c] = copyfrom.P[i][c]
+                self.rangesites.append(i)
         
     def __str__(self):
         str = ""
@@ -23,6 +26,7 @@ class PWM:
     def randomize(self):
         """generate a random P matrix with length len"""
         self.P = []
+        self.rangesites = []
         for i in range(0, 4):
             self.P.append( {} )
             sump = 0.0
@@ -32,6 +36,7 @@ class PWM:
                 thisp = random.uniform(0.0, 1.0 - sump)
                 self.P[i][c] = thisp
                 sump += thisp
+            self.rangesites.append(i)
     
     def mutate(self, ap):
         rand_site = random.randint(0, self.P.__len__()-1)
@@ -53,6 +58,7 @@ class PWM:
     
     def read_from_file(self, path, id):
         self.P = []
+        self.rangesites = []
         fin = open(path, "r")
         i = -1
         found_our_id = False
@@ -70,6 +76,7 @@ class PWM:
                     tokens = l.split()
                     cc = 0
                     self.P.append( {} )
+                    self.rangesites.append(i)
                     #print tokens
                     for c in ALPHABET:
                         self.P[i][c] = float(tokens[cc])
@@ -101,7 +108,7 @@ class PWM:
             the affinity of a TF is the sum of the affinity to both
             strand at this location.
             But in my code, I'm only dealing with single stranded DNA."""
-        for k in range(0, self.P.__len__() ):
+        for k in self.rangesites:
             #if self.P[k][ part[k] ] == 0.0:
             #    continue
             #else:

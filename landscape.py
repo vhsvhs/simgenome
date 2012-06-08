@@ -347,10 +347,11 @@ class Landscape:
             this_config = {} # key = site, value = the TF bound starting at this site.
             site = 0
             while (site < gene.urs.__len__()):
-                
-                
                 [i, j, d] = self.sample_cdf(site, ptables, ap)
                 
+                #
+                # Useful output for debugging:
+                #
                 #print "\n. Sampled i=", i, "j=", j, "d=", d
                 #if i < ap.params["numtr"]:
                 #    print "i:",i, genome.genes[i].pwm.P
@@ -358,11 +359,13 @@ class Landscape:
                 #    print "j:",j,genome.genes[j].pwm.P
                 #print "URS:", gene.urs
                 #print i, j, d
+                #
+                #
+                
                 if False == configurations.__contains__(site):
                     configurations[site] = []
                 configurations[site].append( [i,j,d] )
                 this_config[site] = i
-                #print "site", site
                 if i < ap.params["numtr"]-1:
                     site += genome.genes[i].pwm.P.__len__()
                 else:
@@ -372,7 +375,6 @@ class Landscape:
                 if False == configurations.__contains__(site):
                     configurations[site] = []
                 this_config[site] = j
-                #print "site", site
                 if j < ap.params["numtr"]-1:
                     site += genome.genes[j].pwm.P.__len__()
                 else:
