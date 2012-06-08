@@ -1,5 +1,6 @@
 # timepatternID, basal_gene_id, timepoint, expression_level, reporter_gene_ID, rule_type
-0 0 10 0.8 2 ge 
+RULE 0 0 10 0.95 2 ge 
+INPUT 0 0 10 1.0
 
 
 

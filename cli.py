@@ -4,9 +4,16 @@ from genetic_algorithm import *
 from population import *
 from version import *
 from debug_tools import *
+from rules import *
 
 def read_cli(ap):
     """This method reads the command-line interface arguments and sets global parameters"""
+    x = ap.getOptionalArg("--verbose")
+    if x != False:
+        ap.params["verbosity"] = int(x)
+    else:
+        ap.params["verbosity"] = 2
+    
     x = ap.getOptionalArg("--growth_rate")
     if x != False:
         ap.params["growth_rate"] = float(x)
@@ -43,18 +50,42 @@ def read_cli(ap):
     else:
         ap.params["maxtime"] = MAX_TIME
 
+    x = ap.getOptionalArg("--maxgenerations")
+    if x != False:
+        ap.params["maxgens"] = int(x)
+    else:
+        ap.params["maxgens"] = MAX_GA_GENS
+
     x = ap.getOptionalArg("--numtr")
     if x != False:
         ap.params["numtr"] = int(x)
     else:
-        ap.params["numtr"] = N_TR 
+        ap.params["numtr"] = N_TR
+    ap.params["rangetrs"] = []
+    
+    # Here we precompute the range of TR numbers "rangertrs", and the range + 1 (for no dimerization) "rangetrs+".
+    # We'll use these ranges very often in the code, so this precomputation step saves time later.
+    for i in range(0, ap.params["numtr"]):
+        ap.params["rangetrs"].append(i)
+    ap.params["rangetrs+"] = ap.params["rangetrs"] + [ap.params["numtr"]]     
 
     x = ap.getOptionalArg("--numreporter")
     if x != False:
         ap.params["numreporter"] = int(x)
     else:
         ap.params["numreporter"] = N_REPORTER 
-        
+
+    x = ap.getOptionalArg("--maxgd")
+    if x != False:
+        ap.params["maxgd"] = int(x)
+    else:
+        ap.params["maxgd"] = MAX_GD
+
+    # Here we precompte the range of GD values, because we'll use this range very often in the code. 
+    ap.params["rangegd"] = []
+    for d in range(0, ap.params["maxgd"]):
+        ap.params["rangegd"].append( d )
+    
     x = ap.getOptionalArg("--mu")
     if x != False:
         ap.params["mu"] = float(x)
@@ -103,42 +134,53 @@ def read_cli(ap):
     else:
         ap.params["generation"] = INIT_GEN
 
+    ap.params["enable_epigenetics"] = False
     x = ap.getOptionalArg("--enable_heritable_expression")
     if x != False:
-        ap.params["enable_epigenetics"] = True
-    else:
-        ap.params["enable_epigenetics"] = False
+        if int(x) == 1:
+            ap.params["enable_epigenetics"] = True
+
 
 def check_world_consistency(ap, population, landscape):
     """Check for out-of-bounds genes"""
-    for tp in landscape.timepatterns:
-        if tp.basal_gene_id > population.genomes[0].genes.__len__() - 1:
-            print "Ooops. One of your rules uses basal gene", tp.basal_gene_id, "but your genome only contains genes 0 through", (population.genomes[0].genes.__len__() - 1)
-            exit(1)
-        for rule in tp.rules:
+    for rc in landscape.rulecollection:
+        for rule in rc.rules:
             if rule.reporter_id > population.genomes[0].genes.__len__() - 1:
                 print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome only contains", population.genomes[0].genes.__len__(), "genes."
                 exit(1)
 
-def get_timepatterns_from_file(ap):
+def get_input_rules_from_file(ap):
+    """See the examples, included with the source code, for information about the required file format."""
     if False == ap.getOptionalArg("--patternpath"):
         return None
     else:
-        ret_timepatterns = []
+        ret_rulecollection = []  # see Landscape.rulecollection
+        ret_inputpatterns = {} # see Landscape.inputpatterns
         patternpath = ap.getOptionalArg("--patternpath")
+        
         fin = open(patternpath, "r")
-        for l in fin.readlines():
-            if l.startswith("#"):
-                continue
-            else:
+        lines = fin.readlines()
+        fin.close()
+        
+        # 1, scan to find the maximum timeslice. . .
+        for l in lines:     
+            if l.startswith("RULE") or l.startswith("INPUT"):
+                tokens = l.split()
+                this_timepoint = int(tokens[2])
+                if this_timepoint > ap.params["maxtime"]:
+                    ap.params["maxtime"] = this_timepoint
+                    
+        # 2, scan for rules and inputs. . .
+        for l in lines:
+            if l.startswith("RULE"):
                 tokens = l.split()
                 if tokens.__len__() >= 6:
-                    this_timepattern_id = int(tokens[0])
-                    this_basal_gene_id = int(tokens[1])
-                    this_timepoint = int(tokens[2])
-                    this_expr_level = float(tokens[3])
-                    this_reporter_gene_id = int(tokens[4])
-                    this_rule_type = tokens[5]
+                    this_rulecollection_id = int(tokens[1])
+                    this_basal_gene_id = int(tokens[2])
+                    this_timepoint = int(tokens[3])
+                    this_expr_level = float(tokens[4])
+                    this_reporter_gene_id = int(tokens[5])
+                    this_rule_type = tokens[6]
                     if this_rule_type == "ge":
                         this_rule_type = operator.ge
                     elif this_rule_type == "eq":
@@ -147,19 +189,23 @@ def get_timepatterns_from_file(ap):
                         this_rule_type = operator.le
                     else:
                         this_rule_type = this_rule_type = operator.ge
-
-                    if ret_timepatterns.__len__() <= this_timepattern_id:
-                        this_timepattern = Time_Pattern(this_basal_gene_id)
-                        ret_timepatterns.append(this_timepattern)
-                
-                    if this_timepoint > ap.params["maxtime"]:
-                        ap.params["maxtime"] = this_timepoint
-                                            
+                    if ret_rulecollection.__len__() <= this_rulecollection_id:
+                        this_timepattern = Rule_Collection(this_rulecollection_id)
+                        ret_rulecollection.append(this_timepattern)
                     this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type)
-                    ret_timepatterns[ this_timepattern_id ].rules.append( this_rule )
-        return ret_timepatterns
-        fin.close()
-
+                    ret_rulecollection[ this_rulecollection_id ].rules.append( this_rule )
+            elif l.startswith("INPUT"):
+                tokens = l.split()
+                if tokens.__len__() >= 4:
+                    this_basal_gene_id = int(tokens[1])
+                    this_timepoint_start = int(tokens[2])
+                    this_timepoint_stop = int(tokens[3])
+                    this_expr_level = float(tokens[4])
+                    for t in range(this_timepoint_start, this_timepoint_stop+1):
+                        if t not in ret_inputpatterns:
+                            ret_inputpatterns[t] = []
+                        ret_inputpatterns[t].append( [this_basal_gene_id, this_expr_level] )
+        return [ret_rulecollection, ret_inputpatterns]
 
 def get_genes_from_file(ap):
     """Returns either a list of genes read from a file,

@@ -18,7 +18,7 @@ class Genome:
     def init(self, ap, init_genes=None, init_expression=None):
         if init_genes == None:
             """Add ap.params["numtr"] number of transcription factor genes"""
-            for i in range(0, ap.params["numtr"]):
+            for i in ap.params["rangetrs"]:
                 repressor = False
                 if i%2:
                     repressor = True

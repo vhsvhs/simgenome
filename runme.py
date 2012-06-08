@@ -35,8 +35,7 @@ def main():
                       
     """Build a fitness landscape"""
     landscape = Landscape(ap)
-    cli_timepatterns = get_timepatterns_from_file(ap)
-    landscape.init(ap, genome = population.genomes[0], tp=cli_timepatterns)
+    landscape.init(ap, genome = population.genomes[0])
         
     if rank == 0:
         """Verify existence of necessary folders."""
@@ -56,7 +55,7 @@ def main():
     ga.runsim(ap)
 
     if rank == 0:
-        return [ga.gen_gid_fitness, population, landscape]
+        return [population, landscape]
     else:
         return None
 
@@ -76,4 +75,6 @@ rank = comm.Get_rank()
 if rank == 0:
     splash()
 mpi_check()
-x = main()
+
+prof_path = "./prof_trace." + (random.random() * 1000000).__str__() + ".cprofile"
+cProfile.run( 'main()', prof_path )

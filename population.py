@@ -79,7 +79,7 @@ class Population:
                     self.genomes[gid].is_elite = False
     
     def print_fitness(self, ap, gid_fitness):
-        if int(ap.getOptionalArg("--verbose")) > 2:
+        if ap.params["verbosity"] > 2:
             print "\n................................................\n"
             for gid in gid_fitness:
                 marka = ""
@@ -89,7 +89,7 @@ class Population:
             print "\n................................................"
     
     def do_mutations(self, ap):
-        if int(ap.getOptionalArg("--verbose")) > 2:
+        if ap.params["verbosity"] > 2:
             print "\n. The population is mutating. . .\n"
             
         """Introduce mutations into (potentially) all genomes in the population"""
@@ -105,7 +105,7 @@ class Population:
                 n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * mu)
                 n_deletions = None
                 n_duplications = None
-                if int(ap.getOptionalArg("--verbose")) >= 2:                
+                if ap.params["verbosity"] >= 2:                
                     print "\t.", n_point_mutations, "cis mutations to individual", gid
                 """URS mutations...."""
                 for i in range(0, n_point_mutations):
@@ -129,10 +129,10 @@ class Population:
                 rand_roll = random.random()
                 if rand_roll < mu:
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
-                    if int(ap.getOptionalArg("--verbose")) >= 2:
+                    if ap.params["verbosity"] >= 2:
                         print "\t+ mutating PWM ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
-        if int(ap.getOptionalArg("--verbose")) > 2:
+        if ap.params["verbosity"] > 2:
             print "\n"
                 
                     
@@ -175,7 +175,7 @@ class Population:
         
         
     def do_reproduction(self, gid_fitness, min_fitness, max_fitness, sum_fitness, ap):        
-        if int(ap.getOptionalArg("--verbose")) > 2:
+        if ap.params["verbosity"] > 2:
             print "\n. The population is reproducing, selectively based on fitness. . .\n"
         
         new_genomes = {}
@@ -184,7 +184,7 @@ class Population:
         for child_gid in gid_fitness:
             new_genomes[child_gid] = Genome(child_gid)                         
             if self.genomes[child_gid].is_elite == True:
-                if int(ap.getOptionalArg("--verbose")) > 2:
+                if ap.params["verbosity"] > 2:
                     print "\t+ new child", child_gid, "=", child_gid, "cloned."
                 new_genomes[child_gid].is_elite = True
                 new_genomes[child_gid].init(ap, init_genes = self.genomes[child_gid].genes, init_expression=self.genomes[child_gid].gene_expr)
@@ -192,7 +192,7 @@ class Population:
                 """Select the parents from the fitness CDF."""
                 parent1 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness) 
                 parent2 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
-                if int(ap.getOptionalArg("--verbose")) > 2:
+                if ap.params["verbosity"] > 2:
                     print "\t+ new child", child_gid, "=", parent1, "X", parent2
                 new_genomes[child_gid].is_elite = False
                 new_genes = []

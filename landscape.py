@@ -1,169 +1,76 @@
-from configuration import *
-from genome import *
-from probtable import *
+from cli import *
+from rules import *
 
-"""RULE_TYPES defines a set of boolean comparison criteria for comparing
-the observed expression levels of reporter genes to their optimal levels.
-These operator functions will be applied as follows:
-operator.f( observed expression, optimal expression)
-where 'f' is the operator function."""
-RULE_TYPES = [operator.ge, operator.eq, operator.le]
-
-
-class Fitness_Rule:
-    """Each Fitness_RUle object defines a particular expression gate that
-    must be achieved for maximal fitness.  See the class Time_Pattern, in which
-    multiple Fitness_Rule instances are combined to define an overall fitness landscape."""
-    timepoint = None
-    expression_level = None
-    reporter_id = None
-    rule_type = None # See RULE_TYPES
-
-    def __init__(self, t, e, id, r):
-        self.timepoint = t
-        self.expression_level = e
-        self.reporter_id = id
-        self.rule_type = r
-    
-    def __str__(self):
-        l = "\t+ At time "
-        l += self.timepoint.__str__()
-        l += " expression of gene "
-        l += self.reporter_id.__str__()
-        l += " must be "
-        if self.rule_type == operator.ge:
-            l += ">"
-        if self.rule_type == operator.le:
-            l += "<"
-        if self.rule_type == operator.eq:
-            l += "="
-        l += " "
-        l += self.expression_level.__str__()
-        l += ".\n"
-        return l
-    
-    def collapse(self):
-        return [self.timepoint, self.expression_level, self.reporter_id, self.rule_type]
-
-class Time_Pattern:
-    """Each instance of the class Time_Pattern defines a unique set of temporal expression patterns
-    for a subset of reporter genes in each genome.  See the parent class, Landscape, for how to
-    calculate the fitness of a given Time_Pattern.  This class can be initialized with an a priori
-    desired expression pattern, or the pattern can be randomly initialized."""
-    basal_gene_id = None
-    rules = []
-    
-    def __init__(self, basal_gene_id):
-        self.basal_gene_id = basal_gene_id
-        self.rules = []
-        
-    def collapse(self):
-        data = []
-        for r in self.rules:
-            data.append( r.collapse() )
-        return data
-    
-    def uncollapse(self, data):
-        for rule in data:
-            this_rule = Fitness_Rule(rule[0], rule[1], rule[2], rule[3])
-            self.rules.append( this_rule )
-    
-    def init_random(self):
-        """This method generates a random set of Fitness_Rule objects."""
-        last_time = 0
-        for i in range(0, ap.params["ngoals"]):
-            """First, expression > 0.5"""
-            last_time += random.randint(1, GOAL_PULSE_MAX)
-            if last_time > ap.params["maxtime"]:
-                last_time = ap.params["maxtime"]
-            e = 0.5
-            rand_ri = random.randint(ap.params["numtr"], N_REPORTER+ap.params["numtr"]-1)
-            r = RULE_TYPES[0] 
-            self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
-            """Next, expression at maximum"""     
-            last_time += random.randint(1, GOAL_PULSE_MAX)
-            e = 1.0
-            r = RULE_TYPES[1]
-            if last_time > ap.params["maxtime"]:
-                last_time = ap.params["maxtime"]
-            self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
-            """Finally, expression < 0.5"""
-            last_time += random.randint(1, GOAL_PULSE_MAX)
-            e = 0.5
-            r = RULE_TYPES[2]
-            if last_time > ap.params["maxtime"]:
-                last_time = ap.params["maxtime"]
-            self.rules.append( Fitness_Rule(last_time, e, rand_ri, r) )
-    
-    def init_basic_test(self):
-        """This method is for debugging/testing only."""
-        time = ap.params["maxtime"]-1
-        e = 0.5
-        rand_ri = random.randint(ap.params["numtr"], N_REPORTER+ap.params["numtr"]-1) 
-        r = RULE_TYPES[0] 
-        self.rules.append( Fitness_Rule(time, e, rand_ri, r) )
-    
-    def __str__(self):
-        ret = ""
-        ret += "\n+ Rule: activation of basal gene " + self.basal_gene_id.__str__() + " should cause the following:\n"
-        for r in self.rules:
-            ret += r.__str__()
-        return ret
-    
 class Landscape:
-    """The Landscape class holds an array of Time_Pattern objects.  Each Time_Pattern can express
-    different overlapping expression patterns.  For example, one Time_Pattern can define the expression
-    pattern needed for cell lifecycle, while a second Time_Pattern can define the expression
+    """The Landscape class holds an array of Rule_Collection objects.  Each Rule_Collection can express
+    different overlapping expression patterns.  For example, one Rule_Collection can define the expression
+    pattern needed for cell lifecycle, while a second Rule_Collection can define the expression
     patterns for a stress response."""
-    timepatterns = []
+    rulecollection = []
+    inputpatterns = {} # key = timepoint, value = array of tuples (gene, expr. value)
     gamma = None
     r = None
     t_counter = 0
     
     def __init__(self, ap):
-        self.timepatterns = []
+        self.rulecollection = [] # array of Rule_Collection objects
+        self.inputpatterns = {}  # hashtable, key = timepoint, value = array of tuples (gene, expression level).
         self.gamma = None
         self.r = None
         self.t_counter = ap.params["generation"]
     
     def init(self, ap, genome=None, tp=None):
+        [tp,ip] = get_input_rules_from_file(ap)
+        
+        """Verify that we found input patterns and fitness rules."""
         if tp == None:
             if comm.Get_rank() == 0:
-                print "\n. Building a random fitness landscape."
-            self.init_random(genome)
-        else:
+                print "\n. Hmmm, I didn't find any fitness rules in the file", ap.getOptionalArg("--patternpath")
+            exit()
+        if ip == None:
             if comm.Get_rank() == 0:
-                print "\n. Creating a fitness landscape based on", ap.getOptionalArg("--patternpath")
-            self.timepatterns = tp
+                print "\n. Hmmm, I didn't find any input patterns in the file", ap.getOptionalArg("--patternpath")
+            exit()
+        
+        if comm.Get_rank() == 0:
+            print "\n. Building the fitness landscape described in", ap.getOptionalArg("--patternpath")
+        self.rulecollection = tp
+        self.inputpatterns = ip
         self.set_gamma(ap)
         
         if comm.Get_rank() == 0:
-            for t in self.timepatterns:
+            for t in self.rulecollection:
                 print t
         
     def uncollapse(self, data, ap):
-        for d in data:
-            this_timepattern = Time_Pattern(d)
-            this_timepattern.uncollapse( data[d] )
-            self.timepatterns.append( this_timepattern )
+        for d in data[0]:
+            this_rulecollection = Rule_Collection(d)
+            this_rulecollection.uncollapse( data[d] )
+            self.rulecollection.append( this_rulecollection )
             self.set_gamma(ap)
+        for t in data[1]:
+            self.inputpatterns[t] = data[1][t]
     
     def collapse(self):
-        data = {}
-        for t in self.timepatterns:
-            data[ t.basal_gene_id ] = t.collapse()
-        return data
+        data_rules = {}
+        for t in self.rulecollection:
+            data_rules[ t.basal_gene_id ] = t.collapse()
+        
+        data_inputs = {}
+        for t in self.inputpatterns:
+            data_inputs[ t ] = self.inputpatterns[t]
+        return [data_rules, data_inputs]
 
-    def init_random(self, genome):
+    def build_random_fitness_rules(self, genome):
         """Creates a random fitness goal, using genome as the seed."""    
         """First, select a basal TR to activate the goal."""
         randid = random.randint(0, ap.params["numtr"]-1)
         
         """Next, build a random pattern.
         For now, the random Landscape contains only one time pattern."""
-        rand_timepattern = Time_Pattern(randid)
-        rand_timepattern.init_basic_test()
-        self.timepatterns.append( rand_timepattern )
+        rand_rulecollection = Rule_Collection(randid)
+        rand_rulecollection.init_basic_test()
+        self.rulecollection.append( rand_rulecollection )
     
     def coopfunc(self, g, d):
         """Calculates the degree of binding cooperativity between two TFs binding distance d apart.
@@ -179,16 +86,16 @@ class Landscape:
         # to-do: grab gamma values from the command-line, or radomly initialize them
         # from an a priori distribution.
         g = zeros( (ap.params["numtr"], ap.params["numtr"]), dtype=float)
-        self.gamma = zeros( (ap.params["numtr"], ap.params["numtr"], MAX_GD), dtype=float)
-        for i in range (0, ap.params["numtr"]):
-            for j in range(0, ap.params["numtr"]):
-                for d in range(0, MAX_GD):
+        self.gamma = zeros( (ap.params["numtr"], ap.params["numtr"], ap.params["maxgd"]), dtype=float)
+        for i in ap.params["rangetrs"]:
+            for j in ap.params["rangetrs"]:
+                for d in ap.params["rangegd"]:
                     self.gamma[i,j,d] = self.coopfunc( g[i,j], d)
     
     def fitness_helper(self, gene_expr_level):
         expr_error = 0.0
         max_expr_error = 0.0
-        for pattern in self.timepatterns:
+        for pattern in self.rulecollection:
             for rule in pattern.rules:
                 obs_expr = gene_expr_level[rule.reporter_id][rule.timepoint]
                 if False == rule.rule_type(obs_expr, rule.expression_level):
@@ -201,75 +108,73 @@ class Landscape:
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
         Returns a floating-point value."""
                 
-        """First, build the r vector..."""
+        if ap.params["verbosity"] >= 99:
+            notime = 0.0
+            timestart = datetime.utcnow()
+                
+        # First, build the r vector...
         self.r = []
         self.maxr = 0
-        for x in range(0, ap.params["numtr"]):
+        for x in ap.params["rangetrs"]:
             self.r.append( genome.genes[x].pwm.P.__len__() )
             if self.r[x] > self.maxr:
                 self.maxr = self.r[x]
-        """Deal with the no-occupancy case"""
+        # Deal with the no-occupancy case
         self.r.append(1)
         
-        """Next, initialize expression levels, using either epigenetically inherited levels,
-        or -- as default -- setting expression to zero."""
+        # Next, initialize expression levels, using either epigenetically inherited levels,
+        # or, as default, sett expression to zero.
+        # If epigenetics is enabled, then gene expression has already been established at this point.
         if ap.params["enable_epigenetics"] == False or genome.gene_expr.__len__() < 1:
             for gene in genome.genes:
                 genome.gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL]
         
-        list_of_basal_gids = []
-        tf_expr_level = {}
-        for timepattern in self.timepatterns:
-            genome.gene_expr[timepattern.basal_gene_id] = [MAXIMUM_ACTIVITY_LEVEL]
-            list_of_basal_gids.append( timepattern.basal_gene_id )
-        
-        """Print a report to the screen."""
-        for gene in genome.genes:
-            if int(ap.getOptionalArg("--verbose")) > 5:
-                marka = "      "
-                if gene.has_dbd and gene.is_repressor == False:
-                    marka = "[act.]"
-                elif gene.has_dbd and gene.is_repressor:
-                    marka = "[rep.]"
-                print "gen.", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tact: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][0]
-        print ""
-        
+        tf_expr_level = {} # key = gene id, value = array of expression values for each timeslice
+                
         for timeslice in range(0, ap.params["maxtime"]):
             self.t_counter = timeslice
-            """Ensure that constitutively active (basal) genes remain activated."""
-            for timepattern in self.timepatterns:
-                if genome.gene_expr[timepattern.basal_gene_id][timeslice] < MAXIMUM_ACTIVITY_LEVEL:
-                    genome.gene_expr[timepattern.basal_gene_id][timeslice] = MAXIMUM_ACTIVITY_LEVEL
+
+            # manually set expression values for genes defined in the input rules.   
+            if timeslice in self.inputpatterns:
+                for i in self.inputpatterns[timeslice]:
+                    this_gene = i[0]
+                    this_expr_level = i[1]
+                    genome.gene_expr[this_gene][timeslice] = this_expr_level
+
+            # print a special line, but only if it's the 0th timeslice.
+            if timeslice == 0:
+                if ap.params["verbosity"] > 5:
+                    """Print a report to the screen."""
+                    for gene in genome.genes:
+                        if ap.params["verbosity"] > 5:
+                            marka = "      "
+                            if gene.has_dbd and gene.is_repressor == False:
+                                marka = "[act.]"
+                            elif gene.has_dbd and gene.is_repressor:
+                                marka = "[rep.]"
+                            print "gen.", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tact: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice]
+                    print ""
+
             
-            # for debugging:
-            #if timeslice > 10:
-            #    for timepattern in self.timepatterns:
-            #        gene_expr[timepattern.basal_gene_id].append(MINIMUM_ACTIVITY_LEVEL)               
-            
-            
-            """ Update TF expression levels..."""            
-            for tf in range(0, ap.params["numtr"]):
+            # Update TF expression levels...           
+            for tf in ap.params["rangetrs"]:
                 tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice]
                                        
-            for gene in genome.genes:
-                if False == list_of_basal_gids.__contains__(gene.id):
-                    """Calculate the delta G of binding on the cis-region for every gene."""
-                    pe = self.get_expression(genome, gene, tf_expr_level, ap)
-                    expr_modifier = 2.0 * pe
-                    new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
-                    genome.gene_expr[gene.id].append( new_expr_level )
-                else:
-                    pe = 1.0
-                    genome.gene_expr[gene.id].append( genome.gene_expr[gene.id][timeslice] )
-                            
-                """ Prevent out-of-bounds expression. """
+            for gene in genome.genes:                
+                # Calculate the delta G of binding on the cis-region for every gene.
+                pe = self.get_expression(genome, gene, tf_expr_level, ap)                
+                expr_modifier = 2.0 * pe
+                new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
+                genome.gene_expr[gene.id].append( new_expr_level )
+                
+                # Prevent out-of-bounds expression levels.
                 if genome.gene_expr[gene.id][timeslice+1] > MAXIMUM_ACTIVITY_LEVEL:
                     genome.gene_expr[gene.id][timeslice+1] = MAXIMUM_ACTIVITY_LEVEL
                 if genome.gene_expr[gene.id][timeslice+1] < MINIMUM_ACTIVITY_LEVEL:
                     genome.gene_expr[gene.id][timeslice+1] = MINIMUM_ACTIVITY_LEVEL
             
-                """Print a report to the screen."""
-                if int(ap.getOptionalArg("--verbose")) > 5:
+                # Print a report to stdout.
+                if ap.params["verbosity"] > 5:                    
                     expr_delta = 0.0
                     expr_delta = genome.gene_expr[ gene.id ][timeslice+1] - genome.gene_expr[ gene.id ][timeslice]
                     marka = "      "
@@ -283,41 +188,45 @@ class Landscape:
             # to-do: if gene expression has not changed from the last timeslice
             #    then we've reached equilibrium, so stop cycling through time slices.
             #
-            if int(ap.getOptionalArg("--verbose")) > 5:
+            if ap.params["verbosity"] > 5:
                 print ""
 
         fitness = self.fitness_helper(genome.gene_expr)
-        if int(ap.getOptionalArg("--verbose")) > 5:
-            print "\n. At gen.", ap.params["generation"], ", individual", genome.id, "has fitness %.5f"%fitness, "\n"
+        if ap.params["verbosity"] > 5:
+            print "\n. At generation", ap.params["generation"], ", individual", genome.id, "has fitness %.5f"%fitness, "\n"
+        if ap.params["verbosity"] >= 99:
+            timeend = datetime.utcnow()
+            print ". Generation", ap.params["generation"], "for individual", genome.id, "took %.3f"%(timeend-timestart).total_seconds(), "seconds.\n"
+        
         return fitness
     
     def get_expression(self, genome, gene, tf_expr_levels, ap):
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""
         pe = []        
-        ptables = ProbTable( ap.params["numtr"], MAX_GD, gene.urs.__len__() )
-        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)     
+        ptables = ProbTable( ap.params["numtr"], ap.params["maxgd"], gene.urs.__len__() )
+        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)  
         return self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)          
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
         """returns a ProbTable object, named ret."""
-        if int(ap.getOptionalArg("--verbose")) > 100:
+        if ap.params["verbosity"] > 100:
             print "\n\n. CALC_PROB_TABLES gene", gene.id
         L = gene.urs.__len__()        
         for x in range(0, L): # foreach site in gene's upstream region
             sum_cpr = 0.0
-            for i in range(0, ap.params["numtr"]):   # foreach transcription factor
+            for i in ap.params["rangetrs"]:   # foreach transcription factor
                 pwm_tmp = genome.genes[i].pwm.prob_binding( x, gene.urs )
                 #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%pwm_tmp, "bits."
                 sum_cpt = 0.0
-                for j in range(0, ap.params["numtr"]+1): # +1 to also consider the empty case
+                for j in ap.params["rangetrs+"]: # +1 to also consider the empty case
                     #print i, j, x
-                    for d in range(0, MAX_GD):                        
+                    for d in ap.params["rangegd"]:                        
                         if (L-x < self.r[i]): 
                             """ CASE 1: TF i's PWM is too wide to start binding at site x"""
                             ret.cpa[i,j,d,x] = 0 # P @ x = 0
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
-                            if int(ap.getOptionalArg("--verbose")) > 100:
+                            if ap.params["verbosity"] > 100:
                                 print "case 1:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
                         elif (L-x >= self.r[i] and (j == i or j == ap.params["numtr"]) and d == 0): # // if TF i can bind here
@@ -326,7 +235,7 @@ class Landscape:
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp # basic case, no competition or cooperation
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
-                            if int(ap.getOptionalArg("--verbose")) > 100:
+                            if ap.params["verbosity"] > 100:
                                 print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
                         elif (j < ap.params["numtr"]): # else, cooperative/competitive binding...
@@ -336,7 +245,7 @@ class Landscape:
                                 ret.cpa[i,j,d,x] = 0
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
-                                if int(ap.getOptionalArg("--verbose")) > 100:
+                                if ap.params["verbosity"] > 100:
                                     print "case 4:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
                             elif (x+1 - self.r[i] - d - self.r[j] < 0):
@@ -344,14 +253,14 @@ class Landscape:
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
-                                if int(ap.getOptionalArg("--verbose")) > 100:
+                                if ap.params["verbosity"] > 100:
                                     print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
                             """CASE 5: TFs i and j are different AND they can both fit on the URS..."""
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d]
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
-                            if int(ap.getOptionalArg("--verbose")) > 100:
+                            if ap.params["verbosity"] > 100:
                                 print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
                         elif (j == ap.params["numtr"]) or (i == j):
@@ -359,20 +268,39 @@ class Landscape:
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp;
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
-                            if int(ap.getOptionalArg("--verbose")) > 100:
+                            if ap.params["verbosity"] > 100:
                                 print "case 6:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
                 ret.cpt[i,x] = sum_cpt
             ret.cpr[x] = sum_cpr
         return ret
-    
+        
     def sample_cdf(self, site, ptables, ap):
         """Picks a random configuration starting at site, drawing IID from ptables.
         ptables.cpr must contain the cummulative marginal distributions.
         This method returns [i,j,d], where TF is binding to site, followed by distance
         d, and then TF j binds."""
         
-        randp = random.uniform(0.0, ptables.cpr[site])
+        # Use Numpy's cumsum method to calculate a cummulative probability distribution for all binding events at site.
+        # c will be a flattened version of ptables.cpa, for the subarray specific to 'site'.
+#        c = cumsum(ptables.cpa[:,:,:,site])
+#        #print "c=", c
+#        # Draw a random value from the CDF. . .
+#        randp = random.random() * ptables.cpr[site]
+#        # Find where that random value lives in ptables.cpa. . .
+#        x = searchsorted(c, randp)
+#        #print "randp=", randp
+#        #print "x=", x
+#        reti = x/(ap.params["numtr"]+1)/MAX_GD
+#        retj = reti/MAX_GD
+#        retd = x%MAX_GD
+#        #print "new answer:", [reti, retj, retd]
+#        return [reti, retj, retd]
+        
+        #
+        # This is the old way....
+        #  
+        randp = random.random() * ptables.cpr[site]
         sump = 0.0
         reti = 0
         retj = 0
@@ -385,13 +313,14 @@ class Landscape:
         #d = random.randint(0, MAX_GD-1)
         
         
-        for i in range(0, ap.params["numtr"]):
+        for i in ap.params["rangetrs"]:
             reti = i
-            for j in range(0, ap.params["numtr"]+1):
+            for j in ap.params["rangetrs+"]:
                 retj = j
-                for d in range(0, MAX_GD):
+                for d in ap.params["rangegd"]:
                     retd = d
                     sump += ptables.cpa[i,j,d,site]
+                    #this next line is useful for debugging, but it totally explodes the runtime:
                     #print "site", site, "tf", i, "tf", j, "d", d, "sump", sump, "randp", randp
                     if sump > randp:
                         break
@@ -399,6 +328,7 @@ class Landscape:
                     break
             if sump > randp:
                 break
+        #print "old answer:", [reti, retj, retd]
         return [reti, retj, retd]
         
     
@@ -417,7 +347,16 @@ class Landscape:
             this_config = {} # key = site, value = the TF bound starting at this site.
             site = 0
             while (site < gene.urs.__len__()):
+                
+                
                 [i, j, d] = self.sample_cdf(site, ptables, ap)
+                
+                #print "\n. Sampled i=", i, "j=", j, "d=", d
+                #if i < ap.params["numtr"]:
+                #    print "i:",i, genome.genes[i].pwm.P
+                #if j < ap.params["numtr"]:
+                #    print "j:",j,genome.genes[j].pwm.P
+                #print "URS:", gene.urs
                 #print i, j, d
                 if False == configurations.__contains__(site):
                     configurations[site] = []

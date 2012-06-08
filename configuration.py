@@ -6,14 +6,15 @@ try:
     from datetime import datetime
     import math
     from mpilibs import *
+    import numpy
     from numpy import *
     import operator
     from operator import mul, add
     import os
-    from progressbar import *
     import random
     import re
     import sys
+    import cProfile
 except ImportError:
     print "\n. Sorry, I had a problem importing one (or more) Python libraries."
     exit()
@@ -66,7 +67,8 @@ smaller than or equal to GOAL_PULSE_MAX number of time ticks apart from each oth
 GOAL_PULSE_MAX = 2
 
 """maximum distance between TFs to include gamma term"""
-MAX_GD = 1
+MAX_GD = 3
+
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
 MAX_TIME = 3

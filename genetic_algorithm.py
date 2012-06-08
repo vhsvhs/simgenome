@@ -35,7 +35,7 @@ class Genetic_Algorithm:
         sumtime_end_bcast = notime
             
         """For each GA generation. . . ."""
-        for i in range(ap.params["generation"], ap.params["generation"]+MAX_GA_GENS):
+        for i in range(ap.params["generation"], ap.params["generation"]+ap.params["maxgens"]):
             ap.params["generation"] = i
             time_start_gen = datetime.utcnow()
                                             
@@ -46,7 +46,7 @@ class Genetic_Algorithm:
                 [their_gid_fitness, their_gid_terminal_expression] = comm.recv(source=slave, tag=11)
                 if slave == 1:
                     time_end_calc = datetime.utcnow()
-                if int(ap.getOptionalArg("--verbose")) > 100:
+                if ap.params["verbosity"] > 100:
                     print "\n. genetic_algorithm.py line 56 - Master received from slave", slave, ":\ngid_fitness:", their_gid_fitness, "\ngid_terminal_expression:", their_gid_terminal_expression
                 for gid in their_gid_fitness.keys():
                     gid_fitness[gid] = their_gid_fitness[gid]
@@ -56,7 +56,7 @@ class Genetic_Algorithm:
             time_end_gather = datetime.utcnow()
             
             """Post-fitness. . .print stats, record data, etc."""
-            if int(ap.getOptionalArg("--verbose")) > 2:
+            if ap.params["verbosity"] >= 2:
                 pop_data = self.population.collapse()
                 pop_data_pickle = pickle.dumps( pop_data )
                 fout = open(ap.getArg("--runid") + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle", "w")
@@ -67,7 +67,7 @@ class Genetic_Algorithm:
             
             time_end_stats = datetime.utcnow()
             
-            if int(ap.getOptionalArg("--verbose")) >= 1:
+            if ap.params["verbosity"] >= 1:
                 timedelta = datetime.utcnow() - time_start_gen
                 sumtime_gen += timedelta.total_seconds()
                 print "\n................................................\n" 
@@ -92,7 +92,7 @@ class Genetic_Algorithm:
                 print "The population arrived at an optima.  Goodbye."
                 exit(1)
             
-            if i < MAX_GA_GENS:                
+            if i < ap.params["maxgens"]:                
                 time_getmm = datetime.utcnow()
                 
                 [min_fitness, max_fitness, sum_fitness, fitness_gid] = self.population.get_minmax_fitness(gid_fitness)
@@ -112,7 +112,7 @@ class Genetic_Algorithm:
                     comm.send(pop_data_pickle, dest=slave, tag=11)
                 time_end_bcast = datetime.utcnow()
             
-                if ap.getOptionalArg("--perftime") == "True":
+                if ap.getOptionalArg("--perftime") == "on":
                     print "\n. Performance data for generation", i, ". . ."
                     ngen = i + 1
                     sumtime_end_calc += (time_end_calc - time_start_gen).total_seconds()
@@ -120,7 +120,7 @@ class Genetic_Algorithm:
                     sumtime_end_gather += (time_end_gather - time_end_calc).total_seconds()
                     print "\t. mean time_end_gather %.3f sec."%(sumtime_end_gather/ ngen)
                     sumtime_end_stats += (time_end_stats - time_end_gather).total_seconds()
-                    print "\t. mean time_end_gather %.3f sec."%(sumtime_end_stats/ ngen)
+                    print "\t. mean time_end_stats %.3f sec."%(sumtime_end_stats/ ngen)
                     sumtime_getmm += (time_getmm - time_end_stats).total_seconds()
                     print "\t. mean time_getmm %.3f sec."%(sumtime_getmm/ ngen)
                     sumtime_end_evo += (time_end_evo - time_getmm).total_seconds()
@@ -132,7 +132,7 @@ class Genetic_Algorithm:
 
     def runsim_slave(self, rank, comm, ap):
         """For each GA generation. . . ."""
-        for i in range(ap.params["generation"], ap.params["generation"]+MAX_GA_GENS):
+        for i in range(ap.params["generation"], ap.params["generation"]+ap.params["maxgens"]):
             ap.params["generation"] = i
             
             """gid_fitness[genome ID] = [fitness at generation i]"""
@@ -144,7 +144,7 @@ class Genetic_Algorithm:
             """Calculate fitness for every individual."""
             for gid in my_items:
                 gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], ap)
-                if ap.getOptionalArg("--verbose") > 1:
+                if ap.params["verbosity"] >= 2:
                     """and then plot the expression of all genes in this genome"""
                     filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
                     plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "time", "expression", ap)
@@ -161,7 +161,7 @@ class Genetic_Algorithm:
             """Send data to master."""
             comm.send( [gid_fitness, gid_terminal_expression], dest=0, tag=11)  
             
-            if i < MAX_GA_GENS:
+            if i < ap.params["maxgens"]:
                 """Get updated data from master."""
                 pop_data_pickle = comm.recv(source=0, tag=11)
                 pop_data = pickle.loads( pop_data_pickle ) 
@@ -177,8 +177,7 @@ class Genetic_Algorithm:
             self.runsim_master(comm, ap)
         else:
             self.runsim_slave(rank, comm, ap)
-            
- 
+             
     def get_fitness_stats(self, gid_fitness):
         """gid_fitness is a hashtable, key = genome.id, value = fitness for that genome."""
         f_vals = gid_fitness.values()
