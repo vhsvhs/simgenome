@@ -55,14 +55,15 @@ class Genetic_Algorithm:
             
             time_end_gather = datetime.utcnow()
             
-            """Post-fitness. . .print stats, record data, etc."""
+            """Post-fitness. . . record data, pickle the population, etc."""
             if ap.params["verbosity"] >= 2:
                 pop_data = self.population.collapse()
                 pop_data_pickle = pickle.dumps( pop_data )
                 fout = open(ap.getArg("--runid") + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle", "w")
                 fout.write(pop_data_pickle)
                 fout.close()
-                        
+            
+            """Get basic stats on the population's fitness distribution"""
             [max_f, min_f, mean_f, median_f, std_f] = self.get_fitness_stats(gid_fitness)
             
             time_end_stats = datetime.utcnow()
@@ -88,9 +89,9 @@ class Genetic_Algorithm:
                 log_generation(ap, line)
             
             """Check for convergence on terminal conditions."""
-            if mean_f == 1.0:
-                print "The population arrived at an optima.  Goodbye."
-                exit(1)
+            #if mean_f == 1.0:
+            #    print "The population arrived at an optima.  Goodbye."
+            #    exit(1)
             
             if i < ap.params["maxgens"]:                
                 time_getmm = datetime.utcnow()
@@ -138,7 +139,7 @@ class Genetic_Algorithm:
             """gid_fitness[genome ID] = [fitness at generation i]"""
             gid_fitness = {}
             
-            """Find my items."""
+            """Find my items, a list of individuals in the population for which I am responsible."""
             my_items = list_my_items(self.population.list_genome_ids(), rank)
         
             """Calculate fitness for every individual."""
