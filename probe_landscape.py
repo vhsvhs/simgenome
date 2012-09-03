@@ -1,5 +1,6 @@
 ############################
 #
+#
 # probe_landscape.py
 #
 #
@@ -34,3 +35,19 @@ from population import *
 from version import *
 from debug_tools import *
 from cli import *
+
+# read the pickled population
+
+# extract the target genome
+
+gene_site_state_result = {}
+# for each gene:
+#    for each site in the gene's URS:
+#        for each of the possible alternate states:
+#            make the mutation, calculate fitness
+#            record the fitness in gene_site....
+#            record the size of network shift in gene_site....
+
+# Write a table expressing gene_site...
+
+
