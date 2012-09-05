@@ -22,6 +22,7 @@ For example, with a population size of 128, good values for N include 5, 9, 17, 
 ** VERBOSITY NOTES (use --verbose N)
 
 N= 1:
+. Prints basic notifications about population construction, loading files, etc.
 . Prints generation stats: time to completion, max/min/mean/median/sd fitness.
 
 N= 2:
@@ -30,13 +31,14 @@ N= 2:
 . Writes the R script to plot_expression for each individual for each generation.
 
 N= 3:
-. Invokes the method 'print_configuration', which writes config.gen.X.gid.Y.txt
 
 N= 4:
+. Invokes the method 'print_configuration', which writes config.gen.X.gid.Y.txt
 . Invokes R to plot_expression.
 
 N= 5:
 . Prints timeslice information to stdout.
+
 
 N= 10:
 . Plots the R script (functon plot_expression) for each individual for each generation.
