@@ -63,6 +63,8 @@ class PWM:
         i = -1
         found_our_id = False
         for l in fin.readlines():
+            if l.startswith("#"):
+                continue
             if l.startswith("pwm"):
                 tokens = l.split()
                 if int(tokens[1]) == id:

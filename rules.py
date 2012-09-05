@@ -28,7 +28,7 @@ class Fitness_Rule:
         self.rule_type = r
     
     def __str__(self):
-        l = "\n\t+ At time "
+        l = "  + At time "
         l += self.timepoint.__str__()
         l += " expression of gene "
         l += self.reporter_id.__str__()
@@ -107,7 +107,7 @@ class Rule_Collection:
     
     def __str__(self):
         ret = ""
-        ret += "\n+ Rules. . ."
+        ret += "--> Fitness Goals:\n"
         for r in self.rules:
             ret += r.__str__()
         return ret

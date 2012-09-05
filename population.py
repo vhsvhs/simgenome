@@ -8,12 +8,9 @@ class Population:
         self.genomes = {}
     
     def init(self, ap, init_genes=None):
-        if init_genes == None:
-            if comm.Get_rank() == 0:
-                print "\n. Building a random population..."
-        else:
-            if comm.Get_rank() == 0:
-                print "\n. Creating a population, specified by", ap.getOptionalArg("--urspath"), "and",ap.getOptionalArg("--pwmpath") 
+        #if init_genes != None:
+        #    if comm.Get_rank() == 0 and ap.params["verbosity"] > 2:
+        #        print "\n. Creating a population, specified by", ap.getOptionalArg("--urspath"), "and",ap.getOptionalArg("--pwmpath") 
         for i in range(0, ap.params["popsize"]):
             """Fill the population with ap.params["popsize"] copies of the seed genome."""
             self.genomes[ i ] = Genome(i)
@@ -21,7 +18,7 @@ class Population:
     
     def init_from_pickle(self, picklepath):
         if comm.Get_rank() == 0:
-            print "\n.Restoring the population at", picklepath
+            print "\n. Loading the pickled population at", picklepath
         fin = open(picklepath, "r")
         pop_data = pickle.load( fin )
         fin.close()
@@ -38,6 +35,14 @@ class Population:
         for gid in self.genomes.keys():
             data[gid] = self.genomes[gid].collapse()
         return data
+        
+    def get_info(self):
+        """Returns a multi-line string with basic information about the population."""
+        ret = "--> population size: "
+        ret += (self.genomes.__len__()).__str__()
+        ret += "\n--> genes per individual: "
+        ret += (self.genomes[0].genes.__len__()).__str__()
+        return ret
         
     def list_genome_ids(self):
         l = self.genomes.keys()

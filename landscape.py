@@ -123,12 +123,13 @@ class Landscape:
         self.r.append(1)
         
         # Next, initialize expression levels, using either epigenetically inherited levels,
-        # or, as default, sett expression to zero.
+        # or, as default, set expression to zero.
         # If epigenetics is enabled, then gene expression has already been established at this point.
         if ap.params["enable_epigenetics"] == False or genome.gene_expr.__len__() < 1:
             for gene in genome.genes:
                 genome.gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL]
         
+        # The expression levels for each TF will be stored in this hashtable.
         tf_expr_level = {} # key = gene id, value = array of expression values for each timeslice
                 
         for timeslice in range(0, ap.params["maxtime"]):
@@ -205,6 +206,8 @@ class Landscape:
         pe = []        
         ptables = ProbTable( ap.params["numtr"], ap.params["maxgd"], gene.urs.__len__() )
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)  
+        #print ptables
+        #exit()
         return self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)          
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
@@ -229,26 +232,29 @@ class Landscape:
                             if ap.params["verbosity"] > 100:
                                 print "case 1:", i, j, d, x, ret.cpa[i,j,d,x]
                             continue
-                        elif (L-x >= self.r[i] and (j == i or j == ap.params["numtr"]) and d == 0): # // if TF i can bind here
-                            """CASE 2: TF i can start binding at site x
-                            and TF i is identical to j."""
-                            ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp # basic case, no competition or cooperation
-                            sum_cpt += ret.cpa[i,j,d,x]
-                            sum_cpr += ret.cpa[i,j,d,x]
-                            if ap.params["verbosity"] > 100:
-                                print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
-                            continue
-                        elif (j < ap.params["numtr"]): # else, cooperative/competitive binding...
+                        # The implied else case is that TF i can fit at site x.
+                        # Victor: I think we should first do cases 3, 4, and 5
+#                        elif (L-x >= self.r[i] and (j == i or j == ap.params["numtr"]) and d == 0): # // if TF i can bind here
+#                            """CASE 2: TF i can start binding at site x
+#                            and TF i is identical to j."""
+#                            ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp # basic case, no competition or cooperation
+#                            sum_cpt += ret.cpa[i,j,d,x]
+#                            sum_cpr += ret.cpa[i,j,d,x]
+#                            if ap.params["verbosity"] > 100:
+#                                print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
+#                            continue
+                        if (j < ap.params["numtr"]):  # TF j is real, not the empty slot.
                             if (d < MIN_TF_SEPARATION):
+                                # If d == 0, then this case should never be reached.
                                 """ CASE 4: the distance between TFs i and j is too small."""
                                 # we forbid TFs to bind this close together
-                                ret.cpa[i,j,d,x] = 0
+                                ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
                                 if ap.params["verbosity"] > 100:
                                     print "case 4:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
-                            elif (x+1 - self.r[i] - d - self.r[j] < 0):
+                            elif (L - self.r[i] - d - self.r[j] < 0):
                                 """CASE 3: TF i and j cannot both fit on the sequence."""
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 sum_cpt += ret.cpa[i,j,d,x]
@@ -256,14 +262,29 @@ class Landscape:
                                 if ap.params["verbosity"] > 100:
                                     print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
-                            """CASE 5: TFs i and j are different AND they can both fit on the URS..."""
-                            ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d]
-                            sum_cpt += ret.cpa[i,j,d,x]
-                            sum_cpr += ret.cpa[i,j,d,x]
-                            if ap.params["verbosity"] > 100:
-                                print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
-                            continue
-                        elif (j == ap.params["numtr"]) or (i == j):
+                            else:
+                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d] 
+                                sum_cpt += ret.cpa[i,j,d,x]
+                                sum_cpr += ret.cpa[i,j,d,x]
+                                if ap.params["verbosity"] > 100:
+                                    print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
+                                continue
+#                            elif (i != j):
+#                                """CASE 5: TFs i and j are different AND they can both fit on the URS..."""
+#                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d]
+#                                sum_cpt += ret.cpa[i,j,d,x]
+#                                sum_cpr += ret.cpa[i,j,d,x]
+#                                if ap.params["verbosity"] > 100:
+#                                    print "case 5:", i, j, d, x, ret.cpa[i,j,d,x]
+#                                continue
+#                            elif (i == j):
+#                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp # basic case, no competition or cooperation
+#                                sum_cpt += ret.cpa[i,j,d,x]
+#                                sum_cpr += ret.cpa[i,j,d,x]
+#                                if ap.params["verbosity"] > 100:
+#                                    print "case 2:", i, j, d, x, ret.cpa[i,j,d,x]
+#                                continue
+                        elif (j == ap.params["numtr"]): # j is the empty slot
                             """CASE 6: there is no j:"""
                             ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp;
                             sum_cpt += ret.cpa[i,j,d,x]
@@ -366,19 +387,20 @@ class Landscape:
                     configurations[site] = []
                 configurations[site].append( [i,j,d] )
                 this_config[site] = i
-                if i < ap.params["numtr"]-1:
+                if i < ap.params["numtr"]:
                     site += genome.genes[i].pwm.P.__len__()
                 else:
                     site += 1 # for the non-occuped case
                 site += d
                 
-                if False == configurations.__contains__(site):
-                    configurations[site] = []
-                this_config[site] = j
-                if j < ap.params["numtr"]-1:
-                    site += genome.genes[j].pwm.P.__len__()
-                else:
-                    site += 1
+                if site < gene.urs.__len__(): # don't create a configuration beyond the length of the URS
+                    if False == configurations.__contains__(site):
+                        configurations[site] = []
+                    this_config[site] = j
+                    if j < ap.params["numtr"]:
+                        site += genome.genes[j].pwm.P.__len__()
+                    else:
+                        site += 1
                 
             """"2. Calculate the binding energy of the configuration."""
             sum_lambda_act = 0.0
@@ -405,7 +427,7 @@ class Landscape:
             this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(k_act-k_rep) ) ))
             pe_sum += this_pe
             #print "gene", gene.id, "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
-        if ap.getOptionalArg("--verbose") > 3:
+        if ap.params["verbosity"] > 3:
             self.print_configuration(configurations, genome, gene, ap)
         return (pe_sum / ap.params["iid_samples"])
     
@@ -413,7 +435,7 @@ class Landscape:
     def print_configuration(self, configs, genome, gene, ap):        
         """configs is a hashtable of configurations...
             configs[site] = array of triples [gene i, gene j, distance]"""
-        foutpath = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
+        foutpath = WORKSPACE + "/" + ap.getArg("--runid") + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
             

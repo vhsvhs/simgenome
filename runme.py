@@ -6,12 +6,16 @@ from version import *
 from cli import *
 
 def check_workspace(ap):
-    if False == os.path.exists(ap.getArg("--runid")):
-        os.system("mkdir " + ap.getArg("--runid"))
+    if False == os.path.exists(WORKSPACE):
+        os.system("mkdir " + WORKSPACE)
+    if False == os.path.exists(WORKSPACE + "/" + ap.getArg("--runid")):
+        os.system("mkdir " + WORKSPACE + "/" + ap.getArg("--runid"))
     dirs = [POPPICKLES, "LOGS", "PLOTS", EXPR_PLOTS]
     for d in dirs:
-        if False == os.path.exists(ap.getArg("--runid") + "/" + d):
-            os.system("mkdir " + ap.getArg("--runid") + "/" + d)
+        if False == os.path.exists(WORKSPACE + "/" + ap.getArg("--runid") + "/" + d):
+            os.system("mkdir " + WORKSPACE + "/" + ap.getArg("--runid") + "/" + d)
+    # clear expression histories from previous runs
+    os.system("rm -rf " + WORKSPACE + "/" + ap.getArg("--runid") + "/" + EXPR_PLOTS + "/*")
 
 def main():
     ap = ArgParser(sys.argv)
@@ -24,13 +28,18 @@ def main():
     
     """Build a population"""    
     population = Population()
+    if comm.Get_rank() == 0 and ap.params["verbosity"] > 1:
+        print "\n. Buildng the population. . ."
     popath = ap.getOptionalArg("--pop_path")
-    """--pop_path should always be specified in combination with --start_generation"""
+    """If --pop_path is specified, it should be accompanied with --start_generation"""
     if popath != False:
         population.init_from_pickle(popath)
     else:
         cli_genes = get_genes_from_file(ap)
         population.init(ap, init_genes=cli_genes)
+    if comm.Get_rank() == 0 and ap.params["verbosity"] > 1:    
+        print population.get_info()
+                
                       
     """Build a fitness landscape"""
     landscape = Landscape(ap)

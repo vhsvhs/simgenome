@@ -66,7 +66,8 @@ def read_cli(ap):
     # We'll use these ranges very often in the code, so this precomputation step saves time later.
     for i in range(0, ap.params["numtr"]):
         ap.params["rangetrs"].append(i)
-    ap.params["rangetrs+"] = ap.params["rangetrs"] + [ap.params["numtr"]]     
+    ap.params["rangetrs+"] = ap.params["rangetrs"] + [ap.params["numtr"]]
+    # . . . this produces an array [0,1,2,3,4,...,n] where 1 through n-1 correspond to TR indices, and n corresponds to the empty case.     
 
     x = ap.getOptionalArg("--numreporter")
     if x != False:
@@ -170,6 +171,7 @@ def get_input_rules_from_file(ap):
                     ap.params["maxtime"] = this_timepoint
                     
         # 2, scan for rules and inputs. . .
+        max_time = 0
         for l in lines:
             if l.startswith("RULE"):
                 tokens = l.split()
@@ -198,20 +200,49 @@ def get_input_rules_from_file(ap):
                 if tokens.__len__() >= 4:
                     this_basal_gene_id = int(tokens[1])
                     this_timepoint_start = int(tokens[2])
+                    if this_timepoint_start > max_time:
+                        max_time = this_timepoint_start
                     this_timepoint_stop = int(tokens[3])
+                    if this_timepoint_stop > max_time:
+                        max_time = this_timepoint_stop
                     this_expr_level = float(tokens[4])
                     for t in range(this_timepoint_start, this_timepoint_stop+1):
                         if t not in ret_inputpatterns:
                             ret_inputpatterns[t] = []
                         ret_inputpatterns[t].append( [this_basal_gene_id, this_expr_level] )
+        
+        # 3. Ensure we don't have rules for timepoints beyond the max timepoint
+        if max_time > ap.params["maxtime"]:
+            if comm.Get_rank() == 0 and ap.params["verbosity"] >= 1:
+                print "\n. You specified the maximum timepoint to be", ap.params["maxtime"]
+                print "  However, your fitness rules imply a maximum timepoint of", max_time
+                print "--> I am setting maximum time to", max_time
+            ap.params["maxtime"] = max_time
+        
+        
         return [ret_rulecollection, ret_inputpatterns]
 
 def get_genes_from_file(ap):
     """Returns either a list of genes read from a file,
     or returns None if the user did not specify to use genes from a file."""
-    if False == ap.getOptionalArg("--urspath"): 
+    
+    if comm.Get_rank() == 0 and ap.params["verbosity"] >= 1:
+        if False == ap.getOptionalArg("--urspath"): 
+            print "\n. I found no value for --urspath."
+            print "--> I will build random URSs."
+        else:
+            print "--> Reading the URSs described in", ap.getOptionalArg("--urspath")
+                
+        if False == ap.getOptionalArg("--pwmpath"): 
+            print "\n. I found no value for --pwmpath."
+            print "--> I will build random PWMs."
+        else:
+            print "--> Reading the PWMs described in", ap.getOptionalArg("--pwmpath")
+    
+    if False == ap.getOptionalArg("--urspath"):
         return None
-    else:
+    
+    if False != ap.getOptionalArg("--urspath"):
         ret_genes = []
         urspath = ap.getOptionalArg("--urspath")
         fin = open(urspath, "r")

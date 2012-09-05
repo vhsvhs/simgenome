@@ -38,7 +38,7 @@ class Genetic_Algorithm:
         for i in range(ap.params["generation"], ap.params["generation"]+ap.params["maxgens"]):
             ap.params["generation"] = i
             time_start_gen = datetime.utcnow()
-                                            
+                                                        
             gid_fitness = {}
 
             """Wait for data from slaves. . ."""
@@ -59,7 +59,9 @@ class Genetic_Algorithm:
             if ap.params["verbosity"] >= 2:
                 pop_data = self.population.collapse()
                 pop_data_pickle = pickle.dumps( pop_data )
-                fout = open(ap.getArg("--runid") + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle", "w")
+                pop_pickle_path = WORKSPACE + "/" + ap.getArg("--runid") + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle"
+                print "\n. Saving the population to", pop_pickle_path
+                fout = open(pop_pickle_path, "w")
                 fout.write(pop_data_pickle)
                 fout.close()
             
@@ -147,7 +149,7 @@ class Genetic_Algorithm:
                 gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], ap)
                 if ap.params["verbosity"] >= 2:
                     """and then plot the expression of all genes in this genome"""
-                    filenameseed = ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
+                    filenameseed = WORKSPACE + "/" + ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
                     plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "time", "expression", ap)
             
             """Save the expression at the last timeslice, to be inherited by childern."""

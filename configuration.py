@@ -22,6 +22,7 @@ except ImportError:
 
 POPPICKLES = "POP_HISTORY"
 EXPR_PLOTS = "EXPR_HISTORY"
+WORKSPACE = "WORKSPACE"
 
 """The values in this configuration file will be used as defaults.
 Most of these parameter values can be overrided by command-line values."""
@@ -59,15 +60,18 @@ INIT_GEN = 0
 IID_SAMPLES = 4000
 
 """Each random fitness goal will involve GOAL_COMPLEXITY number of expected unique 
-gene expression pulses in time."""
+gene expression pulses in time.  This variable is only valid if random fitness goals are being generated.
+i.e., you don't specify --patternpath"""
 GOAL_COMPLEXITY = 1
 
 """Each random fitness goal will include ideal expression pulses that are
-smaller than or equal to GOAL_PULSE_MAX number of time ticks apart from each other.""" 
+smaller than or equal to GOAL_PULSE_MAX number of time ticks apart from each other.
+This variable is only valid if random fitness goals are being generated.
+i.e., you don't specify --patternpath""" 
 GOAL_PULSE_MAX = 2
 
 """maximum distance between TFs to include gamma term"""
-MAX_GD = 3
+MAX_GD = 1
 
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
