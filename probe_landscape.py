@@ -35,12 +35,12 @@ from cli import *
 
 
 def check_workspace(ap):
-    if False == os.path.exists(WORKSPACE + "/" + ap.getArg("--runid")):
-        os.system("mkdir " + WORKSPACE + "/" + ap.getArg("--runid"))
+    if False == os.path.exists(ap.getArg("--workspace") + "/" + ap.getArg("--runid")):
+        os.system("mkdir " + ap.getArg("--workspace") + "/" + ap.getArg("--runid"))
     dirs = ["PROBE"]
     for d in dirs:
-        if False == os.path.exists(WORKSPACE + "/" + ap.getArg("--runid") + "/" + d):
-            os.system("mkdir " + WORKSPACE + "/" + ap.getArg("--runid") + "/" + d)
+        if False == os.path.exists(ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + d):
+            os.system("mkdir " + ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + d)
 
 def splash():
     print "======================================="
@@ -130,7 +130,7 @@ for gene in genm.genes:
                     count_neu_mu += 1
 
 # Write a table expressing gene_site...
-fout = open(WORKSPACE + "/" + ap.getArg("--runid") + "/PROBE/probe_results.txt", "w")
+fout = open(ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/PROBE/probe_results.txt", "w")
 for gene in genm.genes:
     for site in range( 0, gene.urs.__len__() ):
         org_state = gene.urs[site]

@@ -6,16 +6,16 @@ from version import *
 from cli import *
 
 def check_workspace(ap):
-    if False == os.path.exists(WORKSPACE):
-        os.system("mkdir " + WORKSPACE)
-    if False == os.path.exists(WORKSPACE + "/" + ap.getArg("--runid")):
-        os.system("mkdir " + WORKSPACE + "/" + ap.getArg("--runid"))
+    if False == os.path.exists(ap.getArg("--workspace")):
+        os.system("mkdir " + ap.getArg("--workspace"))
+    if False == os.path.exists(ap.getArg("--workspace") + "/" + ap.getArg("--runid")):
+        os.system("mkdir " + ap.getArg("--workspace") + "/" + ap.getArg("--runid"))
     dirs = [POPPICKLES, "LOGS", "PLOTS", EXPR_PLOTS]
     for d in dirs:
-        if False == os.path.exists(WORKSPACE + "/" + ap.getArg("--runid") + "/" + d):
-            os.system("mkdir " + WORKSPACE + "/" + ap.getArg("--runid") + "/" + d)
+        if False == os.path.exists(ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + d):
+            os.system("mkdir " + ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + d)
     # clear expression histories from previous runs
-    os.system("rm -rf " + WORKSPACE + "/" + ap.getArg("--runid") + "/" + EXPR_PLOTS + "/*")
+    os.system("rm -rf " + ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + EXPR_PLOTS + "/*")
 
 def main():
     ap = ArgParser(sys.argv)
@@ -84,5 +84,8 @@ if rank == 0:
     splash()
 mpi_check()
 
-prof_path = "./prof_trace." + (random.random() * 1000000).__str__() + ".cprofile"
-cProfile.run( 'main()', prof_path )
+#if ap.getOptionalArg("--use_cprofile"):
+#   prof_path = "./prof_trace." + (random.random() * 1000000).__str__() + ".cprofile"
+#    cProfile.run( 'main()', prof_path )
+#else:
+main()

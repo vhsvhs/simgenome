@@ -22,7 +22,6 @@ except ImportError:
 
 POPPICKLES = "POP_HISTORY"
 EXPR_PLOTS = "EXPR_HISTORY"
-WORKSPACE = "WORKSPACE"
 
 """The values in this configuration file will be used as defaults.
 Most of these parameter values can be overrided by command-line values."""
