@@ -436,7 +436,7 @@ class Landscape:
     def print_configuration(self, configs, genome, gene, ap):        
         """configs is a hashtable of configurations...
             configs[site] = array of triples [gene i, gene j, distance]"""
-        foutpath = ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
+        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
             

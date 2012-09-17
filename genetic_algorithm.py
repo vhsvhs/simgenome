@@ -59,7 +59,7 @@ class Genetic_Algorithm:
             if ap.params["verbosity"] >= 2:
                 pop_data = self.population.collapse()
                 pop_data_pickle = pickle.dumps( pop_data )
-                pop_pickle_path = ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle"
+                pop_pickle_path = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle"
                 print "\n. Saving the population to", pop_pickle_path
                 fout = open(pop_pickle_path, "w")
                 fout.write(pop_data_pickle)
@@ -149,7 +149,7 @@ class Genetic_Algorithm:
                 gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], ap)
                 if ap.params["verbosity"] >= 2:
                     """and then plot the expression of all genes in this genome"""
-                    filenameseed = ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
+                    filenameseed = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
                     plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "time", "expression", ap)
             
             """Save the expression at the last timeslice, to be inherited by childern."""
