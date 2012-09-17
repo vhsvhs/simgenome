@@ -6,16 +6,16 @@ from version import *
 from cli import *
 
 def check_workspace(ap):
-    if False == os.path.exists(ap.getArg("--workspace")):
-        os.system("mkdir " + ap.getArg("--workspace"))
-    if False == os.path.exists(ap.getArg("--workspace") + "/" + ap.getArg("--runid")):
-        os.system("mkdir " + ap.getArg("--workspace") + "/" + ap.getArg("--runid"))
+    if False == os.path.exists(ap.params["workspace"]):
+        os.system("mkdir " + ap.params["workspace"])
+    if False == os.path.exists(ap.params["workspace"] + "/" + ap.params["runid"]):
+        os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"])
     dirs = [POPPICKLES, "LOGS", "PLOTS", EXPR_PLOTS]
     for d in dirs:
-        if False == os.path.exists(ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + d):
-            os.system("mkdir " + ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + d)
+        if False == os.path.exists(ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d):
+            os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
     # clear expression histories from previous runs
-    os.system("rm -rf " + ap.getArg("--workspace") + "/" + ap.getArg("--runid") + "/" + EXPR_PLOTS + "/*")
+    os.system("rm -rf " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/*")
 
 def main():
     ap = ArgParser(sys.argv)

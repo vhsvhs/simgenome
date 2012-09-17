@@ -7,6 +7,13 @@ from rules import *
 
 def read_cli(ap):
     """This method reads the command-line interface arguments and sets global parameters"""
+    x = ap.getArg("--workspace")
+    ap.params["workspace"] = x
+
+    x = ap.getArg("--runid")
+    ap.params["runid"] = x
+
+    
     x = ap.getOptionalArg("--verbose")
     if x != False:
         ap.params["verbosity"] = int(x)
