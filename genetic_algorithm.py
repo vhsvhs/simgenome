@@ -131,7 +131,7 @@ class Genetic_Algorithm:
                     sumtime_end_bcast += (time_end_bcast - time_end_evo).total_seconds()
                     print "\t. mean time_end_bcast %.3f sec."%(sumtime_end_bcast/ ngen)
                                         
-                    print "\t. mean communication/calculation %.3f sec."%( (sumtime_end_gather + sumtime_end_bcast) / (sumtime_end_gather + sumtime_end_bcast + sumtime_end_calc + sumtime_end_stats + sumtime_getmm + sumtime_end_evo) )
+                    print "\t. mean comm/calc ratio: %.3f"%( (sumtime_end_gather + sumtime_end_bcast) / (sumtime_end_gather + sumtime_end_bcast + sumtime_end_calc + sumtime_end_stats + sumtime_getmm + sumtime_end_evo) )
 
     def runsim_slave(self, rank, comm, ap):
         """For each GA generation. . . ."""
