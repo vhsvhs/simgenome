@@ -12,10 +12,12 @@ def check_workspace(ap):
         os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"])
     dirs = [POPPICKLES, "LOGS", "PLOTS", EXPR_PLOTS]
     for d in dirs:
-        if False == os.path.exists(ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d):
-            os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
-    # clear expression histories from previous runs
-    os.system("rm -rf " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/*")
+        if os.path.exists(ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d):
+            # clear data from previous runs
+            os.system("rm -rf " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
+        os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
+
+
 
 def main():
     ap = ArgParser(sys.argv)
