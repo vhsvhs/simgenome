@@ -34,16 +34,13 @@ class Landscape:
         
         if comm.Get_rank() == 0:
             print "\n. Building the fitness landscape described in", ap.getOptionalArg("--patternpath")
-            for r in tp:
-                print ""
-                print r
         self.rulecollection = tp
         self.inputpatterns = ip
         self.set_gamma(ap)
         
         if comm.Get_rank() == 0:
             for t in self.rulecollection:
-                print t
+                print "43", t
         
     def uncollapse(self, data, ap):
         for d in data[0]:
