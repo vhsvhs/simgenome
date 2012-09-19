@@ -34,8 +34,8 @@ class Landscape:
         
         if comm.Get_rank() == 0:
             print "\n. Building the fitness landscape described in", ap.getOptionalArg("--patternpath")
-            print r
             for r in tp:
+                print ""
                 print r
         self.rulecollection = tp
         self.inputpatterns = ip
