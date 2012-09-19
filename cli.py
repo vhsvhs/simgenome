@@ -169,8 +169,7 @@ def get_input_rules_from_file(ap):
         fin.close()
         
         # 1, scan to find the maximum timeslice. . .
-        for l in lines:
-            print l     
+        for l in lines: 
             if l.startswith("RULE") or l.startswith("INPUT"):
                 tokens = l.split()
                 this_timepoint = int(tokens[2])
