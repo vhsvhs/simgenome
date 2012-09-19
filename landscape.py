@@ -165,7 +165,8 @@ class Landscape:
             for gene in genome.genes:                
                 # Calculate the delta G of binding on the cis-region for every gene.
                 pe = self.get_expression(genome, gene, tf_expr_level, ap)                
-                expr_modifier = 2.0 * pe
+                #expr_modifier = 2.0 * pe
+                expr_modifier = ap.params["growth_rate"] * pe
                 new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
                 genome.gene_expr[gene.id].append( new_expr_level )
                 
