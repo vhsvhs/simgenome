@@ -13,7 +13,6 @@ def read_cli(ap):
     x = ap.getArg("--runid")
     ap.params["runid"] = x
 
-    
     x = ap.getOptionalArg("--verbose")
     if x != False:
         ap.params["verbosity"] = int(x)
