@@ -40,7 +40,7 @@ class Landscape:
         
         if comm.Get_rank() == 0:
             for t in self.rulecollection:
-                print "43", t
+                print t
         
     def uncollapse(self, data, ap):
         for d in data[0]:

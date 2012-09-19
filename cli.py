@@ -152,7 +152,8 @@ def check_world_consistency(ap, population, landscape):
     for rc in landscape.rulecollection:
         for rule in rc.rules:
             if rule.reporter_id > population.genomes[0].genes.__len__() - 1:
-                print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome only contains", population.genomes[0].genes.__len__(), "genes."
+                print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome only contains", (population.genomes[0].genes.__len__() -1 ), "genes."
+                print "I am quitting."
                 exit(1)
 
 def get_input_rules_from_file(ap):
