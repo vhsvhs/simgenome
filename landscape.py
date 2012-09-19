@@ -90,7 +90,7 @@ class Landscape:
         for i in ap.params["rangetrs"]:
             for j in ap.params["rangetrs"]:
                 for d in ap.params["rangegd"]:
-                    print i, j, d
+                    #print i, j, d
                     self.gamma[i,j,d] = self.coopfunc( g[i,j], d)
     
     def fitness_helper(self, gene_expr_level):
