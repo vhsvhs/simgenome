@@ -8,14 +8,12 @@ class Landscape:
     patterns for a stress response."""
     rulecollection = []
     inputpatterns = {} # key = timepoint, value = array of tuples (gene, expr. value)
-    gamma = None
     r = None
     t_counter = 0
     
     def __init__(self, ap):
         self.rulecollection = [] # array of Rule_Collection objects
         self.inputpatterns = {}  # hashtable, key = timepoint, value = array of tuples (gene, expression level).
-        self.gamma = None
         self.r = None
         self.t_counter = ap.params["generation"]
     
@@ -36,7 +34,6 @@ class Landscape:
             print "\n. Building the fitness landscape described in", ap.getOptionalArg("--patternpath")
         self.rulecollection = tp
         self.inputpatterns = ip
-        self.set_gamma(ap)
         
         if comm.Get_rank() == 0:
             for t in self.rulecollection:
@@ -47,7 +44,6 @@ class Landscape:
             this_rulecollection = Rule_Collection(d)
             this_rulecollection.uncollapse( data[d] )
             self.rulecollection.append( this_rulecollection )
-            self.set_gamma(ap)
         for t in data[1]:
             self.inputpatterns[t] = data[1][t]
     
@@ -72,37 +68,22 @@ class Landscape:
         rand_rulecollection.init_basic_test()
         self.rulecollection.append( rand_rulecollection )
     
-    def coopfunc(self, g, d):
-        """Calculates the degree of binding cooperativity between two TFs binding distance d apart.
-        g is positive for synergistic interactions, and negative for antagonistic interactions.
-        g ranges from -1 to +inifinity."""
-        return 1 + g * math.exp( (-1)*(d**2)/V_RATE_OF_COOP_DECAY );
 
-    def set_gamma(self, ap):
-        """Prec-calculates the cooperative/competitive binding interactions between all TFs."""
-        # g is the binding coop term (see the coopfunc).
-        # for now, g is all zeroes, so there is no cooperative binding.
-        #
-        # to-do: grab gamma values from the command-line, or radomly initialize them
-        # from an a priori distribution.
-        g = zeros( (ap.params["numtr"], ap.params["numtr"]), dtype=float)
-        self.gamma = zeros( (ap.params["numtr"], ap.params["numtr"], ap.params["maxgd"]), dtype=float)
-        for i in ap.params["rangetrs"]:
-            for j in ap.params["rangetrs"]:
-                for d in ap.params["rangegd"]:
-                    #print i, j, d
-                    self.gamma[i,j,d] = self.coopfunc( g[i,j], d)
     
     def fitness_helper(self, gene_expr_level):
+        """Returns the fitness of an individual, given their expression levels for all genes."""
         expr_error = 0.0
         max_expr_error = 0.0
         for pattern in self.rulecollection:
+            """Iterate over all rule collections..."""
             for rule in pattern.rules:
+                """Iteratre over all rules..."""
                 obs_expr = gene_expr_level[rule.reporter_id][rule.timepoint]
                 if False == rule.rule_type(obs_expr, rule.expression_level):
                     expr_error += abs(obs_expr - rule.expression_level)
                 max_expr_error += 1.0
-        return math.exp(FITNESS_SCALAR * expr_error)
+        expr_error = expr_error / max_expr_error # Normalize the expression error by the max. possible error
+        return math.exp(FITNESS_SCALAR * expr_error) # FITNESS_SCALAR is defined in configuration.py
                     
     
     def get_fitness(self, genome, ap):
@@ -265,7 +246,7 @@ class Landscape:
                                     print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
                             else:
-                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d] 
+                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * genome.gamma[j, i, d] 
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
                                 if ap.params["verbosity"] > 100:
@@ -273,7 +254,7 @@ class Landscape:
                                 continue
 #                            elif (i != j):
 #                                """CASE 5: TFs i and j are different AND they can both fit on the URS..."""
-#                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * self.gamma[j, i, d]
+#                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * genome.gamma[j, i, d]
 #                                sum_cpt += ret.cpa[i,j,d,x]
 #                                sum_cpr += ret.cpa[i,j,d,x]
 #                                if ap.params["verbosity"] > 100:

@@ -95,8 +95,9 @@ MAX_DECAY_RATE = 1.4
 
 """This rate gets used in the function coopfunc (in Landscape) to
 control the rate of decay of the cooperative or competitive interactions
-between TFs."""
-V_RATE_OF_COOP_DECAY = 80
+between TFs.  Big values facilitate cooperative binding across long distances,
+whereas small values make the coopfunc dropoff quickly."""
+V_RATE_OF_COOP_DECAY = 6
 
 
 

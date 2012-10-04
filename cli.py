@@ -92,6 +92,15 @@ def read_cli(ap):
     for d in range(0, ap.params["maxgd"]):
         ap.params["rangegd"].append( d )
     
+    # Is the TF coop matrix
+    ap.params["coopinit"] = None
+    x = ap.getOptionalArg("--tfcoop")
+    if x == False:
+        ap.params["coopinit"] = "zeros"
+    elif x == "random":
+        ap.params["coopinit"] = "random"
+    
+    
     x = ap.getOptionalArg("--mu")
     if x != False:
         ap.params["mu"] = float(x)
