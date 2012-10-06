@@ -40,7 +40,7 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
     rep_pointsstring = ""
     for gid in series:
         string = "y" + gid.__str__() + "<-c("
-        for t in range(1, ap.params["maxtime"]):
+        for t in range(0, ap.params["maxtime"]):
             this_expr = genome.gene_expr[gid][t]
             #if miny == None:
             #    miny = this_expr

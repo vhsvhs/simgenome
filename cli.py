@@ -281,7 +281,7 @@ def get_genes_from_file(ap):
                     elif this_repressor == 1:
                         this_repressor = True
                     this_urs = tokens[3]
-                    this_gene = Gene(this_id, this_urs.__len__(), urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm) 
+                    this_gene = Gene(this_id, this_urs.__len__(), urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm, ap=ap) 
                     ret_genes.append(this_gene)
         fin.close()
         

@@ -208,9 +208,11 @@ class Population:
                     else:
                         parentgene = self.genomes[parent2].genes[geneid]
                     copypwm = None
+                    copygamma = None
                     if parentgene.has_dbd:
                         copypwm = PWM(copyfrom=parentgene.pwm)
-                    gene_copy = Gene(geneid, parentgene.urs.__len__(), urs=parentgene.urs, has_dbd=parentgene.has_dbd, repressor=parentgene.is_repressor,pwm=copypwm)
+                        copygamma = numpy.copy( parentgene.gamma )
+                    gene_copy = Gene(geneid, parentgene.urs.__len__(), urs=parentgene.urs, has_dbd=parentgene.has_dbd, repressor=parentgene.is_repressor,pwm=copypwm,gamma=copygamma)
                     new_genes.append( gene_copy )
                 new_genomes[child_gid].init(ap, init_genes=new_genes, init_expression=self.genomes[parent1].gene_expr)
         """Save the new children genomes."""

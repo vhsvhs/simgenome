@@ -3,7 +3,7 @@ RULE 0 0 10 0.95 2 ge
 
 # basal_gene_id, time_start, time_stop, expr_level
 INPUT 0 0 10 1.0
-INPUT 1 0 10 1.0
+#INPUT 1 0 10 1.0
 
 
 

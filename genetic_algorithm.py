@@ -149,7 +149,7 @@ class Genetic_Algorithm:
                 gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], ap)
                 if ap.params["verbosity"] >= 2:
                     """and then plot the expression of all genes in this genome"""
-                    filenameseed = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/expr.gen" + i.__str__() + ".gid" + gid.__str__() 
+                    filenameseed = "expr.gen" + i.__str__() + ".gid" + gid.__str__() 
                     plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "time", "expression", ap)
             
             """Save the expression at the last timeslice, to be inherited by childern."""

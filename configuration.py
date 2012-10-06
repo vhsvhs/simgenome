@@ -97,7 +97,7 @@ MAX_DECAY_RATE = 1.4
 control the rate of decay of the cooperative or competitive interactions
 between TFs.  Big values facilitate cooperative binding across long distances,
 whereas small values make the coopfunc dropoff quickly."""
-V_RATE_OF_COOP_DECAY = 6
+V_RATE_OF_COOP_DECAY = 3
 
 
 

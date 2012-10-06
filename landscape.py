@@ -246,7 +246,7 @@ class Landscape:
                                     print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
                             else:
-                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * genome.gamma[j, i, d] 
+                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * (genome.genes[i].gamma[j, d] + genome.genes[j].gamma[i,d]) 
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
                                 if ap.params["verbosity"] > 100:
@@ -420,6 +420,7 @@ class Landscape:
             configs[site] = array of triples [gene i, gene j, distance]"""
         foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
+        fout.write("#\n# For example, \"site 3 :  1 [-] 0.672 0.120\" indicates that site 3 is bound by repressor 1\n# in 67.2 percent of IID samples with activation energy = 0.120.\n# Activation energies < 0.5 indicate repression, = 0.5 indicate no activation,\n# > 0.5 indicates activation.#\n#\n")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
             
         """configs is array of arrays, [site, tf_i, tf_j, distance between i and j]"""
