@@ -50,7 +50,7 @@ class Landscape:
     def collapse(self):
         data_rules = {}
         for t in self.rulecollection:
-            data_rules[ t.basal_gene_id ] = t.collapse()
+            data_rules[ t.collection_id ] = t.collapse()
         
         data_inputs = {}
         for t in self.inputpatterns:
@@ -103,6 +103,10 @@ class Landscape:
                 self.maxr = self.r[x]
         # Deal with the no-occupancy case
         self.r.append(1)
+                
+        # debug:
+        #for gene in genome.genes:
+        #    print "rank=", comm.Get_rank(), " debug landscape.py109 genome=", genome.id, " gid=", gene.id, " gamma=", gene.gamma
         
         # Next, initialize expression levels, using either epigenetically inherited levels,
         # or, as default, set expression to zero.

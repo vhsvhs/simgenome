@@ -1,6 +1,6 @@
 from configuration import *
 
-def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
+def write_expression_cran(genome, output_filename_seed, title, xlab, ylab, ap):
     """This method uses R to plot the time vs. expression for all genes in one individual genome"""
     """genome must contain valid data in genome.gene_expr"""
     maxx = None
@@ -25,7 +25,7 @@ def plot_expression(genome, output_filename_seed, title, xlab, ylab, ap):
     maxx = None
     tstring = ""
     tstring += "t <-c("
-    for t in range(1, ap.params["maxtime"]):
+    for t in range(1, ap.params["maxtime"]+1):
         if maxx == None:
             maxx = t
         elif t > maxx:

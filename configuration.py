@@ -70,7 +70,7 @@ i.e., you don't specify --patternpath"""
 GOAL_PULSE_MAX = 2
 
 """maximum distance between TFs to include gamma term"""
-MAX_GD = 1
+MAX_GD = 2
 
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""

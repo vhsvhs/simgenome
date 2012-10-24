@@ -7,9 +7,10 @@ class Gene:
     pwm = None      # "pwm" stands for position specific weight matrix.
     id = None
     is_repressor = False
-    gamma = None # i.e., cofactor affinity.  It's a 2-d Numpy array. gamma[tf][distance].  Values: 1.0 = no effect on binding, <1.0 = decreases binding, >1.0 = strengthens binding.
+    tfcoop = None # array of relative co-factor affinities, without consideration of distance. [-1,0) = anti-co-factor activity. 0 = no activity, (0,+infinity] = positive co-factor activity
+    gamma = None # i.e., cofactor affinity at various distances.  This is calculated from self.tfcoop.  It's a 2-d Numpy array. gamma[tf][distance].  Values: 1.0 = no effect on binding, <1.0 = decreases binding, >1.0 = strengthens binding.
         
-    def __init__(self, id, urs_len, urs = None, has_dbd = False, repressor = False, pwm = None, gamma = None, ap = None):
+    def __init__(self, id, urs_len, urs = None, has_dbd = False, repressor = False, pwm = None, tfcoop = None, gamma = None, ap = None):
         """gamma and ap are optional, but you need at least one of them."""
         
         """1. id"""
@@ -38,14 +39,15 @@ class Gene:
             self.pwm.randomize()
         
         """6. Co-factor affinity"""
-        if self.has_dbd and gamma == None:
-            self.set_gamma(ap)
-        elif self.has_dbd and gamma != None:
+        if self.has_dbd and tfcoop == None:
+            self.set_tfcoop(ap)
+        elif self.has_dbd and tfcoop != None:
+            self.tfcoop = tfcoop
             self.gamma = gamma
 
     def collapse(self):
         #print "gene.py47 collapsing into", [self.id, self.urs.__len__(), self.urs, self.has_dbd, self.is_repressor, self.pwm, self.gamma]
-        return [self.id, self.urs.__len__(), self.urs, self.has_dbd, self.is_repressor, self.pwm, self.gamma]
+        return [self.id, self.urs.__len__(), self.urs, self.has_dbd, self.is_repressor, self.pwm, self.tfcoop, self.gamma]
 
     def coopfunc(self, g, d):
         """Calculates the degree of binding cooperativity between two TFs binding distance d apart.
@@ -53,21 +55,50 @@ class Gene:
         g ranges from -1 to +inifinity. g of zero means no effect on binding."""
         return 1 + g * math.exp( (-1)*(d**2)/V_RATE_OF_COOP_DECAY );
 
-    def set_gamma(self, ap):
+    def set_tfcoop(self, ap):
         if ap == None:
-            if self.gamma == None:
+            if self.tfcoop == None:
                 print "\n. Error gene.py line 56.  You need to specify ap= or gamma= when you call the function set_gamma."
-            return
+                exit(1)
         
         # tfcoop is an intermediary matrix that holds random draws from the gamma distribution.
         # tfcoop becomes transformed into self.gamma
-        tfcoop = None
         if ap.params["coopinit"] == "random":
-            tfcoop = numpy.random.gamma(2.0,10.0, (ap.params["numtr"]) ) - 4.0
+            self.tfcoop = numpy.random.gamma(2.0,5.0, (ap.params["numtr"]) ) - 4.0
         else:
-            tfcoop = zeros( (ap.params["numtr"]), dtype=float)
+            self.tfcoop = zeros( (ap.params["numtr"]), dtype=float)
+        self.set_gamma(ap)
 
+
+    def set_gamma(self, ap):
         self.gamma = zeros( (ap.params["numtr"], ap.params["maxgd"]), dtype=float)
         for i in ap.params["rangetrs"]:
             for d in ap.params["rangegd"]:
-                self.gamma[i,d] = self.coopfunc( tfcoop[i], d)
+                self.gamma[i,d] = self.coopfunc( self.tfcoop[i], d)
+        #print "debug gene.py 75", " rank=", comm.Get_rank()," gamma=", self.gamma
+        
+        
+    def mutate_urs(self):
+        """Pick a random site"""
+        rand_site = random.randint(0, self.urs.__len__()-1)
+        """Mutate!"""
+        curr_state = self.urs[rand_site]
+        ALPHABET.remove(curr_state)
+        new_state = random.choice( ALPHABET )
+        ALPHABET.append(curr_state)
+        new_urs = ""
+        for j in range(0, self.urs.__len__()):
+            if j == rand_site:
+                new_urs += new_state.__str__()
+            else:
+                new_urs += self.urs[j]
+        self.urs = new_urs
+    
+    def mutate_gamma(self, ap):
+        rand_tr_id = random.randint(0, ap.params["numtr"]-1)
+        delta = random.randint(-1,10)
+        #print "\t gene.py100 ", self.tfcoop[rand_tr_id], " + ", delta
+        self.tfcoop[rand_tr_id] += delta
+        if self.tfcoop[rand_tr_id] < -1:
+            self.tfcoop[rand_tr_id] = -1.0
+        self.set_gamma(ap)

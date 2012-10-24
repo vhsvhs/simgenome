@@ -23,7 +23,28 @@ class Genetic_Algorithm:
                 maxgid = gid
         return maxgid
     
-    def runsim_master(self, comm, ap):                
+    def masteronly_bcast(self, ap):
+        """Broadcast the updated population to MPI slaves."""
+        pop_data = self.population.collapse()
+        pop_data_pickle = pickle.dumps( pop_data )
+        for slave in range(1, comm.Get_size()):
+            comm.send(pop_data_pickle, dest=slave, tag=11)
+    
+        if ap.params["verbosity"] >= 2:
+            pop_pickle_path = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + POPPICKLES + "/population.gen" + ap.params["generation"].__str__() + ".pickle"
+            print "\n. Saving the population to", pop_pickle_path
+            fout = open(pop_pickle_path, "w")
+            fout.write(pop_data_pickle)
+            fout.close()
+    
+    def slaveonly_recv(self):
+        pop_data_pickle = comm.recv(source=0, tag=11)
+        pop_data = pickle.loads( pop_data_pickle ) 
+        population = Population()
+        population.uncollapse(pop_data)
+        self.population = population
+    
+    def runsim_master(self, comm, ap):                        
         """These variables will store time measurments.  Use --perftime True to print these stats."""
         notime = 0.0
         sumtime_gen = notime
@@ -33,7 +54,7 @@ class Genetic_Algorithm:
         sumtime_getmm = notime
         sumtime_end_evo = notime
         sumtime_end_bcast = notime
-            
+        
         """For each GA generation. . . ."""
         for i in range(ap.params["generation"], ap.params["generation"]+ap.params["maxgens"]):
             ap.params["generation"] = i
@@ -54,17 +75,7 @@ class Genetic_Algorithm:
                         self.population.genomes[gid].gene_expr = their_gid_terminal_expression[gid]
             
             time_end_gather = datetime.utcnow()
-            
-            """Post-fitness. . . record data, pickle the population, etc."""
-            if ap.params["verbosity"] >= 2:
-                pop_data = self.population.collapse()
-                pop_data_pickle = pickle.dumps( pop_data )
-                pop_pickle_path = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle"
-                print "\n. Saving the population to", pop_pickle_path
-                fout = open(pop_pickle_path, "w")
-                fout.write(pop_data_pickle)
-                fout.close()
-            
+                        
             """Get basic stats on the population's fitness distribution"""
             [max_f, min_f, mean_f, median_f, std_f] = self.get_fitness_stats(gid_fitness)
             
@@ -109,11 +120,16 @@ class Genetic_Algorithm:
                 time_end_evo = datetime.utcnow()
                 
                 """Broadcast the updated population to MPI slaves."""
-                pop_data = self.population.collapse()
-                pop_data_pickle = pickle.dumps( pop_data )
-                for slave in range(1, comm.Get_size()):
-                    comm.send(pop_data_pickle, dest=slave, tag=11)
+                self.masteronly_bcast(ap)
                 time_end_bcast = datetime.utcnow()
+
+#                """Post-fitness. . . record pickle population, etc."""
+#                if ap.params["verbosity"] >= 2:
+#                    pop_pickle_path = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle"
+#                    print "\n. Saving the population to", pop_pickle_path
+#                    fout = open(pop_pickle_path, "w")
+#                    fout.write(pop_data_pickle)
+#                    fout.close()
             
                 if ap.getOptionalArg("--perftime") == "on":
                     print "\n. Performance data for generation", i, ". . ."
@@ -134,6 +150,7 @@ class Genetic_Algorithm:
                     print "\t. mean comm/calc ratio: %.3f"%( (sumtime_end_gather + sumtime_end_bcast) / (sumtime_end_gather + sumtime_end_bcast + sumtime_end_calc + sumtime_end_stats + sumtime_getmm + sumtime_end_evo) )
 
     def runsim_slave(self, rank, comm, ap):
+                                
         """For each GA generation. . . ."""
         for i in range(ap.params["generation"], ap.params["generation"]+ap.params["maxgens"]):
             ap.params["generation"] = i
@@ -149,8 +166,9 @@ class Genetic_Algorithm:
                 gid_fitness[ gid ] = self.landscape.get_fitness( self.population.genomes[gid], ap)
                 if ap.params["verbosity"] >= 2:
                     """and then plot the expression of all genes in this genome"""
-                    filenameseed = "expr.gen" + i.__str__() + ".gid" + gid.__str__() 
-                    plot_expression( self.population.genomes[gid], filenameseed, filenameseed, "time", "expression", ap)
+                    title = "expr.gen" + i.__str__() + ".gid" + gid.__str__() 
+                    filenameseed = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/" + title
+                    write_expression_cran( self.population.genomes[gid], filenameseed, title, "time", "expression", ap)
             
             """Save the expression at the last timeslice, to be inherited by childern."""
             gid_terminal_expression = {}
@@ -166,11 +184,7 @@ class Genetic_Algorithm:
             
             if i < ap.params["maxgens"]:
                 """Get updated data from master."""
-                pop_data_pickle = comm.recv(source=0, tag=11)
-                pop_data = pickle.loads( pop_data_pickle ) 
-                population = Population()
-                population.uncollapse(pop_data)
-                self.population = population
+                self.slaveonly_recv()
 
     def runsim(self, ap):
         """This is the main method of the genetic algorithm."""

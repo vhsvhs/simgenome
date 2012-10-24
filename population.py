@@ -114,29 +114,23 @@ class Population:
                     print "\t.", n_point_mutations, "cis mutations to individual", gid
                 """URS mutations...."""
                 for i in range(0, n_point_mutations):
-                    """Pick a random gene"""
                     rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
-                    """Pick a random site"""
-                    rand_site = random.randint(0, self.genomes[gid].genes[rand_gene].urs.__len__()-1)
-                    """Mutate!"""
-                    curr_state = self.genomes[gid].genes[rand_gene].urs[rand_site]
-                    ALPHABET.remove(curr_state)
-                    new_state = random.choice( ALPHABET )
-                    ALPHABET.append(curr_state)
-                    new_urs = ""
-                    for j in range(0, self.genomes[gid].genes[rand_gene].urs.__len__()):
-                        if j == rand_site:
-                            new_urs += new_state.__str__()
-                        else:
-                            new_urs += self.genomes[gid].genes[rand_gene].urs[j]
-                    self.genomes[gid].genes[rand_gene].urs = new_urs
+                    self.genomes[gid].genes[rand_gene].mutate_urs()
                 """PWM mutations..."""
-                rand_roll = random.random()
-                if rand_roll < mu:
+                if random.random() < mu:
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
                         print "\t+ mutating PWM ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
+                """Gamma mutations...."""
+                if True:
+                    rand_tr_id = random.randint(0, ap.params["numtr"]-1)
+                    if ap.params["verbosity"] >= 2:
+                        print "\t+ mutating gamma for TR ", rand_tr_id, "in individual", gid
+                    self.genomes[gid].genes[rand_tr_id].mutate_gamma(ap)
+                    #print self.genomes[gid].genes[rand_tr_id].gamma
+
+                    
         if ap.params["verbosity"] > 2:
             print "\n"
                 
@@ -212,7 +206,9 @@ class Population:
                     if parentgene.has_dbd:
                         copypwm = PWM(copyfrom=parentgene.pwm)
                         copygamma = numpy.copy( parentgene.gamma )
-                    gene_copy = Gene(geneid, parentgene.urs.__len__(), urs=parentgene.urs, has_dbd=parentgene.has_dbd, repressor=parentgene.is_repressor,pwm=copypwm,gamma=copygamma)
+                        copytfcoop = numpy.copy( parentgene.tfcoop )
+                        #print "debug population.py 215 parent gamma:\n", parentgene.gamma, "\n child gamma:\n", copygamma
+                    gene_copy = Gene(geneid, parentgene.urs.__len__(), urs=parentgene.urs, has_dbd=parentgene.has_dbd, repressor=parentgene.is_repressor,pwm=copypwm,gamma=copygamma,tfcoop=copytfcoop)
                     new_genes.append( gene_copy )
                 new_genomes[child_gid].init(ap, init_genes=new_genes, init_expression=self.genomes[parent1].gene_expr)
         """Save the new children genomes."""

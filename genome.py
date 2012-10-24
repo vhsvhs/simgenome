@@ -49,7 +49,7 @@ class Genome:
         gids = data[0].keys()
         gids.sort()
         for gid in gids:
-            this_gene = Gene(data[0][gid][0], data[0][gid][1], data[0][gid][2], data[0][gid][3], data[0][gid][4], data[0][gid][5], data[0][gid][6])
+            this_gene = Gene(data[0][gid][0], data[0][gid][1], data[0][gid][2], data[0][gid][3], data[0][gid][4], data[0][gid][5], data[0][gid][6], data[0][gid][7])
             self.genes.append( this_gene )
         self.gene_expr = data[1]
     
@@ -86,14 +86,14 @@ class Genome:
     def print_gamma(self, ap):
         foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/coop.gen" + ap.params["generation"].__str__() + ".gid" + self.id.__str__() + ".txt"
         lines = []
-        lines.append("dist.\tTFi\tTFj\tcoop_value")
+        lines.append("dist.\tTFi\tTFj\tgamma")
         for gene in self.genes:
-            for j in ap.params["rangetrs"]:                    
-                for d in ap.params["rangegd"]:
-                    this_line = d.__str__() + "\t" + gene.id.__str__() + "\t" + j.__str__() 
-                    if gene.has_dbd:
+            if gene.has_dbd:
+                for j in ap.params["rangetrs"]:                    
+                    for d in ap.params["rangegd"]:
+                        this_line = d.__str__() + "\t" + gene.id.__str__() + "\t" + j.__str__() 
                         this_line += "\t" + gene.gamma[j,d].__str__()
-                    lines.append(this_line)
+                        lines.append(this_line)
         fout = open(foutpath, "w")
         for l in lines:
             fout.write(l + "\n")
