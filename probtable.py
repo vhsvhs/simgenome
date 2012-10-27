@@ -37,7 +37,7 @@ class ProbTable:
         #
         ret += "\n"
         ret += "CPT\nsite\tTR\tvalue\n"
-        dimes = self.cpt.shape
+        dims = self.cpt.shape
         for x in range(0, dims[1]):
             for i in range(0, dims[0]):
                 ret += x.__str__() + "\t"
@@ -46,10 +46,10 @@ class ProbTable:
         
         ret += "\n"
         ret += "CPR\nsite\n"
-        dimes = self.cpr.shape
+        dims = self.cpr.shape
         for i in range(0, dims[0]):
             ret += i.__str__() + "\t"
-            ret += self.cpt[i].__str__() + "\n"        
+            ret += self.cpr[i].__str__() + "\n"        
         
         return ret
 
