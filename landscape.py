@@ -122,7 +122,7 @@ class Landscape:
             self.t_counter = timeslice
 
             # manually set expression values for genes defined in the input rules.   
-            if timeslice in self.inputpatterns:
+            if timeslice in self.inputpatterns: # if we have a rule for this timeslice....
                 for i in self.inputpatterns[timeslice]:
                     this_gene = i[0]
                     this_expr_level = i[1]
@@ -139,7 +139,7 @@ class Landscape:
                                 marka = "[act.]"
                             elif gene.has_dbd and gene.is_repressor:
                                 marka = "[rep.]"
-                            print "gen.", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tact: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice]
+                            print "gen.", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice]
                     print ""
 
             
@@ -149,9 +149,18 @@ class Landscape:
                                        
             for gene in genome.genes:                
                 # Calculate the delta G of binding on the cis-region for every gene.
+                # pe ranges from 0 (repression) to 1.0 (strong activation)
                 pe = self.get_expression(genome, gene, tf_expr_level, ap)                
-                #expr_modifier = 2.0 * pe
-                expr_modifier = ap.params["growth_rate"] * pe
+                
+                #
+                # October 24: new formulation for pe that includes decay
+                #
+                if pe > 0:
+                    expr_modifier = ap.params["growth_rate"] * pe
+                elif pe < 0:
+                    expr_modifier = ap.params["decay_rate"] * pe
+                else:
+                    expr_modifier = 1.0
                 new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
                 genome.gene_expr[gene.id].append( new_expr_level )
                 
@@ -170,7 +179,7 @@ class Landscape:
                         marka = "[act.]"
                     elif gene.has_dbd and gene.is_repressor:
                         marka = "[rep.]"
-                    print "gen.", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tact: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta 
+                    print "gen.", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta 
 
             #
             # to-do: if gene expression has not changed from the last timeslice
@@ -192,10 +201,10 @@ class Landscape:
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""
         pe = []        
         ptables = ProbTable( ap.params["numtr"], ap.params["maxgd"], gene.urs.__len__() )
-        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)  
-        #print ptables
-        #exit()
-        return self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)          
+        ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)          
+        pe = self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)        
+        pe = pe - 0.5  
+        return pe
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
         """returns a ProbTable object, named ret."""
@@ -209,7 +218,6 @@ class Landscape:
                 #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%pwm_tmp, "bits."
                 sum_cpt = 0.0
                 for j in ap.params["rangetrs+"]: # +1 to also consider the empty case
-                    #print i, j, x
                     for d in ap.params["rangegd"]:                        
                         if (L-x < self.r[i]): 
                             """ CASE 1: TF i's PWM is too wide to start binding at site x"""
@@ -236,21 +244,18 @@ class Landscape:
                                 """ CASE 4: the distance between TFs i and j is too small."""
                                 # we forbid TFs to bind this close together
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
-                                sum_cpt += ret.cpa[i,j,d,x]
-                                sum_cpr += ret.cpa[i,j,d,x]
                                 if ap.params["verbosity"] > 100:
                                     print "case 4:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
                             elif (L - self.r[i] - d - self.r[j] < 0):
                                 """CASE 3: TF i and j cannot both fit on the sequence."""
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
-                                sum_cpt += ret.cpa[i,j,d,x]
-                                sum_cpr += ret.cpa[i,j,d,x]
                                 if ap.params["verbosity"] > 100:
                                     print "case 3:", i, j, d, x, ret.cpa[i,j,d,x]
                                 continue
                             else:
-                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * (genome.genes[i].gamma[j, d] + genome.genes[j].gamma[i,d]) 
+                                """Case 5: TF i and TF j can fit with distance d between them"""
+                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp #* (genome.genes[i].gamma[j, d] + genome.genes[j].gamma[i,d]) 
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
                                 if ap.params["verbosity"] > 100:
@@ -281,6 +286,9 @@ class Landscape:
                             continue
                 ret.cpt[i,x] = sum_cpt
             ret.cpr[x] = sum_cpr
+        #if gene.id == 2:
+        #    print "\n\nPTABLE FOR GENE 2:"
+        #    print ret
         return ret
         
     def sample_cdf(self, site, ptables, ap):
@@ -304,6 +312,12 @@ class Landscape:
 #        retd = x%MAX_GD
 #        #print "new answer:", [reti, retj, retd]
 #        return [reti, retj, retd]
+        
+    
+        if ptables.cpr[site] == 0.0:
+            return None
+#            return [ap.params["numtr"], ap.params["numtr"], 1]
+        
         
         #
         # This is the old way....
@@ -329,7 +343,7 @@ class Landscape:
                     retd = d
                     sump += ptables.cpa[i,j,d,site]
                     #this next line is useful for debugging, but it totally explodes the runtime:
-                    #print "site", site, "tf", i, "tf", j, "d", d, "sump", sump, "randp", randp
+                    #print "landscape 340, site", site, "tf", i, "tf", j, "d", d, "sump", sump, "randp", randp
                     if sump > randp:
                         break
                 if sump > randp:
@@ -351,33 +365,25 @@ class Landscape:
         """configurations: key = site, value = array of arrays, [i,j,d] samples"""
         for sample in range(0, ap.params["iid_samples"]):
             
-            """"1. build a configuration c_k, by sampling cells from ptables.cpa"""          
+            """"1. build a configuration this_config, by sampling cells from ptables.cpa"""          
             this_config = {} # key = site, value = the TF bound starting at this site.
             site = 0
             while (site < gene.urs.__len__()):
-                [i, j, d] = self.sample_cdf(site, ptables, ap)
                 
-                #
-                # Useful output for debugging:
-                #
-                #print "\n. Sampled i=", i, "j=", j, "d=", d
-                #if i < ap.params["numtr"]:
-                #    print "i:",i, genome.genes[i].pwm.P
-                #if j < ap.params["numtr"]:
-                #    print "j:",j,genome.genes[j].pwm.P
-                #print "URS:", gene.urs
-                #print i, j, d
-                #
-                #
+                x = self.sample_cdf(site, ptables, ap)
+                if x == None:
+                    break
                 
+                [i, j, d] = x                                  
                 if False == configurations.__contains__(site):
                     configurations[site] = []
                 configurations[site].append( [i,j,d] )
                 this_config[site] = i
+                
                 if i < ap.params["numtr"]:
                     site += genome.genes[i].pwm.P.__len__()
                 else:
-                    site += 1 # for the non-occuped case
+                    site += 0 # for the non-occuped case
                 site += d
                 
                 if site < gene.urs.__len__(): # don't create a configuration beyond the length of the URS
@@ -387,7 +393,7 @@ class Landscape:
                     if j < ap.params["numtr"]:
                         site += genome.genes[j].pwm.P.__len__()
                     else:
-                        site += 1
+                        site += 0
                 
             """"2. Calculate the binding energy of the configuration."""
             sum_lambda_act = 0.0
@@ -409,22 +415,28 @@ class Landscape:
             # but this is what I'm doing instead:
             # This incorporates the hill equation"""
             
+
             k_act = sum_lambda_act
             k_rep = sum_lambda_rep
             this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(k_act-k_rep) ) ))
             pe_sum += this_pe
-            #print "gene", gene.id, "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
+            #print "debug landscape.py 417 - gene", gene.id, "k_act", k_act, "k_rep", k_rep, "this_pe", this_pe
         if ap.params["verbosity"] > 3:
             self.print_configuration(configurations, genome, gene, ap)
         return (pe_sum / ap.params["iid_samples"])
     
     
     def print_configuration(self, configs, genome, gene, ap):        
+        
+#        if gene.id == 2:
+#            for key in configs:
+#                print key, configs[key]
+        
         """configs is a hashtable of configurations...
             configs[site] = array of triples [gene i, gene j, distance]"""
         foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
         fout = open( foutpath , "a")
-        fout.write("#\n# For example, \"site 3 :  1 [-] 0.672 0.120\" indicates that site 3 is bound by repressor 1\n# in 67.2 percent of IID samples with activation energy = 0.120.\n# Activation energies < 0.5 indicate repression, = 0.5 indicate no activation,\n# > 0.5 indicates activation.#\n#\n")
+        #fout.write("#\n# For example, \"site 3 :  1 [-] 0.672 0.120\" indicates that site 3 is bound by repressor 1\n# in 67.2 percent of IID samples with activation energy = 0.120.\n# Activation energies < 0.5 indicate repression, = 0.5 indicate no activation,\n# > 0.5 indicates activation.#\n#\n")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
             
         """configs is array of arrays, [site, tf_i, tf_j, distance between i and j]"""
@@ -440,12 +452,15 @@ class Landscape:
             line = "site " + site.__str__() + " :"
             for tf in tf_count:
                 pe = 0.0
-                if tf < ap.params["numtr"]:
-                    pe = genome.genes[tf].pwm.prob_binding(site, gene.urs)
-                tf_type = "[+]"
-                if genome.genes[tf].is_repressor:
+                #if tf < ap.params["numtr"]:
+                pe = genome.genes[tf].pwm.prob_binding(site, gene.urs)
+                if tf == ap.params["numtr"]:
+                    tf_type = "n"
+                elif genome.genes[tf].is_repressor:
                     tf_type = "[-]"
-                line += " \t" + tf.__str__() + " " + tf_type + " %.3f"%tf_count[tf] + " %.3f"%pe
+                else:
+                    tf_type = "[+]"
+                line += " \t" + tf.__str__() + " " + tf_type + " p=%.3f"%tf_count[tf] + " e=%.3f"%pe
             fout.write(line + "\n")
         fout.write("\n")
         fout.close()

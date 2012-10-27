@@ -196,6 +196,10 @@ def get_input_rules_from_file(ap):
                     this_basal_gene_id = int(tokens[2])
                     this_timepoint = int(tokens[3])
                     this_expr_level = float(tokens[4])
+                    if this_expr_level < MINIMUM_ACTIVITY_LEVEL:
+                        this_expr_level = MINIMUM_ACTIVITY_LEVEL
+                    if this_expr_level > MAXIMUM_ACTIVITY_LEVEL:
+                        this_expr_level = MAXIMUM_ACTIVITY_LEVEL
                     this_reporter_gene_id = int(tokens[5])
                     this_rule_type = tokens[6]
                     if this_rule_type == "ge":
@@ -214,6 +218,7 @@ def get_input_rules_from_file(ap):
             elif l.startswith("INPUT"):
                 tokens = l.split()
                 if tokens.__len__() >= 4:
+                    # first parse the parameters of the time pattern
                     this_basal_gene_id = int(tokens[1])
                     this_timepoint_start = int(tokens[2])
                     if this_timepoint_start > max_time:
@@ -222,6 +227,11 @@ def get_input_rules_from_file(ap):
                     if this_timepoint_stop > max_time:
                         max_time = this_timepoint_stop
                     this_expr_level = float(tokens[4])
+                    if this_expr_level < MINIMUM_ACTIVITY_LEVEL:
+                        this_expr_level = MINIMUM_ACTIVITY_LEVEL
+                    if this_expr_level > MAXIMUM_ACTIVITY_LEVEL:
+                        this_expr_level = MAXIMUM_ACTIVITY_LEVEL
+                    # build the input pattern
                     for t in range(this_timepoint_start, this_timepoint_stop+1):
                         if t not in ret_inputpatterns:
                             ret_inputpatterns[t] = []

@@ -121,3 +121,6 @@ class PWM:
         #res1 *= a**( self.P.__len__() )
         
         return res1
+    
+    
+    
