@@ -94,9 +94,36 @@ class Gene:
                 new_urs += self.urs[j]
         self.urs = new_urs
     
+    def mutate_urs_len(self):
+        """Pick a random site at which we will insert or delete"""
+        rand_site = random.randint(0, self.urs.__len__()-1)        
+        mulen = random.randint(1, URS_LEN_INDEL_MAX)
+        action = random.randint(0, 1)
+        if action == 0:
+            # delete
+            newurs = ""
+            for j in range(0, rand_site): 
+                newurs += self.urs[j]
+            if rand_site+mulen < self.urs.__len__():
+                for j in range(rand_site+mulen, self.urs.__len__()):
+                    newurs += self.urs[j]
+            self.urs = newurs
+        elif action == 1:
+            #insert
+            newurs = ""
+            for j in range(0, rand_site): 
+                newurs += self.urs[j]
+            for j in range(0,mulen):
+                newurs += ALPHABET[random.randint(0, ALPHABET.__len__())]
+            for j in range(rand_site, self.urs.__len__()):
+                newurs += self.urs[j]
+            self.urs = newurs            
+    
     def mutate_gamma(self, ap):
+        """Modify this TF's preference for one rand_tr_id gene."""
         rand_tr_id = random.randint(0, ap.params["numtr"]-1)
         delta = random.randint(-1,10)
+        print "gene.py 100:", self.tfcoop
         #print "\t gene.py100 ", self.tfcoop[rand_tr_id], " + ", delta
         self.tfcoop[rand_tr_id] += delta
         if self.tfcoop[rand_tr_id] < -1:

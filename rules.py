@@ -52,21 +52,27 @@ class Rule_Collection:
     for a subset of reporter genes in each genome.  See the parent class, Landscape, for how to
     calculate the fitness of a given Rule_Collection.  This class can be initialized with an a priori
     desired expression pattern, or the pattern can be randomly initialized."""
-    collection_id = None
+    rid = None
+    inputs = {}
     rules = []
     
-    def __init__(self, collection_id):
-        self.collection_id = collection_id
+    def __init__(self, rid):
+        self.rid = rid
         self.rules = []
         
     def collapse(self):
-        data = []
-        for r in self.rules:
-            data.append( r.collapse() )
-        return data
+        r = []
+        i = []
+        for rule in self.rules:
+            r.append( rule.collapse() )
+        for input in self.inputs:
+            i.append( input.collapse() )
+        return [i, r]
     
     def uncollapse(self, data):
-        for rule in data:
+        for input in data[0]:
+            self.inputs.append(input)
+        for rule in data[1]:
             this_rule = Fitness_Rule(rule[0], rule[1], rule[2], rule[3])
             self.rules.append( this_rule )
     

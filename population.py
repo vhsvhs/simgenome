@@ -108,22 +108,27 @@ class Population:
             if mu > 0.0:
                 """How many mutations should we make?"""
                 n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * mu)
-                n_deletions = None
-                n_duplications = None
                 if ap.params["verbosity"] >= 2:                
                     print "\t.", n_point_mutations, "cis mutations to individual", gid
-                """URS mutations...."""
+                """URS nt mutations...."""
                 for i in range(0, n_point_mutations):
                     rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
                     self.genomes[gid].genes[rand_gene].mutate_urs()
-                """PWM mutations..."""
-                if random.random() < mu:
+                """URS length changes...."""
+                n_urslen_changes = int(self.genomes[gid].genes.__len__() * ap.params["urslenmu"])
+                for i in range(0, n_urslen_changes):
+                    rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
+                    self.genomes[gid].genes[rand_gene].mutate_urs_len()
+                """DBD mutations..."""
+                n_pwm_changes = int(ap.params["numtr"] * ap.params["dbdmu"])
+                for i in range(n_pwm_changes):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
-                        print "\t+ mutating PWM ", rand_tr_id, "in individual", gid
+                        print "\t+ mutating DBD ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
                 """Gamma mutations...."""
-                if True:
+                n_p2p_changes = int(ap.params["numtr"] * ap.params["dbdmu"])
+                for i in range(n_p2p_changes):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
                         print "\t+ mutating gamma for TR ", rand_tr_id, "in individual", gid
@@ -190,7 +195,12 @@ class Population:
             else:
                 """Select the parents from the fitness CDF."""
                 parent1 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness) 
-                parent2 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
+                if random.random() < ap.params["sexual_ratio"]:
+                    """sexual reproduction with two parents."""
+                    parent2 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
+                else:
+                    """clonal reproduction with one parent."""
+                    parent2 = parent1
                 if ap.params["verbosity"] > 2:
                     print "\t+ new child", child_gid, "=", parent1, "X", parent2
                 new_genomes[child_gid].is_elite = False

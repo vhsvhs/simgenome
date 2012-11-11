@@ -113,11 +113,35 @@ def read_cli(ap):
     else:
         ap.params["elitemu"] = ELITE_MU
         
+    x = ap.getOptionalArg("--dbdmu")
+    if x != False:
+        ap.params["dbdmu"] = float(x)
+    else:
+        ap.params["dbdmu"] = DBD_MU
+
     x = ap.getOptionalArg("--pwmmu")
     if x != False:
         ap.params["pwmmu"] = float(x)
     else:
         ap.params["pwmmu"] = PWM_MU
+
+    x = ap.getOptionalArg("--urslenmu")
+    if x != False:
+        ap.params["urslenmu"] = float(x)
+    else:
+        ap.params["urslenmu"] = URS_LEN_MU
+
+    x = ap.getOptionalArg("--p2pmu")
+    if x != False:
+        ap.params["p2pmu"] = float(x)
+    else:
+        ap.params["p2pmu"] = P2P_MU
+
+    x = ap.getOptionalArg("--p2pmudelta")
+    if x != False:
+        ap.params["p2pmudelta"] = float(x)
+    else:
+        ap.params["p2pmudelta"] = P2P_MU_DELTA
 
     x = ap.getOptionalArg("--eliteproportion")
     if x != False:
@@ -149,6 +173,12 @@ def read_cli(ap):
     else:
         ap.params["generation"] = INIT_GEN
 
+    x = ap.getOptionalArg("--sexual_ratio")
+    if x != False:
+        ap.params["sexual_ratio"] = float(x)
+    else:
+        ap.params["sexual_ratio"] = SEXUAL_RATIO
+
     ap.params["enable_epigenetics"] = False
     x = ap.getOptionalArg("--enable_heritable_expression")
     if x != False:
@@ -158,20 +188,23 @@ def read_cli(ap):
 
 def check_world_consistency(ap, population, landscape):
     """Check for out-of-bounds genes"""
-    for rc in landscape.rulecollection:
-        for rule in rc.rules:
+    for rid in landscape.rulecollections:
+        for rule in landscape.rulecollections[rid].rules:
             if rule.reporter_id > population.genomes[0].genes.__len__() - 1:
                 print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome only contains", (population.genomes[0].genes.__len__() -1 ), "genes."
                 print "I am quitting."
                 exit(1)
+        #
+        # to-do:
+        # Check that input correspond to rules.
+        #
 
 def get_input_rules_from_file(ap):
     """See the examples, included with the source code, for information about the required file format."""
     if False == ap.getOptionalArg("--patternpath"):
         return None
     else:
-        ret_rulecollection = []  # see Landscape.rulecollection
-        ret_inputpatterns = {} # see Landscape.inputpatterns
+        ret = {}  # see Landscape.rulecollection
         patternpath = ap.getOptionalArg("--patternpath")
         
         fin = open(patternpath, "r")
@@ -192,7 +225,7 @@ def get_input_rules_from_file(ap):
             if l.startswith("RULE"):
                 tokens = l.split()
                 if tokens.__len__() >= 6:
-                    this_rulecollection_id = int(tokens[1])
+                    this_rc_id = int(tokens[1])
                     this_basal_gene_id = int(tokens[2])
                     this_timepoint = int(tokens[3])
                     this_expr_level = float(tokens[4])
@@ -210,32 +243,36 @@ def get_input_rules_from_file(ap):
                         this_rule_type = operator.le
                     else:
                         this_rule_type = this_rule_type = operator.ge
-                    if ret_rulecollection.__len__() <= this_rulecollection_id:
-                        this_timepattern = Rule_Collection(this_rulecollection_id)
-                        ret_rulecollection.append(this_timepattern)
                     this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type)
-                    ret_rulecollection[ this_rulecollection_id ].rules.append( this_rule )
+                    if this_rc_id not in ret:
+                        ret[this_rc_id] = Rule_Collection(this_rc_id)
+                    ret[ this_rc_id ].rules.append( this_rule )
             elif l.startswith("INPUT"):
                 tokens = l.split()
                 if tokens.__len__() >= 4:
                     # first parse the parameters of the time pattern
-                    this_basal_gene_id = int(tokens[1])
-                    this_timepoint_start = int(tokens[2])
+                    this_rc_id = int(tokens[1])
+
+                    this_basal_gene_id = int(tokens[2])
+                    this_timepoint_start = int(tokens[3])
                     if this_timepoint_start > max_time:
                         max_time = this_timepoint_start
-                    this_timepoint_stop = int(tokens[3])
+                    this_timepoint_stop = int(tokens[4])
                     if this_timepoint_stop > max_time:
                         max_time = this_timepoint_stop
-                    this_expr_level = float(tokens[4])
+                    this_expr_level = float(tokens[5])
                     if this_expr_level < MINIMUM_ACTIVITY_LEVEL:
                         this_expr_level = MINIMUM_ACTIVITY_LEVEL
                     if this_expr_level > MAXIMUM_ACTIVITY_LEVEL:
                         this_expr_level = MAXIMUM_ACTIVITY_LEVEL
                     # build the input pattern
+                    if this_rc_id not in ret:
+                        ret[this_rc_id] = Rule_Collection(this_rc_id)
                     for t in range(this_timepoint_start, this_timepoint_stop+1):
-                        if t not in ret_inputpatterns:
-                            ret_inputpatterns[t] = []
-                        ret_inputpatterns[t].append( [this_basal_gene_id, this_expr_level] )
+                        if t not in ret[this_rc_id].inputs:
+                            ret[this_rc_id].inputs[t] = []
+                        ret[this_rc_id].inputs[t].append( [this_basal_gene_id, this_expr_level] )
+        
         
         # 3. Ensure we don't have rules for timepoints beyond the max timepoint
         if max_time > ap.params["maxtime"]:
@@ -246,7 +283,7 @@ def get_input_rules_from_file(ap):
             ap.params["maxtime"] = max_time
         
         
-        return [ret_rulecollection, ret_inputpatterns]
+        return ret
 
 def get_genes_from_file(ap):
     """Returns either a list of genes read from a file,

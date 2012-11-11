@@ -79,6 +79,15 @@ class Genetic_Algorithm:
             """Get basic stats on the population's fitness distribution"""
             [max_f, min_f, mean_f, median_f, std_f] = self.get_fitness_stats(gid_fitness)
             
+            fout = open(ap.params["workspace"] + "/" + ap.params["runid"] + "/LOGS/gen" + i.__str__() + ".txt", "a")
+            fout.write("ID\tfitness\n")
+            gids = gid_fitness.keys()
+            gids.sort()
+            for gid in gids:
+                fout.write(gid.__str__() + "\t" + gid_fitness[gid].__str__() + "\n")
+            fout.close()
+            
+            
             time_end_stats = datetime.utcnow()
             
             if ap.params["verbosity"] >= 1:
@@ -98,7 +107,7 @@ class Genetic_Algorithm:
                 # to-do: calculate effective pop. size
                 #
                 #print "\n. effective popsize=", self.population.effective_popsize()
-                line = "gen " + i.__str__() + "\t" + "\tmaxf= %.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + "\tstdf= %.3f"%std_f 
+                line = "gen " + i.__str__() + "\t" + "\tmaxf= %.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + " \tstdf= %.3f"%std_f 
                 log_generation(ap, line)
             
             """Check for convergence on terminal conditions."""

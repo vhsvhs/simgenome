@@ -33,7 +33,7 @@ Most of these parameter values can be overrided by command-line values."""
 INIT_URS_LEN = 20
 
 """What is the initial length (# sites) in a new PWM?"""
-INIT_PWM_LEN = 3
+INIT_PWM_LEN = 5
 
 ALPHABET = ["A", "C", "G", "T"]
 
@@ -47,10 +47,20 @@ N_TR = 2
 N_REPORTER = 1
 
 """Mean mutation rate"""
-MU = 0.1
+MU = 0.05
 ELITE_MU = 0.01
 ELITE_PROPORTION = 0.3
-PWM_MU = MU
+DBD_MU = 0.1 # how often are DBD's mutated?
+PWM_MU = 0.5 # how much change occurs to a particular PWM once selected for mutation?
+URS_LEN_MU = 0.05
+URS_LEN_INDEL_MAX = 10
+P2P_MU = 0.1
+P2P_MU_DELTA = 1.0
+
+"""When reproduction occurs, what proportion of reproductive events are sexual? 1.0 means only sexual reproduction,
+wherease 0.0 means all clonal reproduction."""
+SEXUAL_RATIO = 1.0
+
 """How many generations to run the genetic algorithm?"""
 MAX_GA_GENS = 5000
 INIT_GEN = 0
