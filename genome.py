@@ -41,6 +41,7 @@ class Genome:
 #            self.tfcoop = zeros( (ap.params["numtr"], ap.params["numtr"]), dtype=float)
 #        self.set_gamma(ap)
         
+        self.print_dbds(ap)
         # print the gamma matrix
         self.print_gamma(ap)
 
@@ -72,9 +73,7 @@ class Genome:
         while (True == self.contains_gene(randid) ):
             randid = random.randint(0,1000000)
         return randid
-    
-    def get_expression_levels(self):
-        pass
+
     
     def count_cis_seq_len(self):
         count = 0
@@ -94,6 +93,18 @@ class Genome:
                         this_line = d.__str__() + "\t" + gene.id.__str__() + "\t" + j.__str__() 
                         this_line += "\t" + gene.gamma[j,d].__str__()
                         lines.append(this_line)
+        fout = open(foutpath, "w")
+        for l in lines:
+            fout.write(l + "\n")
+        fout.close()
+
+    def print_dbds(self, ap):
+        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/dbds.gen" + ap.params["generation"].__str__() + ".gid" + self.id.__str__() + ".txt"
+        lines = []
+        for gene in self.genes:
+            if gene.has_dbd:
+                lines.append("\nGene " + gene.id.__str__() + ":\n")
+                lines.append( gene.pwm.__str__())
         fout = open(foutpath, "w")
         for l in lines:
             fout.write(l + "\n")

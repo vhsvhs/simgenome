@@ -64,11 +64,13 @@ class Genetic_Algorithm:
 
             """Wait for data from slaves. . ."""
             for slave in range(1, comm.Get_size()):
+                if ap.params["verbosity"] > 50:
+                    print "\n. genetic_algorithm.py line 68 - Master is waiting for data from slave", slave
                 [their_gid_fitness, their_gid_terminal_expression] = comm.recv(source=slave, tag=11)
                 if slave == 1:
                     time_end_calc = datetime.utcnow()
-                if ap.params["verbosity"] > 100:
-                    print "\n. genetic_algorithm.py line 56 - Master received from slave", slave, ":\ngid_fitness:", their_gid_fitness, "\ngid_terminal_expression:", their_gid_terminal_expression
+                if ap.params["verbosity"] > 50:
+                    print "\n. genetic_algorithm.py line 73 - Master received from slave", slave, ":\ngid_fitness:", their_gid_fitness, "\ngid_terminal_expression:", their_gid_terminal_expression
                 for gid in their_gid_fitness.keys():
                     gid_fitness[gid] = their_gid_fitness[gid]
                     if ap.params["enable_epigenetics"] == True:
@@ -78,7 +80,8 @@ class Genetic_Algorithm:
                         
             """Get basic stats on the population's fitness distribution"""
             [max_f, min_f, mean_f, median_f, std_f] = self.get_fitness_stats(gid_fitness)
-            
+
+            """Print LOGS/genX.txt with the fitness of each individual at this generation."""            
             fout = open(ap.params["workspace"] + "/" + ap.params["runid"] + "/LOGS/gen" + i.__str__() + ".txt", "a")
             fout.write("ID\tfitness\n")
             gids = gid_fitness.keys()

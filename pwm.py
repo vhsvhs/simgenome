@@ -93,7 +93,7 @@ class PWM:
             for c in ALPHABET:
                 self.P[i][c] = flat_p
     
-    def prob_binding(self, pos, urs):
+    def specificity(self, pos, urs):
         """What is the probability that the PWM in gene tf will bind the upstream 
         regulatory region (urs) sequence with the right edge of the PWM at site pos?"""        
         if (urs.__len__() - pos < self.P.__len__() ):

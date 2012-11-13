@@ -96,18 +96,25 @@ class Population:
     def do_mutations(self, ap):
         if ap.params["verbosity"] > 2:
             print "\n. The population is mutating. . .\n"
-            
+
+        """Print LOGS/mu.genX.txt with the number of mutations made to each individual at this generation."""            
+        fout = open(ap.params["workspace"] + "/" + ap.params["runid"] + "/LOGS/mu.gen" + ap.params["generation"].__str__() + ".txt", "a")
+        fout.write("ID\tN_cis\tN_urslen\tN_PWM\tN_p2p\n")
+    
         """Introduce mutations into (potentially) all genomes in the population"""
         for gid in self.genomes:
             mu = ap.params["mu"] 
             if self.genomes[gid].is_elite == True:
                 mu = ap.params["elitemu"] 
-                
-            #print "debug population.py 92 - ID", gid, "mu", mu
+            
+            n_point_mutations = 0
+            n_urslen_changes = 0
+            n_pwm_changes = 0
+            n_p2p_changes = 0
             
             if mu > 0.0:
                 """How many mutations should we make?"""
-                n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * mu)
+                n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * ap.params["cismu"])
                 if ap.params["verbosity"] >= 2:                
                     print "\t.", n_point_mutations, "cis mutations to individual", gid
                 """URS nt mutations...."""
@@ -127,15 +134,18 @@ class Population:
                         print "\t+ mutating DBD ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
                 """Gamma mutations...."""
-                n_p2p_changes = int(ap.params["numtr"] * ap.params["dbdmu"])
+                n_p2p_changes = int(ap.params["numtr"] * ap.params["p2pmu"])
                 for i in range(n_p2p_changes):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
                         print "\t+ mutating gamma for TR ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].mutate_gamma(ap)
                     #print self.genomes[gid].genes[rand_tr_id].gamma
+            fout.write(gid.__str__() + ("\t%d"%n_point_mutations).__str__() + ("\t%d"%n_urslen_changes).__str__() + ("\t%d"%n_pwm_changes).__str__() + ("\t%d"%n_p2p_changes).__str__() + "\n" )
+        
+        """Close the LOGS/mu.genX.txt"""
+        fout.close()
 
-                    
         if ap.params["verbosity"] > 2:
             print "\n"
                 
@@ -182,6 +192,9 @@ class Population:
         if ap.params["verbosity"] > 2:
             print "\n. The population is reproducing, selectively based on fitness. . .\n"
         
+        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/mating.gen" + ap.params["generation"].__str__() + ".txt"
+        lines = []
+
         new_genomes = {}
         """For now we assume the new population has the same size as its parent population."""
         
@@ -189,7 +202,9 @@ class Population:
             new_genomes[child_gid] = Genome(child_gid)                         
             if self.genomes[child_gid].is_elite == True:
                 if ap.params["verbosity"] > 2:
-                    print "\t+ new child", child_gid, "=", child_gid, "cloned."
+                    l = "\t+ elite child " + child_gid.__str__() + " = " + child_gid.__str__() + " cloned."
+                    print l
+                    lines.append(l)
                 new_genomes[child_gid].is_elite = True
                 new_genomes[child_gid].init(ap, init_genes = self.genomes[child_gid].genes, init_expression=self.genomes[child_gid].gene_expr)
             else:
@@ -202,7 +217,9 @@ class Population:
                     """clonal reproduction with one parent."""
                     parent2 = parent1
                 if ap.params["verbosity"] > 2:
-                    print "\t+ new child", child_gid, "=", parent1, "X", parent2
+                    l = "\t+ new child " + child_gid.__str__() + " = " + parent1.__str__() + " X " + parent2.__str__()
+                    print l
+                    lines.append(l)
                 new_genomes[child_gid].is_elite = False
                 new_genes = []
                 for geneid in range(0, self.genomes[parent1].genes.__len__()):
@@ -223,6 +240,12 @@ class Population:
                 new_genomes[child_gid].init(ap, init_genes=new_genes, init_expression=self.genomes[parent1].gene_expr)
         """Save the new children genomes."""
         self.genomes = new_genomes
+            
+        fout = open(foutpath, "w")
+        fout.write("\n. Generation " + ap.params["generation"].__str__() + "\n")
+        for l in lines:
+            fout.write(l + "\n")
+        fout.close()
             
     def compare_two_genomes(self, idx, idy):
         for j in range(0, self.genomes[idx].genes.__len__()):

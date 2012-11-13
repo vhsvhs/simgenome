@@ -84,9 +84,10 @@ def read_cli(ap):
     x = ap.getOptionalArg("--maxgd")
     if x != False:
         ap.params["maxgd"] = int(x)
+        if ap.params["maxgd"] <= 0:
+            ap.params["maxgd"] = 1
     else:
         ap.params["maxgd"] = MAX_GD
-
     # Here we precompte the range of GD values, because we'll use this range very often in the code. 
     ap.params["rangegd"] = []
     for d in range(0, ap.params["maxgd"]):
@@ -130,6 +131,12 @@ def read_cli(ap):
         ap.params["urslenmu"] = float(x)
     else:
         ap.params["urslenmu"] = URS_LEN_MU
+
+    x = ap.getOptionalArg("--cismu")
+    if x != False:
+        ap.params["cismu"] = float(x)
+    else:
+        ap.params["cismu"] = URS_LEN_MU
 
     x = ap.getOptionalArg("--p2pmu")
     if x != False:

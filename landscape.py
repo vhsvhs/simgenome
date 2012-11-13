@@ -136,19 +136,20 @@ class Landscape:
                                            
                 for gene in genome.genes:                
                     # Calculate the delta G of binding on the cis-region for every gene.
-                    # pe ranges from 0 (repression) to 1.0 (strong activation)
-                    pe = self.get_expression(genome, gene, tf_expr_level, ap)                
-                    
+                    # pe ranges from -0.5 (repression) to 0.5 (strong activation)
+                    pe = self.get_expr_modifier(genome, gene, tf_expr_level, ap)                
+                                        
                     #
                     # October 24: new formulation for pe that includes decay
                     #
-                    if pe > 0:
+                    if pe > 0.0:
                         expr_modifier = ap.params["growth_rate"] * pe
-                    elif pe < 0:
+                    elif pe < 0.0:
                         expr_modifier = ap.params["decay_rate"] * pe
                     else:
-                        expr_modifier = 1.0
-                    new_expr_level = genome.gene_expr[gene.id][timeslice] * expr_modifier;
+                        expr_modifier = 0.0 # this will result in no change to expression level
+                    """New expression level equals the old expression level, plus the modification (which may be positive or negative)"""
+                    new_expr_level = genome.gene_expr[gene.id][timeslice] + expr_modifier;
                     genome.gene_expr[gene.id].append( new_expr_level )
                     
                     # Prevent out-of-bounds expression levels.
@@ -192,13 +193,14 @@ class Landscape:
             print ". Generation", ap.params["generation"], "for individual", genome.id, "took %.3f"%(timeend-timestart).total_seconds(), "seconds.\n"
         return fitness
     
-    def get_expression(self, genome, gene, tf_expr_levels, ap):
+    def get_expr_modifier(self, genome, gene, tf_expr_levels, ap):
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""
         pe = []        
         ptables = ProbTable( ap.params["numtr"], ap.params["maxgd"], gene.urs.__len__() )
+        #print ptables
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)          
         pe = self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)        
-        pe = pe - 0.5  
+        pe = pe - 0.5 # This will make pe range from -0.5 to +0.5.  
         return pe
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
@@ -209,7 +211,7 @@ class Landscape:
         for x in range(0, L): # foreach site in gene's upstream region
             sum_cpr = 0.0
             for i in ap.params["rangetrs"]:   # foreach transcription factor
-                pwm_tmp = genome.genes[i].pwm.prob_binding( x, gene.urs )
+                pwm_tmp = genome.genes[i].pwm.specificity( x, gene.urs )
                 #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%pwm_tmp, "bits."
                 sum_cpt = 0.0
                 for j in ap.params["rangetrs+"]: # +1 to also consider the empty case
@@ -323,16 +325,7 @@ class Landscape:
         return [reti, retj, retd]
         
     
-    def prob_expr(self, genome, ptables, gene, tf_expr_levels, ap, lam=None):
-        #
-        # to-do: the problem is in the configuration!
-        #
-        # site 0: 10k/10k samples
-        # site 2: 1693/10k samples
-        # . . .
-        #
-        
-        
+    def prob_expr(self, genome, ptables, gene, tf_expr_levels, ap, lam=None):        
         """Returns a floating-point value corresponding to the expression level of gene,
         given the ProbTable ptables"""        
         #print "prob_expr, gene", gene.id, gene.urs
@@ -379,7 +372,7 @@ class Landscape:
                 tf = this_config[site]
                 if tf < ap.params["numtr"]: # there will be no binding energy for the empty configuration:
                     """Get the strength of TF binding at this site..."""
-                    tf_specificity = genome.genes[tf].pwm.prob_binding(site, gene.urs)
+                    tf_specificity = genome.genes[tf].pwm.specificity(site, gene.urs)
                     #print "tf", tf, "binds gene", gene.id, "site", site, "tf_specificity", tf_specificity
                     if genome.genes[tf].is_repressor:
                         sum_lambda_rep += tf_specificity
@@ -415,7 +408,19 @@ class Landscape:
         """configs is a hashtable of configurations...
             configs[site] = array of triples [gene i, gene j, distance]"""
         foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
-        fout = open( foutpath , "a")
+        try:
+            fout = open( foutpath , "a")
+        except IOError:
+            print "\n. I had a problem opening", foutpath
+            exit()
+
+        if self.t_counter == 0 and gene.id == 0:        
+            fout.write("Notes\n")
+            fout.write("[+] : activator\n")
+            fout.write("[-] : repressor\n")
+            fout.write("p   : proportion of IID samples\n")
+            fout.write("e   : energy bound by TF in this configuration\n\n")
+        
         #fout.write("#\n# For example, \"site 3 :  1 [-] 0.672 0.120\" indicates that site 3 is bound by repressor 1\n# in 67.2 percent of IID samples with activation energy = 0.120.\n# Activation energies < 0.5 indicate repression, = 0.5 indicate no activation,\n# > 0.5 indicates activation.#\n#\n")
         fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
             
@@ -434,18 +439,18 @@ class Landscape:
                 i = c[0]
                 j = c[1]
                 d = c[2]
-                if False == tf_count[site].__contains__(i):
+                if i not in tf_count[site]:
                     tf_count[site][i] = 0.0
                 tf_count[site][i] += 1.0 / ap.params["iid_samples"]
                 
-                if j < ap.params["numtr"]:
-                    adj_site = site + self.r[i] + d
-                    if adj_site + self.r[j] < gene.urs.__len__():                
-                        if adj_site not in sites:
-                            tf_count[adj_site] = {}
-                        if False == tf_count[adj_site].__contains__(j):
-                            tf_count[adj_site][j] = 0.0
-                        tf_count[adj_site][j] += 1.0 / ap.params["iid_samples"]
+#                if j < ap.params["numtr"]:
+#                    adj_site = site + self.r[i] + d
+#                    if adj_site + self.r[j] < gene.urs.__len__():                
+#                        if adj_site not in sites:
+#                            tf_count[adj_site] = {}
+#                        if False == tf_count[adj_site].__contains__(j):
+#                            tf_count[adj_site][j] = 0.0
+#                        tf_count[adj_site][j] += 1.0 / ap.params["iid_samples"]
 
         # print tf_count
         insites = tf_count.keys()
@@ -456,7 +461,7 @@ class Landscape:
                 if tf < ap.params["numtr"]:
                     if line == None:
                         line = "site " + site.__str__() + " :"
-                    pe = genome.genes[tf].pwm.prob_binding(site, gene.urs)
+                    pe = genome.genes[tf].pwm.specificity(site, gene.urs)
                     if genome.genes[tf].is_repressor:
                         tf_type = "[-]"
                     else:
