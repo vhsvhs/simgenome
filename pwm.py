@@ -41,18 +41,19 @@ class PWM:
         rand_site = random.randint(0, self.P.__len__()-1)
         rand_state = random.randint(0,3)
         
-        d = ap.params["pwmmu"]
+        d = random.random() * ap.params["dbdmu"]
         new_p = (self.P[rand_site][ ALPHABET[rand_state] ] + d)%1.0
+        print "pwm.46 mutating PWM site", rand_site, ALPHABET[rand_state], "%.3f"%self.P[rand_site][ ALPHABET[rand_state]], "%.3f"%new_p
 
+        self.P[rand_site][ ALPHABET[rand_state] ] = new_p
+
+        # . . . and then normalize the PWM. . . 
         sum_states = 0.0
         for c in ALPHABET:
             #print self.P[rand_site][c]
             sum_states += self.P[rand_site][c]
         for c in ALPHABET:
-            if c == rand_state:
-                self.P[rand_site][c] = new_p
-            else:
-                self.P[rand_site][c] /= sum_states
+            self.P[rand_site][c] = self.P[rand_site][c] / sum_states
         #print self.P
     
     def read_from_file(self, path, id):

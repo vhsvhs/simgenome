@@ -120,12 +120,6 @@ def read_cli(ap):
     else:
         ap.params["dbdmu"] = DBD_MU
 
-    x = ap.getOptionalArg("--pwmmu")
-    if x != False:
-        ap.params["pwmmu"] = float(x)
-    else:
-        ap.params["pwmmu"] = PWM_MU
-
     x = ap.getOptionalArg("--urslenmu")
     if x != False:
         ap.params["urslenmu"] = float(x)
@@ -201,10 +195,14 @@ def check_world_consistency(ap, population, landscape):
                 print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome only contains", (population.genomes[0].genes.__len__() -1 ), "genes."
                 print "I am quitting."
                 exit(1)
-        #
-        # to-do:
-        # Check that input correspond to rules.
-        #
+
+def correct_maxtime_error(implied_max_time, ap):
+        if implied_max_time > ap.params["maxtime"]:
+            if comm.Get_rank() == 0 and ap.params["verbosity"] >= 1:
+                print "\n. You specified the maximum timepoint to be", ap.params["maxtime"]
+                print "  However, your configuration of inputs and fitness rules implies a maximum timepoint of", implied_max_time
+                print "--> I am setting maximum time to", implied_max_time
+            ap.params["maxtime"] = implied_max_time
 
 def get_input_rules_from_file(ap):
     """See the examples, included with the source code, for information about the required file format."""
@@ -218,15 +216,20 @@ def get_input_rules_from_file(ap):
         lines = fin.readlines()
         fin.close()
         
-        # 1, scan to find the maximum timeslice. . .
+        # 1, scan to find the maximum timepoint implied by the INPUT setup. . .
         for l in lines: 
             if l.startswith("RULE") or l.startswith("INPUT"):
                 tokens = l.split()
-                this_timepoint = int(tokens[2])
-                if this_timepoint > ap.params["maxtime"]:
-                    ap.params["maxtime"] = this_timepoint
+                start_time = int(tokens[2])
+                if start_time > ap.params["maxtime"]:
+                    #print "cli.py 231", start_time, ap.params["maxtime"]
+                    correct_maxtime_error(start_time, ap)
+                end_time = int(tokens[3])
+                if end_time > ap.params["maxtime"]:
+                    #print "cli.py 235", end_time, ap.params["maxtime"]
+                    correct_maxtime_error(end_time, ap)
                     
-        # 2, scan for rules and inputs. . .
+        # 2. scan to find the maximum timepoint implied by the RULE setup. . .
         max_time = 0
         for l in lines:
             if l.startswith("RULE"):
@@ -282,14 +285,8 @@ def get_input_rules_from_file(ap):
         
         
         # 3. Ensure we don't have rules for timepoints beyond the max timepoint
-        if max_time > ap.params["maxtime"]:
-            if comm.Get_rank() == 0 and ap.params["verbosity"] >= 1:
-                print "\n. You specified the maximum timepoint to be", ap.params["maxtime"]
-                print "  However, your fitness rules imply a maximum timepoint of", max_time
-                print "--> I am setting maximum time to", max_time
-            ap.params["maxtime"] = max_time
-        
-        
+        correct_maxtime_error(max_time, ap)
+        #print "cli.py 295 -", ap.params["maxtime"]
         return ret
 
 def get_genes_from_file(ap):

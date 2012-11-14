@@ -443,14 +443,14 @@ class Landscape:
                     tf_count[site][i] = 0.0
                 tf_count[site][i] += 1.0 / ap.params["iid_samples"]
                 
-#                if j < ap.params["numtr"]:
-#                    adj_site = site + self.r[i] + d
-#                    if adj_site + self.r[j] < gene.urs.__len__():                
-#                        if adj_site not in sites:
-#                            tf_count[adj_site] = {}
-#                        if False == tf_count[adj_site].__contains__(j):
-#                            tf_count[adj_site][j] = 0.0
-#                        tf_count[adj_site][j] += 1.0 / ap.params["iid_samples"]
+                if j < ap.params["numtr"]:
+                    adj_site = site + self.r[i] + d
+                    if adj_site + self.r[j] < gene.urs.__len__():                
+                        if adj_site not in sites:
+                            tf_count[adj_site] = {}
+                        if False == tf_count[adj_site].__contains__(j):
+                            tf_count[adj_site][j] = 0.0
+                        tf_count[adj_site][j] += 1.0 / ap.params["iid_samples"]
 
         # print tf_count
         insites = tf_count.keys()
