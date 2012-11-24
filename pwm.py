@@ -41,7 +41,7 @@ class PWM:
         rand_site = random.randint(0, self.P.__len__()-1)
         rand_state = random.randint(0,3)
         
-        d = random.random() * ap.params["dbdmu"]
+        d = random.random() * ap.params["pwmmu"]
         new_p = (self.P[rand_site][ ALPHABET[rand_state] ] + d)%1.0
         print "pwm.46 mutating PWM site", rand_site, ALPHABET[rand_state], "%.3f"%self.P[rand_site][ ALPHABET[rand_state]], "%.3f"%new_p
 

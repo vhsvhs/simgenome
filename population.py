@@ -7,10 +7,7 @@ class Population:
     def __init__(self):
         self.genomes = {}
     
-    def init(self, ap, init_genes=None):
-        #if init_genes != None:
-        #    if comm.Get_rank() == 0 and ap.params["verbosity"] > 2:
-        #        print "\n. Creating a population, specified by", ap.getOptionalArg("--urspath"), "and",ap.getOptionalArg("--pwmpath") 
+    def init(self, ap, init_genes=None): 
         for i in range(0, ap.params["popsize"]):
             """Fill the population with ap.params["popsize"] copies of the seed genome."""
             self.genomes[ i ] = Genome(i)
@@ -192,7 +189,7 @@ class Population:
         if ap.params["verbosity"] > 2:
             print "\n. The population is reproducing, selectively based on fitness. . .\n"
         
-        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/mating.gen" + ap.params["generation"].__str__() + ".txt"
+        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/LOGS/mating.gen" + ap.params["generation"].__str__() + ".txt"
         lines = []
 
         new_genomes = {}
@@ -210,14 +207,23 @@ class Population:
             else:
                 """Select the parents from the fitness CDF."""
                 parent1 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness) 
+                
+                do_sex = False
                 if random.random() < ap.params["sexual_ratio"]:
+                    do_sex = True
+                    
+                if do_sex:
                     """sexual reproduction with two parents."""
                     parent2 = self.fitness_cdf_sampler(min_fitness, max_fitness, sum_fitness, gid_fitness)
                 else:
                     """clonal reproduction with one parent."""
                     parent2 = parent1
                 if ap.params["verbosity"] > 2:
-                    l = "\t+ new child " + child_gid.__str__() + " = " + parent1.__str__() + " X " + parent2.__str__()
+                    if do_sex:
+                        sextoken = "cross"
+                    else:
+                        sextoken = "clone"
+                    l = "\t+ child " + sextoken + " " + child_gid.__str__() + " = " + parent1.__str__() + " X " + parent2.__str__()
                     print l
                     lines.append(l)
                 new_genomes[child_gid].is_elite = False

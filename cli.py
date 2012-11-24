@@ -120,6 +120,12 @@ def read_cli(ap):
     else:
         ap.params["dbdmu"] = DBD_MU
 
+    x = ap.getOptionalArg("--pwmmu")
+    if x != False:
+        ap.params["pwmmu"] = float(x)
+    else:
+        ap.params["pwmmu"] = PWM_MU
+
     x = ap.getOptionalArg("--urslenmu")
     if x != False:
         ap.params["urslenmu"] = float(x)
@@ -185,6 +191,10 @@ def read_cli(ap):
     if x != False:
         if int(x) == 1:
             ap.params["enable_epigenetics"] = True
+    
+    x = ap.getOptionalArg("--ko")
+    if x != False:
+        ap.params["ko"] = True
 
 
 def check_world_consistency(ap, population, landscape):

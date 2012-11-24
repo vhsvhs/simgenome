@@ -10,9 +10,7 @@ class Genetic_Algorithm:
     simid = None
         
     def __init__(self, ap):
-        id = ap.getOptionalArg("--runid")
-        if id != False:
-            self.simid == id 
+        id = ap.params["runid"] 
     
     def find_max_fit_gid(self, gid_fitness):
         maxf = 0.0

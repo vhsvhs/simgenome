@@ -46,7 +46,7 @@ def main():
             population.init_from_pickle(popath)
         else:
             cli_genes = get_genes_from_file(ap)
-            population.init(ap, init_genes=cli_genes) # to-do: fix this! so that only one proc eventually calls gene.set_gamma (which builds random gamma distros0
+            population.init(ap, init_genes=cli_genes) # to-do: fix this! so that only one proc eventually calls gene.set_gamma (which builds random gamma distros)
         if ap.params["verbosity"] > 1:    
             print population.get_info()
         """Broadcast the updated population to MPI slaves."""
@@ -55,28 +55,15 @@ def main():
         for slave in range(1, comm.Get_size()):
             comm.send(pop_data_pickle, dest=slave, tag=11)
     else:
-        """Slaves recieve the init population from master."""
+        """Slaves receive the init population from master."""
         pop_data_pickle = comm.recv(source=0, tag=11)
         pop_data = pickle.loads( pop_data_pickle ) 
         population = Population()
         population.uncollapse(pop_data)
         
-        
+    """Master and all slaves build their own landscape, using the user specifications."""
     landscape = Landscape(ap)
     landscape.init(ap, genome = population.genomes[0])
-#    """Master builds the landscape."""
-#    if comm.Get_rank() == 0:
-#        
-#        land_data = landscape.collapse()
-#        land_data_pickle = pickle.dumps( land_data )
-#        for slave in range(1, comm.Get_size()):
-#            comm.send(land_data_pickle, dest=slave, tag=11)
-#    else:
-#        land_data_pickle = comm.recv(source=0, tag=11)
-#        land_data = pickle.loads( land_data_pickle ) 
-#        landscape = Population()
-#        landscape.uncollapse(land_data)
-
     
     ga = Genetic_Algorithm(ap)        
     ga.population = population
@@ -87,9 +74,7 @@ def main():
         check_world_consistency(ap, population, landscape)
          
     comm.Barrier()
-    
-    """Setup the genetic algorithm, using the population and landscape"""
-        
+            
     """Run the simulation."""
     ga.runsim(ap)
 
@@ -115,6 +100,9 @@ if rank == 0:
     splash()
 mpi_check()
 
+#
+# uncomment this code block to run Cprofile.
+#
 #if ap.getOptionalArg("--use_cprofile"):
 #   prof_path = "./prof_trace." + (random.random() * 1000000).__str__() + ".cprofile"
 #    cProfile.run( 'main()', prof_path )

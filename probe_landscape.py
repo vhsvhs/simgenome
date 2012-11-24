@@ -83,7 +83,6 @@ genm = pop.genomes[genomeid]
 landscape = Landscape(ap)
 landscape.init(ap, genome = genm)
 
-
 # calculate the original fitness
 org_fitness = landscape.get_fitness( pop.genomes[genomeid], ap)
 
