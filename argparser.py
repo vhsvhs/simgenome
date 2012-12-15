@@ -1,4 +1,4 @@
-import sys
+import re, sys
 
 class ArgParser:
     def __init__(self, cliArgs):
@@ -45,4 +45,17 @@ class ArgParser:
             return True
         else:
             return False
-    
+
+    def getList(self, flag, type=str):
+        if self.args.__contains__(flag):
+            i = self.args.index(flag)
+            returnList = []
+            flagPattern = re.compile("^\-\-.*")
+            for j in range( i+1, self.args.__len__() ):
+                if re.match(flagPattern, self.args[j] ):
+                    return returnList
+                else:
+                    returnList.append( type(self.args[j]) )
+            return returnList
+        else:
+            return False 

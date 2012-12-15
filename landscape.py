@@ -71,9 +71,9 @@ class Landscape:
         return math.exp(FITNESS_SCALAR * expr_error) # FITNESS_SCALAR is defined in configuration.py
                     
     
-    def get_fitness(self, genome, ap):
+    def get_fitness(self, genome, ap, ko=[]):
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
-        Returns a floating-point value."""
+        Any gene IDs specified in the list 'ko' will be set to MINIMUM_ACTIVITY_LEVEL at each timeslice."""
                 
         if ap.params["verbosity"] >= 99:
             notime = 0.0
@@ -93,29 +93,32 @@ class Landscape:
         
         # for each rule pattern:
         for rid in self.rulecollections:
-            # Next, initialize expression levels, using either epigenetically inherited levels,
-            # or, as default, set expression to zero.
-            # If epigenetics is enabled, then gene expression has already been established at this point.
-            if ap.params["enable_epigenetics"] == False or genome.gene_expr.__len__() < 1:
+            """Next, initialize expression levels, using either epigenetically inherited levels,
+            or, as default, set expression to zero.
+            If epigenetics is enabled, then gene expression has already been established at this point."""
+            if ap.params["enable_epigenetics"] == False:
                 for gene in genome.genes:
                     genome.gene_expr[gene.id] = [MINIMUM_ACTIVITY_LEVEL]
-            # default: if epigenetics is enabled, then we can simply use the values in genome.gene_expr
-            # which already exist, as set by the previous generation.
             
-            # The expression levels for each TF will be stored in this hashtable.
+            """The expression levels for each TF will be stored in this hashtable."""
             tf_expr_level = {} # key = gene id, value = array of expression values for each timeslice
                     
             for timeslice in range(0, ap.params["maxtime"]):
                 self.t_counter = timeslice
     
-                # manually set expression values for genes defined in the input rules.   
+                """Manually set expression values for genes defined in the input rules."""   
                 if timeslice in self.rulecollections[rid].inputs:
                     for i in self.rulecollections[rid].inputs[timeslice]: # for each input rule i...
                         this_gene = i[0]
                         this_expr_level = i[1]
                         genome.gene_expr[this_gene][timeslice] = this_expr_level
+                
+                """Knock-out any genes that have been specified to be KO'd."""
+                """NOTE: if there is a rule for the KO'd gene, the KO wins over the input rule."""
+                for gid in ko:
+                    genome.gene_expr[gid][timeslice] = MINIMUM_ACTIVITY_LEVEL
     
-                # print a special line, but only if it's the 0th timeslice.
+                """Print a special line, but only if it's the 0th timeslice."""
                 if timeslice == 0:
                     if ap.params["verbosity"] > 5:
                         """Print a report to the screen."""
@@ -130,18 +133,18 @@ class Landscape:
                         print ""
     
                 
-                # Update all TF expression levels...           
+                """ Update all TF expression levels."""         
                 for tf in ap.params["rangetrs"]:
                     tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice]
                                            
                 for gene in genome.genes:                
-                    # Calculate the delta G of binding on the cis-region for every gene.
-                    # pe ranges from -0.5 (repression) to 0.5 (strong activation)
-                    pe = self.get_expr_modifier(genome, gene, tf_expr_level, ap)                
+                    if gene.id in ko:
+                        pe = 0.0
+                    else:
+                        """ Calculate the delta G of binding on the cis-region for every gene.
+                        pe ranges from -0.5 (repression) to 0.5 (strong activation)"""
+                        pe = self.get_expr_modifier(genome, gene, tf_expr_level, ap)                
                                         
-                    #
-                    # October 24: new formulation for pe that includes decay
-                    #
                     if pe > 0.0:
                         expr_modifier = ap.params["growth_rate"] * pe
                     elif pe < 0.0:
@@ -152,13 +155,13 @@ class Landscape:
                     new_expr_level = genome.gene_expr[gene.id][timeslice] + expr_modifier;
                     genome.gene_expr[gene.id].append( new_expr_level )
                     
-                    # Prevent out-of-bounds expression levels.
+                    """ Prevent out-of-bounds expression levels."""
                     if genome.gene_expr[gene.id][timeslice+1] > MAXIMUM_ACTIVITY_LEVEL:
                         genome.gene_expr[gene.id][timeslice+1] = MAXIMUM_ACTIVITY_LEVEL
                     if genome.gene_expr[gene.id][timeslice+1] < MINIMUM_ACTIVITY_LEVEL:
                         genome.gene_expr[gene.id][timeslice+1] = MINIMUM_ACTIVITY_LEVEL
                 
-                    # Print a report to stdout.
+                    """ Print a report to stdout."""
                     if ap.params["verbosity"] > 5:                    
                         expr_delta = 0.0
                         expr_delta = genome.gene_expr[ gene.id ][timeslice+1] - genome.gene_expr[ gene.id ][timeslice]
@@ -178,7 +181,7 @@ class Landscape:
 
             rid_fitness[rid] = self.fitness_helper(genome.gene_expr, rid)
         
-        # calculate fitness over all rule conditions
+        """ Calculate fitness over all rule conditions."""
         fitness = 0.0
         countrid = 0
         for rid in rid_fitness:

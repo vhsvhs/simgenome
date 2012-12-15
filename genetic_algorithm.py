@@ -7,7 +7,6 @@ from logs import *
 class Genetic_Algorithm:        
     population = None
     landscape = None    
-    simid = None
         
     def __init__(self, ap):
         id = ap.params["runid"] 
@@ -43,7 +42,7 @@ class Genetic_Algorithm:
         self.population = population
     
     def runsim_master(self, comm, ap):                        
-        """These variables will store time measurments.  Use --perftime True to print these stats."""
+        """These variables will store time measurements.  Use --perftime True to print these stats."""
         notime = 0.0
         sumtime_gen = notime
         sumtime_end_calc = notime
@@ -85,7 +84,10 @@ class Genetic_Algorithm:
             gids = gid_fitness.keys()
             gids.sort()
             for gid in gids:
-                fout.write(gid.__str__() + "\t" + gid_fitness[gid].__str__() + "\n")
+                mark = ""
+                if gid_fitness[gid] == max_f:
+                    mark = "\t*"
+                fout.write(gid.__str__() + "\t%.6f"%(gid_fitness[gid]) + mark + "\n")
             fout.close()
             
             
@@ -159,8 +161,7 @@ class Genetic_Algorithm:
                                         
                     print "\t. mean comm/calc ratio: %.3f"%( (sumtime_end_gather + sumtime_end_bcast) / (sumtime_end_gather + sumtime_end_bcast + sumtime_end_calc + sumtime_end_stats + sumtime_getmm + sumtime_end_evo) )
 
-    def runsim_slave(self, rank, comm, ap):
-                                
+    def runsim_slave(self, rank, comm, ap):                     
         """For each GA generation. . . ."""
         for i in range(ap.params["generation"], ap.params["generation"]+ap.params["maxgens"]):
             ap.params["generation"] = i

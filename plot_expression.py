@@ -71,6 +71,7 @@ def build_graph(epath):
             if this_gene in G:
                 G.add_node(this_gene)
         elif l.startswith("site") and this_time != None and this_gene != None:
+            print l
             tokens = l.split()
             #print tokens
             if tokens.__len__() > 3:
@@ -78,8 +79,8 @@ def build_graph(epath):
                 while (i < tokens.__len__()):
                     this_tf = int(tokens[i])
                     t = tokens[i+1]
-                    p = float(tokens[i+2])
-                    b = float(tokens[i+3])
+                    p = float(tokens[i+2].split("=")[1])
+                    b = float(tokens[i+3].split("=")[1])
                     #print p*b
                     this_w = math.exp(EXP_MODIFIER*p*b) - 1
                     if False == G.nodes().__contains__(this_tf):

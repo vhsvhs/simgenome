@@ -35,9 +35,9 @@ class Population:
         
     def get_info(self):
         """Returns a multi-line string with basic information about the population."""
-        ret = "--> population size: "
+        ret = "--> Population size: "
         ret += (self.genomes.__len__()).__str__()
-        ret += "\n--> genes per individual: "
+        ret += "\n--> Genes per individual: "
         ret += (self.genomes[0].genes.__len__()).__str__()
         return ret
         

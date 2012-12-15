@@ -34,6 +34,7 @@ class Gene:
         """5. pwm"""
         if (self.has_dbd == True and pwm != None):
             self.pwm = pwm
+            #print "gene 27", pwm
         elif self.has_dbd == True:
             self.pwm = PWM()
             self.pwm.randomize()

@@ -18,6 +18,12 @@ def read_cli(ap):
         ap.params["verbosity"] = int(x)
     else:
         ap.params["verbosity"] = 2
+
+    x = ap.getOptionalToggle("--keep") # Erase old data? (False= old data is left, it may be overwritten, but won't be erased). Default is to enable clearcache
+    if x != False:
+        ap.params["clearcache"] = False 
+    else:
+        ap.params["clearcache"] = True
     
     x = ap.getOptionalArg("--growth_rate")
     if x != False:
@@ -66,15 +72,7 @@ def read_cli(ap):
         ap.params["numtr"] = int(x)
     else:
         ap.params["numtr"] = N_TR
-    ap.params["rangetrs"] = []
     
-    # Here we precompute the range of TR numbers "rangertrs", and the range + 1 (for no dimerization) "rangetrs+".
-    # We'll use these ranges very often in the code, so this precomputation step saves time later.
-    for i in range(0, ap.params["numtr"]):
-        ap.params["rangetrs"].append(i)
-    ap.params["rangetrs+"] = ap.params["rangetrs"] + [ap.params["numtr"]]
-    # . . . this produces an array [0,1,2,3,4,...,n] where 1 through n-1 correspond to TR indices, and n corresponds to the empty case.     
-
     x = ap.getOptionalArg("--numreporter")
     if x != False:
         ap.params["numreporter"] = int(x)
@@ -101,7 +99,6 @@ def read_cli(ap):
     elif x == "random":
         ap.params["coopinit"] = "random"
     
-    
     x = ap.getOptionalArg("--mu")
     if x != False:
         ap.params["mu"] = float(x)
@@ -114,17 +111,29 @@ def read_cli(ap):
     else:
         ap.params["elitemu"] = ELITE_MU
         
-    x = ap.getOptionalArg("--dbdmu")
+    x = ap.getOptionalArg("--dbdmu") # prob. of mutating a DBD
     if x != False:
         ap.params["dbdmu"] = float(x)
     else:
         ap.params["dbdmu"] = DBD_MU
 
-    x = ap.getOptionalArg("--pwmmu")
+    x = ap.getOptionalArg("--pwmmu") # how far in bits can a PWM site be mutated?
     if x != False:
         ap.params["pwmmu"] = float(x)
     else:
         ap.params["pwmmu"] = PWM_MU
+
+    x = ap.getOptionalArg("--pwmlenmu") # once selected for mutation, this is the prob. of inserting/deleting content to a DBD's PWM
+    if x != False:
+        ap.params["pwmlenmu"] = float(x)
+    else:
+        ap.params["pwmlenmu"] = PWM_LEN_MU
+
+    x = ap.getOptionalArg("--pwmmulenmax") # the max length of a PWM indel.
+    if x != False:
+        ap.params["pwmmulenmax"] = float(x)
+    else:
+        ap.params["pwmmulenmax"] = PWM_MU_LEN_MAX
 
     x = ap.getOptionalArg("--urslenmu")
     if x != False:
@@ -138,7 +147,7 @@ def read_cli(ap):
     else:
         ap.params["cismu"] = URS_LEN_MU
 
-    x = ap.getOptionalArg("--p2pmu")
+    x = ap.getOptionalArg("--p2pmu") 
     if x != False:
         ap.params["p2pmu"] = float(x)
     else:
@@ -194,7 +203,19 @@ def read_cli(ap):
     
     x = ap.getOptionalArg("--ko")
     if x != False:
-        ap.params["ko"] = True
+        ap.params["doko"] = True
+        ap.params["kogenome"] = int(x)
+    else:
+        ap.params["doko"] = False
+        ap.params["kogenome"] = -1
+    
+    ap.params["rangetrs"] = []
+    """Here we precompute the range of TR numbers "rangertrs", and the range + 1 (for no dimerization) "rangetrs+".
+    We'll use these ranges very often in the code, so this precomputation step saves time later."""
+    for i in range(0, ap.params["numtr"]):
+        ap.params["rangetrs"].append(i)
+    ap.params["rangetrs+"] = ap.params["rangetrs"] + [ap.params["numtr"]]
+    # . . . this produces an array [0,1,2,3,4,...,n] where 1 through n-1 correspond to TR indices, and n corresponds to the empty case. 
 
 
 def check_world_consistency(ap, population, landscape):
@@ -323,7 +344,41 @@ def get_genes_from_file(ap):
         ret_genes = []
         urspath = ap.getOptionalArg("--urspath")
         fin = open(urspath, "r")
-        for l in fin.readlines():
+        lines = fin.readlines()
+        
+        #
+        #
+        #
+#        count_tf = 0
+#        count_reporter = 0
+#        for l in lines:
+#            if l.startswith("#"):
+#                continue            
+#            else:
+#                tokens = l.split()
+#                if tokens.__len__() >= 4:
+#                    this_has_dbd = int(tokens[1])
+#                    if this_has_dbd == 1:
+#                        count_tf += 1
+#                    else:
+#                        count_reporter += 1
+#        print count_tf, count_reporter
+#        exit()
+#        ap.params["numtr"] = count_tf
+#        print "\n. I found " + count_tf.__str__() + " regulators in your gene file."
+#        ap.params["numreporter"] = count_reporter
+#        print "\n. I found " + count_reporter.__str__() + " reporters in your gene file."
+#        
+#        ap.params["rangetrs"] = []
+#        for i in range(0, ap.params["numtr"]):
+#            ap.params["rangetrs"].append(i)
+#        ap.params["rangetrs+"] = ap.params["rangetrs"] + [ap.params["numtr"]]
+        
+        
+        #
+        #
+        #
+        for l in lines:
             if l.startswith("#"):
                 continue
             else:
@@ -346,14 +401,4 @@ def get_genes_from_file(ap):
                     ret_genes.append(this_gene)
         fin.close()
         
-        """Now check what we build versus any command-line parameters...."""
-        count_tf = 0
-        count_reporter = 0
-        for gid in ret_genes:
-            if gid.has_dbd:
-                count_tf += 1
-            else:
-                count_reporter += 1
-        ap.params["numtr"] = count_tf
-        ap.params["numreporter"] = count_reporter
         return ret_genes

@@ -23,27 +23,41 @@ class PWM:
             str += "\n"
         return str
     
+#    def collapse(self):
+#        ret = {}
+#        for site in range(0, self.P.__len__()):
+#            ret[site] = {}
+#            for state in ALPHABET:
+#                ret[site] = self.P[site][state]
+            
+    
+    
+    def generate_random_site(self):
+        p = {}
+        sump = 0.0
+        shuffled_alphabet = ALPHABET
+        random.shuffle(shuffled_alphabet)
+        for c in shuffled_alphabet:
+            thisp = random.uniform(0.0, 1.0 - sump)
+            p[c] = thisp
+            sump += thisp
+        return p
+    
     def randomize(self):
         self.P = []
         self.rangesites = []
         for i in range(0, INIT_PWM_LEN):
-            self.P.append( {} )
-            sump = 0.0
-            shuffled_alphabet = ALPHABET
-            random.shuffle(shuffled_alphabet)
-            for c in shuffled_alphabet:
-                thisp = random.uniform(0.0, 1.0 - sump)
-                self.P[i][c] = thisp
-                sump += thisp
+            self.P[i] = self.generate_random_site()
             self.rangesites.append(i)
     
     def mutate(self, ap):
+        #print "pwm 54:", self, self.rangesites
         rand_site = random.randint(0, self.P.__len__()-1)
         rand_state = random.randint(0,3)
         
         d = random.random() * ap.params["pwmmu"]
         new_p = (self.P[rand_site][ ALPHABET[rand_state] ] + d)%1.0
-        print "pwm.46 mutating PWM site", rand_site, ALPHABET[rand_state], "%.3f"%self.P[rand_site][ ALPHABET[rand_state]], "%.3f"%new_p
+        print "\n\n\n* mutating PWM site", rand_site, ALPHABET[rand_state], "%.3f"%self.P[rand_site][ ALPHABET[rand_state]], "%.3f"%new_p
 
         self.P[rand_site][ ALPHABET[rand_state] ] = new_p
 
@@ -55,6 +69,39 @@ class PWM:
         for c in ALPHABET:
             self.P[rand_site][c] = self.P[rand_site][c] / sum_states
         #print self.P
+
+        # indels. . .
+        d = random.random() # mutate or not?
+        if d < ap.params["pwmlenmu"]:
+            size = int(random.random() * ap.params["pwmmulenmax"])
+            if size < 1:
+                size = 1
+            e = random.random() # insert or deletion?
+            if e > 0.5: #insertion
+                newP = []
+                rand_site = random.randint(0, self.P.__len__()-1)
+                for i in range(0, rand_site):
+                    newP.append( copy.deepcopy( self.P[i] ) )
+                for i in range(0, size):
+                    newP[i].append( self.generate_random_site() )
+                for i in range(rand_site+size, self.P.__len__()):
+                    newP[i].append( copy.deepcopy(self.P[i-size]) )
+
+                self.P = copy.deepcopy(newP)
+
+                self.rangesites = []
+                for i in range(0, newP.__len__()):
+                    self.rangesites.append(i)
+                #print "pwm 81:", self.rangesites
+            elif self.P.__len__() > 2: # deletion
+                for count in range(0, size):
+                    rand_site = random.randint(0, self.P.__len__()-1)
+                    for i in range(rand_site+1, self.P.__len__()):
+                        for c in ALPHABET:
+                            self.P[i-1][c] = self.P[i][c]
+                    self.P.pop(self.P.__len__()-1)
+                    self.rangesites = self.rangesites[0:self.rangesites.__len__()-1]
+                    #print "pwm 88:", self.rangesites
     
     def read_from_file(self, path, id):
         self.P = []

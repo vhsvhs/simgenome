@@ -3,6 +3,7 @@ try:
 except:
    import pickle
 try:
+    import copy
     from datetime import datetime
     import math
     from mpilibs import *
@@ -50,8 +51,10 @@ N_REPORTER = 1
 MU = 0.05
 ELITE_MU = 0.01
 ELITE_PROPORTION = 0.3
-DBD_MU = 0.5 # how often are DBD's mutated?
+DBD_MU = 0.5 # how mutations will be made per DBD?
 PWM_MU = 0.5 # how much change occurs to a particular PWM once selected for mutation?
+PWM_LEN_MU = 0.3
+PWM_MU_LEN_MAX = 2
 URS_LEN_MU = 0.05
 URS_LEN_INDEL_MAX = 10
 P2P_MU = 0.1

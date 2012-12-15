@@ -1,6 +1,7 @@
 from argparser import *
 from configuration import *
 from genetic_algorithm import *
+from KO import *
 from population import *
 from version import *
 from cli import *
@@ -13,9 +14,12 @@ def check_workspace(ap):
     dirs = [POPPICKLES, "LOGS", "PLOTS", EXPR_PLOTS]
     for d in dirs:
         if os.path.exists(ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d):
-            # clear data from previous runs
-            os.system("rm -rf " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
-        os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
+            if ap.params["clearcache"]:
+                """ Clear data from previous runs."""
+                os.system("rm -rf " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
+        if False == os.path.exists(ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d):
+            """Build the directory"""
+            os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
 
 
 def main():
@@ -46,38 +50,55 @@ def main():
             population.init_from_pickle(popath)
         else:
             cli_genes = get_genes_from_file(ap)
-            population.init(ap, init_genes=cli_genes) # to-do: fix this! so that only one proc eventually calls gene.set_gamma (which builds random gamma distros)
+            population.init(ap, init_genes=cli_genes)
+        
         if ap.params["verbosity"] > 1:    
             print population.get_info()
+        
         """Broadcast the updated population to MPI slaves."""
         pop_data = population.collapse()
         pop_data_pickle = pickle.dumps( pop_data )
         for slave in range(1, comm.Get_size()):
             comm.send(pop_data_pickle, dest=slave, tag=11)
     else:
-        """Slaves receive the init population from master."""
+        """Slaves receive the population from master."""
         pop_data_pickle = comm.recv(source=0, tag=11)
         pop_data = pickle.loads( pop_data_pickle ) 
         population = Population()
         population.uncollapse(pop_data)
         
-    """Master and all slaves build their own landscape, using the user specifications."""
+    """Master and slaves build their own copies of the landscape, using the user specifications."""
     landscape = Landscape(ap)
     landscape.init(ap, genome = population.genomes[0])
-    
-    ga = Genetic_Algorithm(ap)        
-    ga.population = population
-    ga.landscape = landscape
-        
+
     if rank == 0:
         """Check for consistency with all parameters."""
-        check_world_consistency(ap, population, landscape)
-         
+        check_world_consistency(ap, population, landscape)    
     comm.Barrier()
-            
-    """Run the simulation."""
-    ga.runsim(ap)
+        
+    #
+    # Default behavior is to run the genetic algorithm:
+    #
+    if ap.params["doko"] == False:
+        ga = Genetic_Algorithm(ap)        
+        ga.population = population
+        ga.landscape = landscape
+        ga.runsim(ap)
 
+    #
+    # If we're doing a KO test, then do that here...
+    #
+    if ap.params["doko"] == True:
+        ko = KO(ap)
+        ko.genome = population.genomes[ ap.params["kogenome"] ]
+        ko.landscape = landscape
+        if ap.params["verbosity"] > 1 and rank == 1:
+            print "\n. Starting a knock-out experiment. . ."
+            print "--> KO on each gene in individual " + ap.params["kogenome"].__str__()
+            print "--> Assessing fitness at generation " + ap.params["generation"].__str__()
+        ko.runko(ap)
+        
+        
     if rank == 0:
         return [population, landscape]
     else:

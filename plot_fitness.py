@@ -20,6 +20,7 @@ minfstring = "minf <-c("
 meanfstring = "meanf <-c("
 for l in lines:
     if l.__len__() > 1:
+        print l
         tokens = l.split()
         gen = int(tokens[1])
         if maxx < gen:
