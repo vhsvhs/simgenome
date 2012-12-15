@@ -1,28 +1,45 @@
-#
-# Sim Genome README
-#
-# Victor Hanson-Smith
-# victorhansonsmith@gmail.com
-# 2012
-#
+SimGenome README
 
-** MPI NOTES
+Victor Hanson-Smith
+victorhansonsmith@gmail.com
+2012
 
-Sim Genome uses a master-slave architecture with MPI.  The master process is 0, and the slave processes are 1 through N-1.
-At the top of each generation, all slaves self identify a subset of the individuals in the population, and then proceed
-to calculate the fitness of those individuals.  Upon completion of fitness calculations, each slave send a hashtable (key = individual ID,
+========
+OVERVIEW
+
+SimGenome is a quantitative model of gene transcription regulatory circuit evolution.  SimGenome incorporates three major
+aspects of this process: (i) DNA-binding thermodynamics, (ii) non-equilibrium gene expression patterns, and (iii) population 
+structure and evolution.
+
+========
+MPI NOTES
+
+SimGenome uses a master-slave architecture with MPI.  The master process is 0, and the slave processes are 1 through N-1.
+
+SimGenome has two running modes: genetic alogorithm (GA) and knock-out (KO) analysis.
+
+In GA, at the beginning of each generation, all slaves self identify a subset of the individuals in the population, and then proceed
+to calculate the fitness of those individuals.  Upon completion of fitness calculations, each slave sends a hashtable (where key = individual ID,
 value = fitness score) to the master.  The master incorporates these hashtables into a single hashtable.  The master then uses
-this hashtable to mutate and reproduce the population, selectively based on individual's fitness scores.  The master then
-broadcasts the updated population to all the slaves.  All processes then iterate to the next generation.
+this hashtable of fitnesses to selectively mate and reproduce the population.  The master also injects mutations into the new children, according
+to the mutation parameters specified by the user.  The master then broadcasts the updated population to all the slaves, and the loop
+then iterates to the next generation.
 
-For best load-balancing, using a population size M and N MPI processes, ensure that M is a multiple of N-1.
-For example, with a population size of 128, good values for N include 5, 9, 17, 33, 65, and 129.
+In KO, the analysis focuses on a single genome, specified using --poppath P and --ko G, where P is the population
+and G is the ID of the target genome within P.  All slaves identify a subset of regulatory genes in G.  Each slave then calculates the
+fitness of the WT individual, and the fitness of the individual with each regulatory gene KO'd individually.
 
+==============
+LOAD BALANCING
+Keep in mind the master node only dispatches jobs; the slaves do the heavy-lifting (i.e. the fitness calculations).  This means that
+best load-balancing results will be achieved using a population with M individuals on a computational cluster with N MPI processes, 
+where M is a multiple of N-1.  For example, with a population size of 128, good values for N include 5, 9, 17, 33, 65, and 129.
 
-** VERBOSITY NOTES (use --verbose N)
+=================================
+VERBOSITY NOTES (use --verbose N)
 
 N= 1:
-. Prints basic notifications about population construction, loading files, etc.
+. Prints basic notifications about population bu, loading files, etc.
 . Prints generation stats: time to completion, max/min/mean/median/sd fitness.
 
 N= 2:
