@@ -47,17 +47,21 @@ def mpi_check():
 
 
 def is_my_item_core(i, l, r, s):
-    """i = the item ID in a list (l) of all item IDs. r is my MPI rank."""
-    chunk_size = int( l.__len__() / (s-1 ) )
-    start = chunk_size * (r-1)
-    end = start + chunk_size
-    remainder = l.__len__() - (s-1) * chunk_size
-    if i < end and i >= start:
+    """ i = ID of the item, l = list of items, r = my MPI rank - 1, s = total number of slaves"""
+    if i%s == r:
         return True
-    elif (r == s-2) and (i >= l.__len__()-remainder):
-        return True
-    else:
-        return False
+    
+#    """i = the item ID in a list (l) of all item IDs. r is my MPI rank."""
+#    chunk_size = int( l.__len__() / (s-1 ) )
+#    start = chunk_size * (r-1)
+#    end = start + chunk_size
+#    remainder = l.__len__() - (s-1) * chunk_size
+#    if i < end and i >= start:
+#        return True
+#    elif (r == s-2) and (i >= l.__len__()-remainder):
+#        return True
+#    else:
+#        return False
 
 def is_my_item(i, l, r):
     """i = the item ID, l = the list of all item IDs, and r = my MPI rank.
@@ -65,7 +69,7 @@ def is_my_item(i, l, r):
     if comm.Get_size() == 1:
         return True
     else:
-        return is_my_item_core(i, l, r, comm.Get_size())
+        return is_my_item_core(i, l, r-1, comm.Get_size()-1)
     
 def list_my_items(l, r):
     """l is a list of all item IDs, r = my MPI rank.
