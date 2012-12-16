@@ -36,10 +36,19 @@ class Genetic_Algorithm:
     
     def slaveonly_recv(self):
         pop_data_pickle = comm.recv(source=0, tag=11)
+        if pop_data_pickle == None:
+            print "\n. Node", comm.Get_rank(), "is finishing."
+            exit()
         pop_data = pickle.loads( pop_data_pickle ) 
         population = Population()
         population.uncollapse(pop_data)
         self.population = population
+    
+    def masteronly_whistle(self):
+        """Tell all slaves that we're done.  They should exit()."""
+        for slave in range(1, comm.Get_size()):
+            comm.send(None, dest=slave, tag=11)
+            
     
     def runsim_master(self, comm, ap):                        
         """These variables will store time measurements.  Use --perftime True to print these stats."""
@@ -51,6 +60,9 @@ class Genetic_Algorithm:
         sumtime_getmm = notime
         sumtime_end_evo = notime
         sumtime_end_bcast = notime
+        
+        if ap.params["stopconvergence"]:
+            count_conv_gens = 0
         
         """For each GA generation. . . ."""
         for i in range(ap.params["generation"], ap.params["generation"]+ap.params["maxgens"]):
@@ -112,54 +124,50 @@ class Genetic_Algorithm:
                 #print "\n. effective popsize=", self.population.effective_popsize()
                 line = "gen " + i.__str__() + "\t" + "\tmaxf= %.3f"%max_f + "\tminf= %.3f"%min_f + "\tmeanf= %.3f"%mean_f + "\tmedianf= %.3f"%median_f + " \tstdf= %.3f"%std_f 
                 log_generation(ap, line)
+                                     
+            time_getmm = datetime.utcnow()
             
-            """Check for convergence on terminal conditions."""
-            #if mean_f == 1.0:
-            #    print "The population arrived at an optima.  Goodbye."
-            #    exit(1)
-            
-            if i < ap.params["maxgens"]:                
-                time_getmm = datetime.utcnow()
-                
-                [min_fitness, max_fitness, sum_fitness, fitness_gid] = self.population.get_minmax_fitness(gid_fitness)
-                """Mark the elite individuals..."""
-                self.population.mark_elite(fitness_gid, max_fitness, min_fitness, ap)
-                self.population.print_fitness(ap, gid_fitness)
-                """Reproduce the population based on pre-mutation fitness"""                
-                self.population.do_reproduction(gid_fitness, min_fitness, max_fitness, sum_fitness, ap)
-                """Mutate the population"""
-                self.population.do_mutations(ap)
-                time_end_evo = datetime.utcnow()
-                
-                """Broadcast the updated population to MPI slaves."""
-                self.masteronly_bcast(ap)
-                time_end_bcast = datetime.utcnow()
+            [min_fitness, max_fitness, sum_fitness, fitness_gid] = self.population.get_minmax_fitness(gid_fitness)
+            """Mark the elite individuals..."""
+            self.population.mark_elite(fitness_gid, max_fitness, min_fitness, ap)
+            self.population.print_fitness(ap, gid_fitness)
+            """Reproduce the population based on pre-mutation fitness"""                
+            self.population.do_reproduction(gid_fitness, min_fitness, max_fitness, sum_fitness, ap)
+            """Mutate the population"""
+            self.population.do_mutations(ap)
+            time_end_evo = datetime.utcnow()
 
-#                """Post-fitness. . . record pickle population, etc."""
-#                if ap.params["verbosity"] >= 2:
-#                    pop_pickle_path = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + POPPICKLES + "/population.gen" + i.__str__() + ".pickle"
-#                    print "\n. Saving the population to", pop_pickle_path
-#                    fout = open(pop_pickle_path, "w")
-#                    fout.write(pop_data_pickle)
-#                    fout.close()
+            """Check for convergence on terminal conditions."""
+            if ap.params["stopconvergence"] == True:
+                if mean_f >= ap.params["fgoal"]:
+                    count_conv_gens += 1
+                else:
+                    count_conv_gens = 0
+                if count_conv_gens >= 3:
+                    self.masteronly_whistle()
+                    exit()
             
-                if ap.getOptionalArg("--perftime") == "on":
-                    print "\n. Performance data for generation", i, ". . ."
-                    ngen = i + 1
-                    sumtime_end_calc += (time_end_calc - time_start_gen).total_seconds()
-                    print "\t. mean time_end_calc %.3f sec."%(sumtime_end_calc / ngen)
-                    sumtime_end_gather += (time_end_gather - time_end_calc).total_seconds()
-                    print "\t. mean time_end_gather %.3f sec."%(sumtime_end_gather/ ngen)
-                    sumtime_end_stats += (time_end_stats - time_end_gather).total_seconds()
-                    print "\t. mean time_end_stats %.3f sec."%(sumtime_end_stats/ ngen)
-                    sumtime_getmm += (time_getmm - time_end_stats).total_seconds()
-                    print "\t. mean time_getmm %.3f sec."%(sumtime_getmm/ ngen)
-                    sumtime_end_evo += (time_end_evo - time_getmm).total_seconds()
-                    print "\t. mean time_end_evo %.3f sec."%(sumtime_end_evo/ ngen)
-                    sumtime_end_bcast += (time_end_bcast - time_end_evo).total_seconds()
-                    print "\t. mean time_end_bcast %.3f sec."%(sumtime_end_bcast/ ngen)
-                                        
-                    print "\t. mean comm/calc ratio: %.3f"%( (sumtime_end_gather + sumtime_end_bcast) / (sumtime_end_gather + sumtime_end_bcast + sumtime_end_calc + sumtime_end_stats + sumtime_getmm + sumtime_end_evo) )
+            """Broadcast the updated population to MPI slaves."""
+            self.masteronly_bcast(ap)
+            time_end_bcast = datetime.utcnow()
+        
+            if ap.getOptionalArg("--perftime") == "on":
+                print "\n. Performance data for generation", i, ". . ."
+                ngen = i + 1
+                sumtime_end_calc += (time_end_calc - time_start_gen).total_seconds()
+                print "\t. mean time_end_calc %.3f sec."%(sumtime_end_calc / ngen)
+                sumtime_end_gather += (time_end_gather - time_end_calc).total_seconds()
+                print "\t. mean time_end_gather %.3f sec."%(sumtime_end_gather/ ngen)
+                sumtime_end_stats += (time_end_stats - time_end_gather).total_seconds()
+                print "\t. mean time_end_stats %.3f sec."%(sumtime_end_stats/ ngen)
+                sumtime_getmm += (time_getmm - time_end_stats).total_seconds()
+                print "\t. mean time_getmm %.3f sec."%(sumtime_getmm/ ngen)
+                sumtime_end_evo += (time_end_evo - time_getmm).total_seconds()
+                print "\t. mean time_end_evo %.3f sec."%(sumtime_end_evo/ ngen)
+                sumtime_end_bcast += (time_end_bcast - time_end_evo).total_seconds()
+                print "\t. mean time_end_bcast %.3f sec."%(sumtime_end_bcast/ ngen)
+                                    
+                print "\t. mean comm/calc ratio: %.3f"%( (sumtime_end_gather + sumtime_end_bcast) / (sumtime_end_gather + sumtime_end_bcast + sumtime_end_calc + sumtime_end_stats + sumtime_getmm + sumtime_end_evo) )
 
     def runsim_slave(self, rank, comm, ap):                     
         """For each GA generation. . . ."""
@@ -193,9 +201,8 @@ class Genetic_Algorithm:
             """Send data to master."""
             comm.send( [gid_fitness, gid_terminal_expression], dest=0, tag=11)  
             
-            if i < ap.params["maxgens"]:
-                """Get updated data from master."""
-                self.slaveonly_recv()
+            """Get updated data from master."""
+            self.slaveonly_recv()
 
     def runsim(self, ap):
         """This is the main method of the genetic algorithm."""

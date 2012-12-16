@@ -201,6 +201,16 @@ def read_cli(ap):
         if int(x) == 1:
             ap.params["enable_epigenetics"] = True
     
+    ap.params["stopconvergence"] = False
+    x = ap.getOptionalArg("--stop_early") # followed by the desired mean pop. fitness goal
+    if x != False:
+        ap.params["stopconvergence"] = True 
+        ap.params["fgoal"] = float(x)
+        if ap.params["fgoal"] > 1.0:
+            ap.params["fgoal"] = 1.0
+        if ap.params["fgoal"] < 0.0:
+            ap.params["fgoal"] = 0.0
+    
     x = ap.getOptionalArg("--ko")
     if x != False:
         ap.params["doko"] = True
