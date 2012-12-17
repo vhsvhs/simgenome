@@ -97,6 +97,15 @@ class Population:
         """Print LOGS/mu.genX.txt with the number of mutations made to each individual at this generation."""            
         fout = open(ap.params["workspace"] + "/" + ap.params["runid"] + "/LOGS/mu.gen" + ap.params["generation"].__str__() + ".txt", "a")
         fout.write("ID\tN_cis\tN_urslen\tN_PWM\tN_p2p\n")
+
+
+        """First, we build some relevant probability distributions."""
+        from scipy import stats
+        ncis_norm = stats.norm(loc=ap.params["cismu"], scale=0.05)
+        ncisindel_norm = stats.norm(loc=ap.params["urslenmu"], scale=0.05)
+        ndbd_norm = stats.norm(loc=ap.params["dbdmu"], scale=0.05)
+        ndbdindel_norm = stats.norm(loc=ap.params["pwmlenmu"], scale=0.05)
+        np2p_norm = stats.norm(loc=ap.params["p2pmu"], scale=0.05)
     
         """Introduce mutations into (potentially) all genomes in the population"""
         for gid in self.genomes:
@@ -105,40 +114,55 @@ class Population:
                 mu = ap.params["elitemu"] 
             
             n_point_mutations = 0
-            n_urslen_changes = 0
-            n_pwm_changes = 0
+            n_cis_indels = 0
+            n_dbd_mutations = 0
+            n_dbd_indels
             n_p2p_changes = 0
             
             if mu > 0.0:
-                """How many mutations should we make?"""
-                n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * ap.params["cismu"])
+                """cis nt mutations"""
+                n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * ncis_norm.rvs() )
+                if n_point_mutations < 0:
+                    n_point_mutations = 0
                 if ap.params["verbosity"] >= 2:                
                     print "\t.", n_point_mutations, "cis mutations to individual", gid
-                """URS nt mutations...."""
                 for i in range(0, n_point_mutations):
                     rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
                     self.genomes[gid].genes[rand_gene].mutate_urs()
-                """URS length changes...."""
-                n_urslen_changes = int(self.genomes[gid].genes.__len__() * ap.params["urslenmu"])
-                for i in range(0, n_urslen_changes):
+                
+                """cis indels"""
+                n_cis_indels = int(self.genomes[gid].genes.__len__() * ncis_norm.rvs() )
+                for i in range(0, n_cis_indels):
                     rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
+                    if ap.params["verbosity"] >= 2:
+                        print "\t+ indel in gene ", rand_gene, "in individual", gid
                     self.genomes[gid].genes[rand_gene].mutate_urs_len()
+                
                 """DBD mutations..."""
-                n_pwm_changes = int(ap.params["numtr"] * ap.params["dbdmu"])
-                for i in range(n_pwm_changes):
+                n_dbd_mutations = int(ap.params["numtr"] * ndbd_norm.rvs() )
+                for i in range(n_dbd_mutations):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
                         print "\t+ mutating DBD ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
+                
+                """DBD indels"""
+                n_dbd_indels = int(ap.params["numtr"] * ndbdindel_norm.rvs() )
+                for i in range(n_dbd_mutations):
+                    rand_tr_id = random.randint(0, ap.params["numtr"]-1)
+                    if ap.params["verbosity"] >= 2:
+                        print "\t+ indel in DBD ", rand_tr_id, "in individual", gid
+                    self.genomes[gid].genes[rand_tr_id].pwm.mutate_len(ap)               
+                
                 """Gamma mutations...."""
-                n_p2p_changes = int(ap.params["numtr"] * ap.params["p2pmu"])
+                n_p2p_changes = int(ap.params["numtr"] * np2p_norm.rvs() )
                 for i in range(n_p2p_changes):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
                         print "\t+ mutating gamma for TR ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].mutate_gamma(ap)
-                    #print self.genomes[gid].genes[rand_tr_id].gamma
-            fout.write(gid.__str__() + ("\t%d"%n_point_mutations).__str__() + ("\t%d"%n_urslen_changes).__str__() + ("\t%d"%n_pwm_changes).__str__() + ("\t%d"%n_p2p_changes).__str__() + "\n" )
+            
+            fout.write(gid.__str__() + ("\t%d"%n_point_mutations).__str__() + ("\t%d"%n_cis_indels).__str__() + ("\t%d"%n_dbd_mutations).__str__() + ("\t%d"%n_dbd_indels).__str__() + ("\t%d"%n_p2p_changes).__str__() + "\n" )
         
         """Close the LOGS/mu.genX.txt"""
         fout.close()

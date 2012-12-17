@@ -111,17 +111,20 @@ def read_cli(ap):
     else:
         ap.params["elitemu"] = ELITE_MU
         
-    x = ap.getOptionalArg("--dbdmu") # prob. of mutating a DBD
+    x = ap.getOptionalArg("--dbdmu") 
+    """There will be dbdmu * n_tr mutation events, where each event includes
+    changing one PWM site's preference by pwmmu amount, and an indel event with probability pwmlenmu.
+    """
     if x != False:
         ap.params["dbdmu"] = float(x)
     else:
         ap.params["dbdmu"] = DBD_MU
 
-    x = ap.getOptionalArg("--pwmmu") # how far in bits can a PWM site be mutated?
+    x = ap.getOptionalArg("--pwmdeltamax") # how far in bits can a PWM site be mutated?
     if x != False:
-        ap.params["pwmmu"] = float(x)
+        ap.params["pwmdeltamax"] = float(x)
     else:
-        ap.params["pwmmu"] = PWM_MU
+        ap.params["pwmdeltamax"] = PWM_MU
 
     x = ap.getOptionalArg("--pwmlenmu") # once selected for mutation, this is the prob. of inserting/deleting content to a DBD's PWM
     if x != False:
@@ -136,6 +139,7 @@ def read_cli(ap):
         ap.params["pwmmulenmax"] = PWM_MU_LEN_MAX
 
     x = ap.getOptionalArg("--urslenmu")
+    """Equals proportion of genes in the genome that will have length mutation event.""" 
     if x != False:
         ap.params["urslenmu"] = float(x)
     else:
@@ -294,7 +298,12 @@ def get_input_rules_from_file(ap):
                         this_rule_type = operator.le
                     else:
                         this_rule_type = this_rule_type = operator.ge
-                    this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type)
+                    this_multiplier = 1.0
+                    if tokens.__len__() > 6:
+                        this_multiplier = float(tokens[7])
+                    if this_multiplier < 0.0:
+                        this_multiplier = 0.0
+                    this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type,m=this_multiplier)
                     if this_rc_id not in ret:
                         ret[this_rc_id] = Rule_Collection(this_rc_id)
                     ret[ this_rc_id ].rules.append( this_rule )

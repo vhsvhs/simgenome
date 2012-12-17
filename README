@@ -11,6 +11,14 @@ SimGenome is a quantitative model of gene transcription regulatory circuit evolu
 aspects of this process: (i) DNA-binding thermodynamics, (ii) non-equilibrium gene expression patterns, and (iii) population 
 structure and evolution.
 
+=================
+REQUIRED SOFTWARE
+
+1. Python
+2. MPI
+3. mpi4py
+4. Numpy
+
 ========
 MPI NOTES
 

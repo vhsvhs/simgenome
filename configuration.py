@@ -14,6 +14,7 @@ try:
     import os
     import random
     import re
+    # we also import scipy.stats in the population.do_mutations method
     import sys
     import cProfile
 except ImportError:
@@ -83,7 +84,7 @@ i.e., you don't specify --patternpath"""
 GOAL_PULSE_MAX = 2
 
 """maximum distance between TFs to include gamma term"""
-MAX_GD = 2
+MAX_GD = 3
 
 """Fitness of temporal expression will be evaluated on timeslices zero through MAX_TIME."""
 MAX_TIME = 3

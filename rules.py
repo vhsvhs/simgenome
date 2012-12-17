@@ -20,12 +20,14 @@ class Fitness_Rule:
     expression_level = None
     reporter_id = None
     rule_type = None # See RULE_TYPES
+    multiplier = 1.0 # The fitness of this rule will be multiplied by this value, relative to other fitness rules.
 
-    def __init__(self, t, e, id, r):
+    def __init__(self, t, e, id, r, m=1.0):
         self.timepoint = t
         self.expression_level = e
         self.reporter_id = id
         self.rule_type = r
+        self.multiplier = m
     
     def __str__(self):
         l = "  + At time "
@@ -45,7 +47,7 @@ class Fitness_Rule:
         return l
     
     def collapse(self):
-        return [self.timepoint, self.expression_level, self.reporter_id, self.rule_type]
+        return [self.timepoint, self.expression_level, self.reporter_id, self.rule_type, self.multiplier]
 
 class Rule_Collection:
     """Each instance of the class Rule_Collection defines a unique set of temporal expression patterns
@@ -73,7 +75,7 @@ class Rule_Collection:
         for input in data[0]:
             self.inputs.append(input)
         for rule in data[1]:
-            this_rule = Fitness_Rule(rule[0], rule[1], rule[2], rule[3])
+            this_rule = Fitness_Rule(rule[0], rule[1], rule[2], rule[3], rule[4])
             self.rules.append( this_rule )
     
     def init_random(self):

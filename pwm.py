@@ -51,26 +51,23 @@ class PWM:
             self.rangesites.append(i)
     
     def mutate(self, ap):
-        #print "pwm 54:", self, self.rangesites
         rand_site = random.randint(0, self.P.__len__()-1)
         rand_state = random.randint(0,3)
         
-        d = random.random() * ap.params["pwmmu"]
+        d = random.random() * ap.params["pwmdeltamax"]
         new_p = (self.P[rand_site][ ALPHABET[rand_state] ] + d)%1.0
         print "\n\n\n* mutating PWM site", rand_site, ALPHABET[rand_state], "%.3f"%self.P[rand_site][ ALPHABET[rand_state]], "%.3f"%new_p
 
         self.P[rand_site][ ALPHABET[rand_state] ] = new_p
 
-        # . . . and then normalize the PWM. . . 
+        """ Normalize the PWM"""
         sum_states = 0.0
         for c in ALPHABET:
-            #print self.P[rand_site][c]
             sum_states += self.P[rand_site][c]
         for c in ALPHABET:
             self.P[rand_site][c] = self.P[rand_site][c] / sum_states
-        #print self.P
 
-        # indels. . .
+    def mutate_len(self, ap):
         d = random.random() # mutate or not?
         if d < ap.params["pwmlenmu"]:
             size = int(random.random() * ap.params["pwmmulenmax"])
