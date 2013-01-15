@@ -100,6 +100,8 @@ class Gene:
         rand_site = random.randint(0, self.urs.__len__()-1)        
         mulen = random.randint(1, URS_LEN_INDEL_MAX)
         action = random.randint(0, 1)
+        if self.urs.__len__() <= MIN_URS_LEN:
+            action = 1
         if action == 0:
             # delete
             newurs = ""
@@ -115,7 +117,7 @@ class Gene:
             for j in range(0, rand_site): 
                 newurs += self.urs[j]
             for j in range(0,mulen):
-                newurs += ALPHABET[random.randint(0, ALPHABET.__len__())]
+                newurs += ALPHABET[random.randint(0, ALPHABET.__len__()-1 )]
             for j in range(rand_site, self.urs.__len__()):
                 newurs += self.urs[j]
             self.urs = newurs            

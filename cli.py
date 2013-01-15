@@ -299,7 +299,7 @@ def get_input_rules_from_file(ap):
                     else:
                         this_rule_type = this_rule_type = operator.ge
                     this_multiplier = 1.0
-                    if tokens.__len__() > 6:
+                    if tokens.__len__() > 7:
                         this_multiplier = float(tokens[7])
                     if this_multiplier < 0.0:
                         this_multiplier = 0.0

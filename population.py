@@ -101,11 +101,11 @@ class Population:
 
         """First, we build some relevant probability distributions."""
         from scipy import stats
-        ncis_norm = stats.norm(loc=ap.params["cismu"], scale=0.05)
-        ncisindel_norm = stats.norm(loc=ap.params["urslenmu"], scale=0.05)
-        ndbd_norm = stats.norm(loc=ap.params["dbdmu"], scale=0.05)
-        ndbdindel_norm = stats.norm(loc=ap.params["pwmlenmu"], scale=0.05)
-        np2p_norm = stats.norm(loc=ap.params["p2pmu"], scale=0.05)
+        ncis_norm = stats.norm(loc=ap.params["cismu"], scale=0.0)
+        ncisindel_norm = stats.norm(loc=ap.params["urslenmu"], scale=NORM_SD)
+        ndbd_norm = stats.norm(loc=ap.params["dbdmu"], scale=NORM_SD)
+        ndbdindel_norm = stats.norm(loc=ap.params["pwmlenmu"], scale=NORM_SD)
+        np2p_norm = stats.norm(loc=ap.params["p2pmu"], scale=NORM_SD)
     
         """Introduce mutations into (potentially) all genomes in the population"""
         for gid in self.genomes:
@@ -116,7 +116,7 @@ class Population:
             n_point_mutations = 0
             n_cis_indels = 0
             n_dbd_mutations = 0
-            n_dbd_indels
+            n_dbd_indels = 0
             n_p2p_changes = 0
             
             if mu > 0.0:

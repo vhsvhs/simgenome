@@ -1,4 +1,10 @@
-"""USAGE: >$ python plot_fitness.py PATH"""
+"""USAGE: 
+
+    >$ python plot_fitness.py PATH
+
+    where PATH is a file path to a generations.txt log file,
+    found in the LOG directory.
+"""
 
 import os, re, sys
 

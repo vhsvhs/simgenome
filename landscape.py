@@ -65,8 +65,8 @@ class Landscape:
         for rule in self.rulecollections[rid].rules:
             obs_expr = gene_expr_level[rule.reporter_id][rule.timepoint]
             if False == rule.rule_type(obs_expr, rule.expression_level):
-                expr_error += abs(obs_expr - rule.expression_level)
-            max_expr_error += 1.0
+                expr_error += abs(obs_expr - rule.expression_level) * rule.multiplier
+            max_expr_error += 1.0 * rule.multiplier
         expr_error = expr_error / max_expr_error # Normalize the expression error by the max. possible error
         return math.exp(FITNESS_SCALAR * expr_error) # FITNESS_SCALAR is defined in configuration.py
                     
@@ -186,7 +186,7 @@ class Landscape:
         countrid = 0
         for rid in rid_fitness:
             countrid += 1.0
-            fitness += rid_fitness[rid] * self.rulecollections[rid].multiplier
+            fitness += rid_fitness[rid]
         fitness /= countrid
         
         if ap.params["verbosity"] > 5:

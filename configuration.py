@@ -33,6 +33,7 @@ Most of these parameter values can be overrided by command-line values."""
    the mean expected length, but the URS length will vary
    for each individual gene."""
 INIT_URS_LEN = 20
+MIN_URS_LEN = 10
 
 """What is the initial length (# sites) in a new PWM?"""
 INIT_PWM_LEN = 5
@@ -60,6 +61,8 @@ URS_LEN_MU = 0.05
 URS_LEN_INDEL_MAX = 10
 P2P_MU = 0.1
 P2P_MU_DELTA = 1.0
+
+NORM_SD = 0.05 # the sd value for normal distributions, created with SciPy
 
 """When reproduction occurs, what proportion of reproductive events are sexual? 1.0 means only sexual reproduction,
 wherease 0.0 means all clonal reproduction."""

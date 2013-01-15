@@ -73,3 +73,10 @@ N= 99:
 
 N= 100:
 . Prints all debugging information.  This is outrageously verbose.
+
+
+========================
+TROUBLESHOOTING & F.A.Q.
+
+* If SimGenome hangs at the end of a generation (usually the 0th generation), this may indicate that a slave node has crashed.
+
