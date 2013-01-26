@@ -192,6 +192,8 @@ def get_legend():
     l = "legend(\"bottomright\", c('clonal birth', 'sexual birth', 'clonal death', 'sexual death'), col=c('deepskyblue','royalblue3','red1', 'red3'), pch=c(2,1,6,4), cex=0.6);\n"
     return l
 
+
+
 def execute_cran_string(cstring):    
     fout_cran = open(output_filename_seed + ".cran", "w")
     fout_cran.write("pdf('" + output_filename_seed + ".pdf', width=6, height=5);\n")

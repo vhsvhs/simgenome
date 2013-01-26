@@ -281,7 +281,7 @@ def get_input_rules_from_file(ap):
                 tokens = l.split()
                 if tokens.__len__() >= 6:
                     this_rc_id = int(tokens[1])
-                    this_basal_gene_id = int(tokens[2])
+                    #this_basal_gene_id = int(tokens[2])
                     this_timepoint = int(tokens[3])
                     this_expr_level = float(tokens[4])
                     if this_expr_level < MINIMUM_ACTIVITY_LEVEL:

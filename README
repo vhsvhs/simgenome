@@ -75,6 +75,22 @@ N= 100:
 . Prints all debugging information.  This is outrageously verbose.
 
 
+=============================================
+NOTES ON GROWTH RATE AND DECAY RATE
+The rate at which genes reach maximum expression, and the rate of their decay, are governed
+by three parameters:
+--growth_rate
+--decay_rate
+--pe_scalar
+
+Genes will be turned on faster if you increase the value of growth rate and/or pe_scalar.
+Genes will decay faster if you increase the value of decay_rate and/or pe_scalar.
+
+It is important to avoid binding "saturation," i.e. the situation where a regulatory region bound at X bits
+reaches maximum expression at the same rate as a gene bound by X+n bits.  In this saturation scenario,
+there is no evolutionary advantage for the regulatory machinery to evolve additional specificity
+for the URS.  To avoid this problem, turn down pe_scalar.
+
 ========================
 TROUBLESHOOTING & F.A.Q.
 

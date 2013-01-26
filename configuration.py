@@ -95,8 +95,11 @@ MAX_TIME = 3
 """Minimum distance between transcription factors bound to the same upstream regulatory sequence."""
 MIN_TF_SEPARATION = 0
 
-"""Inversely proportion to URS length. Higher values make k_act higher, which makes it easer for genes to be expressed."""
-PE_SCALAR = 1.0
+"""Inversely proportion to URS length. 
+Higher values make k_act higher, which makes it easer for genes to be expressed.
+Lower values make k_act lower, which means that more bound sites are required
+for genes to be activated."""
+PE_SCALAR = 0.1
 
 """Genes are never truly 'off'.  The minimum expression level is MINIMUM_ACTIVITY_LEVEL."""
 MINIMUM_ACTIVITY_LEVEL = 0.001
@@ -106,8 +109,8 @@ MAXIMUM_ACTIVITY_LEVEL = 1.0
 FITNESS_SCALAR = -3.0
 
 """If RNA polymerase is active, then the expression level at time t+1 will be GROWTH_FACTOR times the expr. level at current time t."""
-MAX_TRANSCRIPTION_RATE = 2.2
-MAX_DECAY_RATE = 1.4
+MAX_TRANSCRIPTION_RATE = 1.0
+MAX_DECAY_RATE = 1.0
 
 """This rate gets used in the function coopfunc (in Landscape) to
 control the rate of decay of the cooperative or competitive interactions

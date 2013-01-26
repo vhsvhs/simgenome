@@ -186,7 +186,7 @@ class Landscape:
         countrid = 0
         for rid in rid_fitness:
             countrid += 1.0
-            fitness += rid_fitness[rid]
+            fitness += rid_fitness[rid] 
         fitness /= countrid
         
         if ap.params["verbosity"] > 5:
