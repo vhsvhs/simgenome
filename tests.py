@@ -4,160 +4,14 @@ from random import choice
 import scipy.stats as ss
 import math
 
-def gen_nonspec_nt(n):
-    count = 0
-    line = ""
-    while(True):
-        for a in ["A", "C", "G", "T"]:
-            line += a
-            count += 1
-            if count == n:
-                return line
+from pwm_library import *
 
 def get_random_nt(n):
+    """Returns a random nucleotide sequence n sites long."""
     line = ""
     for i in range(0, n):
         line += choice(["A", "C", "G", "T"])
     return line
-
-def get_random_pwm(n):
-    line = ""
-    for i in range(0, n):
-        vals = []
-        sum = 0.0
-        for i in range(0,4):
-            x = random.random()
-            vals.append( x )
-            sum += x
-        for val in vals:
-            line += (val/sum).__str__() + " "
-        line += "\n"
-    return line
-
-def get_nonspec_pwm(n):
-    line = ""
-    for i in range(0, n):
-        line += "0.25 0.25 0.25 0.25\n"
-    return line
-
-def get_Aspec(n):
-    line = ""
-    for i in range(0, n):
-        line += "1.00 0.0 0.0 0.0\n"
-    return line
-
-def get_Cspec(n):
-    line = ""
-    for i in range(0, n):
-        line += "0.00 1.0 0.0 0.0\n"
-    return line
-
-def get_Gspec(n):
-    line = ""
-    for i in range(0, n):
-        line += "0.00 0.0 1.0 0.0\n"
-    return line
-
-def get_Tspec(n):
-    line = ""
-    for i in range(0, n):
-        line += "0.00 0.0 0.0 1.0\n"
-    return line
-
-def get_matalpha2():
-    # ATTTACATG
-    line = ""
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.60 0.01 0.01 0.38\n"
-    line += "0.10 0.01 0.09 0.80\n"
-    line += "0.01 0.01 0.01 0.97\n"
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.01 0.97 0.01 0.01\n"
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.01 0.20 0.01 0.78\n"
-    line += "0.08 0.01 0.90 0.01\n"    
-    return line
-
-def get_matalpha2scram():
-    # ATAATTCGA
-    line = ""
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.10 0.01 0.09 0.80\n"
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.01 0.01 0.01 0.97\n"
-    line += "0.01 0.20 0.01 0.78\n"
-    line += "0.01 0.97 0.01 0.01\n"
-    line += "0.08 0.01 0.90 0.01\n"    
-    line += "0.60 0.01 0.01 0.38\n"
-    return line
-
-def get_ste12():
-    line = ""
-    line += "0.01 0.01 0.01 0.97\n"
-    line += "0.01 0.01 0.97 0.01\n"
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.97 0.01 0.01 0.01\n"
-    line += "0.01 0.97 0.01 0.01\n"
-    line += "0.70 0.01 0.28 0.01\n"  
-    return line
-
-def get_efg1():
-    line = ""
-    line += "0.036599    0.270976    0.002458    0.689964\n"
-    line += "0.817856    0.177225    0.002458    0.002458\n"
-    line += "0.020974    0.005349    0.002458    0.971217\n"
-    line += "0.020974    0.036599    0.939967    0.002458\n"
-    line += "0.005349    0.942857    0.018083    0.033709\n"
-    line += "0.974108    0.005349    0.002458    0.018083\n"
-    line += "0.13035     0.427228    0.002458    0.439962\n"
-    line += "0.349102    0.13035     0.471212    0.049334\n"
-    return line
-
-def get_efg1_seq():
-    return ""
-
-# From Zhu
-def get_tec1():
-    line = ""
-    line += "0.160117    0.430781    0.198437    0.210664\n"
-    line += "0.500104    0.218635    0.073431    0.207828\n"
-    line += "0.753885    0.00989    0.225484    0.01074\n"
-    line += "0.079572    0.917027    0.002496    0.000904\n"
-    line += "0.963133    0.000654    0.034699    0.001513\n"
-    line += "0.013733    0.000967    0.000818    0.98448\n"
-    line += "0.049433    0.00043    0.001742    0.948393\n"
-    line += "0.000344    0.980815    0.007453    0.011387\n"
-    line += "0.001567    0.482371    0.008104    0.507956\n"
-    line += "0.007707    0.399204    0.01281    0.580277\n"
-    line += "0.14392    0.163985    0.563246    0.128847\n"
-    return line
-
-# From Zhu
-def get_ndt80():
-    line = ""
-    line += "0.215888    0.403718    0.140864    0.239529\n"
-    line += "0.201577    0.430686    0.17625    0.191484\n"
-    line += "0.0994    0.114555    0.495278    0.290765\n"
-    line += "0.188009    0.020196    0.675723    0.116069\n"
-    line += "0.444225    0.483732    0.041969    0.030072\n"
-    line += "0.012211    0.948956    0.004543    0.034287\n"
-    line += "0.940416    0.007801    0.04533    0.006451\n"
-    line += "0.018448    0.967691    0.00696    0.0069\n"
-    line += "0.965515    0.004107    0.009598    0.020778\n"
-    line += "0.97028    0.005013    0.01588    0.008826\n"
-    line += "0.945264    0.003527    0.014206    0.037001\n"
-    line += "0.713859    0.024864    0.236744    0.024531\n"
-    line += "0.496837    0.178778    0.082445    0.241937\n"
-    line += "0.123789    0.630913    0.09573    0.149566\n"
-    line += "0.127851    0.32957    0.440099    0.102478\n"
-    line += "0.314093    0.330225    0.277595    0.078086\n"
-    line += "0.360795    0.177409    0.230168    0.231626\n"
-    line += "0.477799    0.192623    0.174716    0.15486\n"
-    return line
-
-
 
 #
 # A simple FFL
@@ -582,7 +436,7 @@ def run_merge():
     for rep in range(0, nreps):
         for n in n_vals:
             m = n
-            baseid = "merge.01-22-2013.n=%d"%n
+            baseid = "merge.01-29-2013.n=%d"%n
             baseid = baseid + ".r" + rep.__str__()
         
             actids = []
@@ -621,10 +475,10 @@ def run_merge():
                 fout.write(actid.__str__() + " 1 0 " + get_random_nt(200) + "\n")            
             for repid in repids:
                 fout.write(repid.__str__() + " 1 1 " + get_random_nt(200) + "\n")  
-            for nid in nids:
-                fout.write(nid.__str__() + " 0 0 " + get_random_nt(200) + "\n")
-            for mid in mids:
-                fout.write(mid.__str__() + " 0 0 " + get_random_nt(200) + "\n")
+            for nid in nids: # enrichment of TEC1 sites
+                fout.write(nid.__str__() + " 0 0 " + "AATGCATG" + get_random_nt(50) + "AATGCATG" + get_random_nt(50) + "AATGCATG" + get_random_nt(50) + "AATGCATG" + get_random_nt(50) +"\n")
+            for mid in mids: # enrichment of EFG1 sites
+                fout.write(mid.__str__() + " 0 0 " + "CAACATTCTTG" + get_random_nt(50) + "CAACATTCTTG" + get_random_nt(50) + "CAACATTCTTG" + get_random_nt(50) + "CAACATTCTTG" + get_random_nt(50) + "\n")
             fout.close()
             
             fout = open("./UTESTS/pwm." + baseid + ".txt", "w")
@@ -748,7 +602,8 @@ def run_kd_test():
     fout.close()
     os.system("source " + scriptname)
     
-
+def run_biofilm_prediction():
+    pass
 
 #run_ko()
 #run_ffl()

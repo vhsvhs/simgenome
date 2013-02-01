@@ -21,7 +21,6 @@ def check_workspace(ap):
             """Build the directory"""
             os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d)
 
-
 def main():
     ap = ArgParser(sys.argv)
     read_cli(ap)
