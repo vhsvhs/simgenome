@@ -603,7 +603,17 @@ def run_kd_test():
     os.system("source " + scriptname)
     
 def run_biofilm_prediction():
-    pass
+    """
+    1. Configure an individual:
+        a. all the URSs from the Candida albicans genome
+        b. all the biofilm regulators (and their PWMs) from C. albicans
+        c. several "control" regulators that don't regulate biofilm targets in C. albicans
+    2. Turn growth rate up very high
+    3. Run the simulation for one individual, for one generation, with no fitness rules.
+    4. Capture the output form STDOUT.
+    5. Examine which target genes were expressed highly, and which genes were not expressed.
+    6. Is there a correlation between the predicted gene expression and the observed gene expression?
+    """
 
 #run_ko()
 #run_ffl()
