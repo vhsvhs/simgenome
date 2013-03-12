@@ -29,7 +29,6 @@ def main():
         """Verify existence of necessary folders."""
         check_workspace(ap)
 
-
     l = []
     for s in range(0, ap.params["popsize"]):
         l.append( s )
@@ -48,7 +47,7 @@ def main():
         if popath != False:
             population.init_from_pickle(popath)
         else:
-            cli_genes = get_genes_from_file(ap)
+            cli_genes = get_genes_from_file(ap)            
             population.init(ap, init_genes=cli_genes)
         
         if ap.params["verbosity"] > 1:    
@@ -68,7 +67,7 @@ def main():
         
     """Master and slaves build their own copies of the landscape, using the user specifications."""
     landscape = Landscape(ap)
-    landscape.init(ap, genome = population.genomes[0])
+    landscape.init(ap)
 
     if rank == 0:
         """Check for consistency with all parameters."""
@@ -96,7 +95,6 @@ def main():
             print "--> KO on each gene in individual " + ap.params["kogenome"].__str__()
             print "--> Assessing fitness at generation " + ap.params["generation"].__str__()
         ko.runko(ap)
-        
         
     if rank == 0:
         return [population, landscape]

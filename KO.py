@@ -78,7 +78,7 @@ class KO:
         ko_gid_fitness = {}
         
         """Find my_items, which is a list of genes that this slave is responsible for."""
-        my_items = list_my_items(ap.params["rangetrs"], rank)
+        my_items = list_my_items(ap.params["trlist"], rank)
         print "\n. KO.py 82: Rank", rank, "has these items:", my_items
             
         for gid in my_items:

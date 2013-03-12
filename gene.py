@@ -6,11 +6,12 @@ class Gene:
     has_dbd = False # False = gene is reporter, True = gene is regulatory gene
     pwm = None      # "pwm" stands for position specific weight matrix.
     id = None
+    name = ""
     is_repressor = False
     tfcoop = None # array of relative co-factor affinities, without consideration of distance. [-1,0) = anti-co-factor activity. 0 = no activity, (0,+infinity] = positive co-factor activity
     gamma = None # i.e., cofactor affinity at various distances.  This is calculated from self.tfcoop.  It's a 2-d Numpy array. gamma[tf][distance].  Values: 1.0 = no effect on binding, <1.0 = decreases binding, >1.0 = strengthens binding.
         
-    def __init__(self, id, urs_len, urs = None, has_dbd = False, repressor = False, pwm = None, tfcoop = None, gamma = None, ap = None):
+    def __init__(self, id, urs_len, urs = None, has_dbd = False, repressor = False, pwm = None, tfcoop = None, gamma = None, ap = None, name = None):
         """gamma and ap are optional, but you need at least one of them."""
         
         """1. id"""
@@ -45,10 +46,13 @@ class Gene:
         elif self.has_dbd and tfcoop != None:
             self.tfcoop = tfcoop
             self.gamma = gamma
+            
+        if name != None:
+            self.name = name
 
     def collapse(self):
         #print "gene.py47 collapsing into", [self.id, self.urs.__len__(), self.urs, self.has_dbd, self.is_repressor, self.pwm, self.gamma]
-        return [self.id, self.urs.__len__(), self.urs, self.has_dbd, self.is_repressor, self.pwm, self.tfcoop, self.gamma]
+        return [self.id, self.urs.__len__(), self.urs, self.has_dbd, self.is_repressor, self.pwm, self.tfcoop, self.gamma, self.name]
 
     def coopfunc(self, g, d):
         """Calculates the degree of binding cooperativity between two TFs binding distance d apart.
@@ -73,7 +77,7 @@ class Gene:
 
     def set_gamma(self, ap):
         self.gamma = zeros( (ap.params["numtr"], ap.params["maxgd"]), dtype=float)
-        for i in ap.params["rangetrs"]:
+        for i in ap.params["trlist"]:
             for d in ap.params["rangegd"]:
                 self.gamma[i,d] = self.coopfunc( self.tfcoop[i], d)
         #print "debug gene.py 75", " rank=", comm.Get_rank()," gamma=", self.gamma

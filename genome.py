@@ -18,7 +18,7 @@ class Genome:
     def init(self, ap, init_genes=None, init_expression=None):
         if init_genes == None:
             """Add ap.params["numtr"] number of transcription factor genes"""
-            for i in ap.params["rangetrs"]:
+            for i in ap.params["trlist"]:
                 repressor = False
                 if i%2:
                     repressor = True
@@ -50,7 +50,7 @@ class Genome:
         gids = data[0].keys()
         gids.sort()
         for gid in gids:
-            this_gene = Gene(data[0][gid][0], data[0][gid][1], data[0][gid][2], data[0][gid][3], data[0][gid][4], data[0][gid][5], data[0][gid][6], data[0][gid][7])
+            this_gene = Gene(data[0][gid][0], data[0][gid][1], urs=data[0][gid][2], has_dbd=data[0][gid][3], repressor=data[0][gid][4], pwm=data[0][gid][5], tfcoop=data[0][gid][6], gamma=data[0][gid][7], name=data[0][gid][8])
             self.genes.append( this_gene )
         self.gene_expr = data[1]
     
@@ -88,7 +88,7 @@ class Genome:
         lines.append("dist.\tTFi\tTFj\tgamma")
         for gene in self.genes:
             if gene.has_dbd:
-                for j in ap.params["rangetrs"]:                    
+                for j in ap.params["trlist"]:                    
                     for d in ap.params["rangegd"]:
                         this_line = d.__str__() + "\t" + gene.id.__str__() + "\t" + j.__str__() 
                         this_line += "\t" + gene.gamma[j,d].__str__()

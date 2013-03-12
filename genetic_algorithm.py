@@ -50,7 +50,7 @@ class Genetic_Algorithm:
             comm.send(None, dest=slave, tag=11)
             
     
-    def runsim_master(self, comm, ap):                        
+    def runsim_master(self, comm, ap):                     
         """These variables will store time measurements.  Use --perftime True to print these stats."""
         notime = 0.0
         sumtime_gen = notime
@@ -169,7 +169,7 @@ class Genetic_Algorithm:
                                     
                 print "\t. mean comm/calc ratio: %.3f"%( (sumtime_end_gather + sumtime_end_bcast) / (sumtime_end_gather + sumtime_end_bcast + sumtime_end_calc + sumtime_end_stats + sumtime_getmm + sumtime_end_evo) )
 
-    def runsim_slave(self, rank, comm, ap):                     
+    def runsim_slave(self, rank, comm, ap):           
         """For each GA generation. . . ."""
         for i in range(ap.params["generation"], ap.params["generation"]+ap.params["maxgens"]):
             ap.params["generation"] = i
@@ -204,7 +204,7 @@ class Genetic_Algorithm:
             """Get updated data from master."""
             self.slaveonly_recv()
 
-    def runsim(self, ap):
+    def runsim(self, ap):        
         """This is the main method of the genetic algorithm."""
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()

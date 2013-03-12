@@ -223,14 +223,15 @@ def read_cli(ap):
         ap.params["doko"] = False
         ap.params["kogenome"] = -1
     
-    ap.params["rangetrs"] = []
-    """Here we precompute the range of TR numbers "rangertrs", and the range + 1 (for no dimerization) "rangetrs+".
+    ap.params["trlist"] = []
+    """Here we precompute the range of TR numbers "rangertrs", and the range + 1 (for no dimerization) "trlist+".
     We'll use these ranges very often in the code, so this precomputation step saves time later."""
     for i in range(0, ap.params["numtr"]):
-        ap.params["rangetrs"].append(i)
-    ap.params["rangetrs+"] = ap.params["rangetrs"] + [ap.params["numtr"]]
+        ap.params["trlist"].append(i)
+    ap.params["trlist+"] = ap.params["trlist"] + [ap.params["numtr"]]
     # . . . this produces an array [0,1,2,3,4,...,n] where 1 through n-1 correspond to TR indices, and n corresponds to the empty case. 
 
+    #ap.params["gene_names"] = {} # key = gene ID (integer), value = name of gene (as a string)
 
 def check_world_consistency(ap, population, landscape):
     """Check for out-of-bounds genes"""
@@ -344,81 +345,95 @@ def get_genes_from_file(ap):
     """Returns either a list of genes read from a file,
     or returns None if the user did not specify to use genes from a file."""
     
+    if comm.Get_rank() == 0 and ap.params["verbosity"] >= 1:                
+        if False == ap.getOptionalArg("--pwmpath"): 
+            print "\n. I found no value for --pwmpath."
+            print "--> I will build random PWMs."
+        else:
+            print "--> Reading the PWMs described in", ap.getOptionalArg("--pwmpath")
+    if False == ap.getOptionalArg("--urspath"):
+        return None
+    gene_pwms = {} # key = gene_id, value = PWM for this gene
+    gene_regmode = {}
+    fin = open(ap.getOptionalArg("--pwmpath"), "r")
+    prev = None
+    countsites = -1
+    for l in fin.xreadlines():
+        if l.__len__() < 1:
+            continue
+        if l.__contains__("pwm"):
+            tokens = l.split()
+            gene_id = int(tokens[1])
+            prev = gene_id
+            reg_mode = int( tokens[2] )
+            gene_pwms[ gene_id ] = PWM()
+            gene_regmode[ gene_id ] = reg_mode
+            countsites = -1
+        elif prev != None and l.__len__() > 2 and False == l.__contains__("#"):
+            countsites += 1
+            tokens = l.split()
+            cc = 0
+            gene_pwms[ prev ].P.append( {} )
+            gene_pwms[ prev ].rangesites.append(countsites)
+            for c in ALPHABET:
+                gene_pwms[ prev ].P[countsites][c] = float(tokens[cc])
+                cc += 1
+    fin.close()
+    
+    
     if comm.Get_rank() == 0 and ap.params["verbosity"] >= 1:
         if False == ap.getOptionalArg("--urspath"): 
             print "\n. I found no value for --urspath."
             print "--> I will build random URSs."
         else:
             print "--> Reading the URSs described in", ap.getOptionalArg("--urspath")
-                
-        if False == ap.getOptionalArg("--pwmpath"): 
-            print "\n. I found no value for --pwmpath."
-            print "--> I will build random PWMs."
-        else:
-            print "--> Reading the PWMs described in", ap.getOptionalArg("--pwmpath")
-    
-    if False == ap.getOptionalArg("--urspath"):
-        return None
-    
     if False != ap.getOptionalArg("--urspath"):
         ret_genes = []
         urspath = ap.getOptionalArg("--urspath")
         fin = open(urspath, "r")
         lines = fin.readlines()
-        
-        #
-        #
-        #
-#        count_tf = 0
-#        count_reporter = 0
-#        for l in lines:
-#            if l.startswith("#"):
-#                continue            
-#            else:
-#                tokens = l.split()
-#                if tokens.__len__() >= 4:
-#                    this_has_dbd = int(tokens[1])
-#                    if this_has_dbd == 1:
-#                        count_tf += 1
-#                    else:
-#                        count_reporter += 1
-#        print count_tf, count_reporter
-#        exit()
-#        ap.params["numtr"] = count_tf
-#        print "\n. I found " + count_tf.__str__() + " regulators in your gene file."
-#        ap.params["numreporter"] = count_reporter
-#        print "\n. I found " + count_reporter.__str__() + " reporters in your gene file."
-#        
-#        ap.params["rangetrs"] = []
-#        for i in range(0, ap.params["numtr"]):
-#            ap.params["rangetrs"].append(i)
-#        ap.params["rangetrs+"] = ap.params["rangetrs"] + [ap.params["numtr"]]
-        
-        
-        #
-        #
-        #
-        for l in lines:
+
+        for i in range(0, lines.__len__()):
+            l = lines[i]
             if l.startswith("#"):
                 continue
-            else:
+            elif l.startswith(">"):
+                l = l.strip()
                 tokens = l.split()
-                if tokens.__len__() >= 4:
-                    this_id = int(tokens[0])
-                    this_pwm = None
-                    if ap.getOptionalArg("--pwmpath"):
-                        pwmpath = ap.getOptionalArg("--pwmpath")
-                        this_pwm = PWM()
-                        this_pwm.read_from_file( pwmpath, this_id )
-                    this_has_dbd = int(tokens[1])
-                    this_repressor = int(tokens[2])
-                    if this_repressor == 0:
-                        this_repressor = False
-                    elif this_repressor == 1:
-                        this_repressor = True
-                    this_urs = tokens[3]
-                    this_gene = Gene(this_id, this_urs.__len__(), urs=this_urs, has_dbd=this_has_dbd, repressor=this_repressor, pwm=this_pwm, ap=ap) 
-                    ret_genes.append(this_gene)
+                gene_id = int( re.sub(">", "", tokens[0]) )
+                gene_name = re.sub(tokens[0] + " ", "", l)
+                if gene_name.__len__() < 1:
+                    gene_name = gene_id.__str__()
+                
+                j = i+1
+                this_urs = ""
+                while j < lines.__len__():
+                    if False == lines[j].startswith(">") and False == lines[j].startswith("#"):
+                        this_urs += lines[j].strip()
+                        j += 1
+                    else:
+                        j = lines.__len__()
+                if gene_id in gene_pwms:
+                    this_gene = Gene(gene_id, this_urs.__len__(), urs=this_urs, has_dbd=True, repressor=gene_regmode[ gene_id ], pwm=gene_pwms[ gene_id ], ap=ap, name=gene_name)
+                else:
+                    this_gene = Gene(gene_id, this_urs.__len__(), urs=this_urs, has_dbd=False, ap=ap, name=gene_name) 
+                ret_genes.append(this_gene)
         fin.close()
-        
-        return ret_genes
+
+    # for debugging:
+    if ap.params["verbosity"] > 5:
+        print ". Gene Summary:"
+        for gene in ret_genes:
+            name = "(" + gene.name + ")"
+            if gene.has_dbd:
+                rep = "Activator"
+                if gene.is_repressor:
+                    rep = "Repressor"
+                print " ", rep, gene.id, name, ": URS length:", gene.urs.__len__()
+            else:
+                print "  Reporter", gene.id, name, ": URS length:", gene.urs.__len__()
+    
+            
+    return ret_genes
+
+

@@ -15,7 +15,7 @@ class Landscape:
         self.r = None
         self.t_counter = ap.params["generation"]
     
-    def init(self, ap, genome=None, tp=None):
+    def init(self, ap, tp=None):
         tp = get_input_rules_from_file(ap)
         
         """Verify that we found input patterns and fitness rules."""
@@ -72,6 +72,7 @@ class Landscape:
                     
     
     def get_fitness(self, genome, ap, ko=[]):
+
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
         Any gene IDs specified in the list 'ko' will be set to MINIMUM_ACTIVITY_LEVEL at each timeslice."""
                 
@@ -82,7 +83,8 @@ class Landscape:
         # First, build the r vector...
         self.r = []
         self.maxr = 0
-        for x in ap.params["rangetrs"]:
+        for x in ap.params["trlist"]:
+            #print "landscape.py 86", x, genome.genes[x], genome.genes[x].pwm
             self.r.append( genome.genes[x].pwm.P.__len__() )
             if self.r[x] > self.maxr:
                 self.maxr = self.r[x]
@@ -134,7 +136,7 @@ class Landscape:
     
                 
                 """ Update all TF expression levels."""         
-                for tf in ap.params["rangetrs"]:
+                for tf in ap.params["trlist"]:
                     tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice]
                                            
                 for gene in genome.genes:            
@@ -170,7 +172,7 @@ class Landscape:
                             marka = "[act.]"
                         elif gene.has_dbd and gene.is_repressor:
                             marka = "[rep.]"
-                        print "r:", rid, "gen.:", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta 
+                        print "r:", rid, "gen.:", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta, "\t" + gene.name 
     
                 #
                 # to-do: if gene expression has not changed from the last timeslice
@@ -208,16 +210,14 @@ class Landscape:
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
         """returns a ProbTable object, named ret."""
-        if ap.params["verbosity"] > 90:
-            print "\n\n. CALC_PROB_TABLES gene", gene.id
         L = gene.urs.__len__()        
         for x in range(0, L): # foreach site in gene's upstream region
             sum_cpr = 0.0
-            for i in ap.params["rangetrs"]:   # foreach transcription factor
+            for i in ap.params["trlist"]:   # foreach transcription factor
                 pwm_tmp = genome.genes[i].pwm.specificity( x, gene.urs )
                 #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%pwm_tmp, "bits."
                 sum_cpt = 0.0
-                for j in ap.params["rangetrs+"]: # +1 to also consider the empty case
+                for j in ap.params["trlist+"]: # +1 to also consider the empty case
                     for d in ap.params["rangegd"]:                        
                         if (L-x < self.r[i]): 
                             """ CASE 1: TF i's PWM is too wide to start binding at site x"""
@@ -309,9 +309,9 @@ class Landscape:
         #d = random.randint(0, MAX_GD-1)
         
         
-        for i in ap.params["rangetrs"]:
+        for i in ap.params["trlist"]:
             reti = i
-            for j in ap.params["rangetrs+"]:
+            for j in ap.params["trlist+"]:
                 retj = j
                 for d in ap.params["rangegd"]:
                     retd = d
@@ -339,8 +339,8 @@ class Landscape:
         """configurations: key = site, value = array of arrays, [i,j,d] samples"""
         
         for sample in range(0, ap.params["iid_samples"]):
-            if ap.params["verbosity"] > 90:
-                print "landscape.py 343, genome", genome.id, ", gene", gene.id, ", iid sample", sample
+            #if ap.params["verbosity"] > 90:
+            #    print "landscape.py 343, genome", genome.id, ", gene", gene.id, ", iid sample", sample
 
             
             """"1. Build a configuration this_config, by sampling cells from ptables.cpa"""          
