@@ -265,11 +265,12 @@ def get_input_rules_from_file(ap):
         for l in lines: 
             if l.startswith("RULE") or l.startswith("INPUT"):
                 tokens = l.split()
-                start_time = int(tokens[2])
-                if start_time > ap.params["maxtime"]:
+                time = int(tokens[3])
+                if time > ap.params["maxtime"]:
                     #print "cli.py 231", start_time, ap.params["maxtime"]
-                    correct_maxtime_error(start_time, ap)
-                end_time = int(tokens[3])
+                    correct_maxtime_error(time, ap)
+            if l.startswith("INPUT"):
+                end_time = int(tokens[4])
                 if end_time > ap.params["maxtime"]:
                     #print "cli.py 235", end_time, ap.params["maxtime"]
                     correct_maxtime_error(end_time, ap)
@@ -288,8 +289,8 @@ def get_input_rules_from_file(ap):
                         this_expr_level = MINIMUM_ACTIVITY_LEVEL
                     if this_expr_level > MAXIMUM_ACTIVITY_LEVEL:
                         this_expr_level = MAXIMUM_ACTIVITY_LEVEL
-                    this_reporter_gene_id = int(tokens[5])
-                    this_rule_type = tokens[6]
+                    this_reporter_gene_id = int(tokens[2])
+                    this_rule_type = tokens[5]
                     if this_rule_type == "ge":
                         this_rule_type = operator.ge
                     elif this_rule_type == "eq":
@@ -300,7 +301,7 @@ def get_input_rules_from_file(ap):
                         this_rule_type = this_rule_type = operator.ge
                     this_multiplier = 1.0
                     if tokens.__len__() > 7:
-                        this_multiplier = float(tokens[7])
+                        this_multiplier = float(tokens[6])
                     if this_multiplier < 0.0:
                         this_multiplier = 0.0
                     this_rule = Fitness_Rule(this_timepoint, this_expr_level, this_reporter_gene_id, this_rule_type,m=this_multiplier)

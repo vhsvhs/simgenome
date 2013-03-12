@@ -137,7 +137,7 @@ class Landscape:
                 for tf in ap.params["rangetrs"]:
                     tf_expr_level[ genome.genes[tf].id ] = genome.gene_expr[ genome.genes[tf].id ][timeslice]
                                            
-                for gene in genome.genes:                
+                for gene in genome.genes:            
                     if gene.id in ko:
                         pe = 0.0
                     else:
@@ -208,7 +208,7 @@ class Landscape:
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
         """returns a ProbTable object, named ret."""
-        if ap.params["verbosity"] > 100:
+        if ap.params["verbosity"] > 90:
             print "\n\n. CALC_PROB_TABLES gene", gene.id
         L = gene.urs.__len__()        
         for x in range(0, L): # foreach site in gene's upstream region
@@ -339,6 +339,9 @@ class Landscape:
         """configurations: key = site, value = array of arrays, [i,j,d] samples"""
         
         for sample in range(0, ap.params["iid_samples"]):
+            if ap.params["verbosity"] > 90:
+                print "landscape.py 343, genome", genome.id, ", gene", gene.id, ", iid sample", sample
+
             
             """"1. Build a configuration this_config, by sampling cells from ptables.cpa"""          
             this_config = {} # key = site, value = the TF bound starting at this site.
