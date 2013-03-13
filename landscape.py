@@ -131,7 +131,7 @@ class Landscape:
                                     marka = "[act.]"
                                 elif gene.has_dbd and gene.is_repressor:
                                     marka = "[rep.]"
-                                print "r:", rid, "gen.:", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice]
+                                print "r:", rid, "\tgen.:", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\t\t" + gene.name
                         print ""
     
                 
@@ -172,7 +172,7 @@ class Landscape:
                             marka = "[act.]"
                         elif gene.has_dbd and gene.is_repressor:
                             marka = "[rep.]"
-                        print "r:", rid, "gen.:", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta, "\t" + gene.name 
+                        print "r:", rid, "\tgen.:", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta, "\t" + gene.name 
     
                 #
                 # to-do: if gene expression has not changed from the last timeslice
@@ -206,6 +206,7 @@ class Landscape:
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)          
         pe = self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)        
         pe = pe - 0.5 # This will make pe range from -0.5 to +0.5.  
+        print "landscape.py 209 pe before/after", (pe + 0.5), pe
         return pe
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):

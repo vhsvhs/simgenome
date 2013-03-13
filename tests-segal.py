@@ -55,7 +55,7 @@ def run_segal2008():
     line += " --pwmpath ./UTESTS/pwm." + baseid + ".txt "
     line += " --workspace ./UTESTS --tfcoop zeros "
     line += " --maxgd 1 "
-    line += " --iid_samples 500" 
+    line += " --iid_samples 3000" 
     line += " --eliteproportion 0.0 "            
     line += " --elitemu 0.0 "
     line += " --mu 0 "

@@ -79,7 +79,7 @@ class Genetic_Algorithm:
                 if slave == 1:
                     time_end_calc = datetime.utcnow()
                 if ap.params["verbosity"] > 50:
-                    print "\n. genetic_algorithm.py line 73 - Master received from slave", slave, ":\ngid_fitness:", their_gid_fitness, "\ngid_terminal_expression:", their_gid_terminal_expression
+                    print "\n. genetic_algorithm.py line 73 - Master received from slave", slave, ":\n. gid_fitness:", their_gid_fitness, "\n. gid_terminal_expression:", their_gid_terminal_expression
                 for gid in their_gid_fitness.keys():
                     gid_fitness[gid] = their_gid_fitness[gid]
                     if ap.params["enable_epigenetics"] == True:
@@ -138,6 +138,7 @@ class Genetic_Algorithm:
             time_end_evo = datetime.utcnow()
 
             """Check for convergence on terminal conditions."""
+            """First check user-specified conditions. . . """
             if ap.params["stopconvergence"] == True:
                 if mean_f >= ap.params["fgoal"]:
                     count_conv_gens += 1
@@ -146,6 +147,7 @@ class Genetic_Algorithm:
                 if count_conv_gens >= 3:
                     self.masteronly_whistle()
                     exit()
+            """Next check if this is the final generation. . . """
             
             """Broadcast the updated population to MPI slaves."""
             self.masteronly_bcast(ap)
