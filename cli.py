@@ -79,7 +79,7 @@ def read_cli(ap):
     else:
         ap.params["numreporter"] = N_REPORTER 
 
-    x = ap.getOptionalArg("--maxgd")
+    x = ap.getOptionalArg("--maxgd") # How close can two proteins be?
     if x != False:
         ap.params["maxgd"] = int(x)
         if ap.params["maxgd"] <= 0:
@@ -101,7 +101,7 @@ def read_cli(ap):
     
     x = ap.getOptionalArg("--mu")
     if x != False:
-        ap.params["mu"] = float(x)
+        ap.params["mu"] = int(x)
     else:
         ap.params["mu"] = MU 
         
@@ -313,7 +313,7 @@ def get_input_rules_from_file(ap):
                 tokens = l.split()
                 if tokens.__len__() >= 4:
                     # first parse the parameters of the time pattern
-                    this_rc_id = int(tokens[1])
+                    this_rc_id = int(tokens[1]) # Rule Collection ID
 
                     this_basal_gene_id = int(tokens[2])
                     this_timepoint_start = int(tokens[3])

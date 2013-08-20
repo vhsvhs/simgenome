@@ -119,7 +119,7 @@ class Population:
             n_dbd_indels = 0
             n_p2p_changes = 0
             
-            if mu > 0.0:
+            if mu > 0: # if --mu 1, basically.  --mu enables/disables all mutations.
                 """cis nt mutations"""
                 n_point_mutations = int(self.genomes[gid].count_cis_seq_len() * ncis_norm.rvs() )
                 if n_point_mutations < 0:

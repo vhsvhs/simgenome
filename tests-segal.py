@@ -18,14 +18,18 @@ def get_random_nt(n):
 def run_segal2008():    
     baseid = "segal2008"
     os.system("mkdir UTESTS")    
-        
+    
+    #
+    # Write the PWM and URS file:
+    #
     write_files( "./UTESTS/pwm." + baseid + ".txt" , "./UTESTS/urs." + baseid + ".fasta" )
      
+    #
+    # Write the input & rule file:
+    #
     fout = open("./UTESTS/rules." + baseid +".txt", "w")
-    fout.write("# timepatternID, reporter_gene_id, timepoint, expression_level, rule_type, multiplier\n")
+    fout.write("# timepatternID, reporter_gene_id, timepoint, expression_level, rule_type, multiplier (optional)\n")
     fout.write("RULE 0 6 1 1.0 le\n")
-
-    
     fout.write("# timepatternID, basal_gene_id, time_start, time_stop, expr_level\n")
     fout.write("INPUT 0 0 0 1 0.00\n") #hunchback
     fout.write("INPUT 0 1 0 1 0.00\n") #tailless
@@ -38,7 +42,6 @@ def run_segal2008():
     fout.close()
     
     
-    #print "utests.py 456", n, rep
     cismu = 0.00
     dbdmu = 0.0
     runid = baseid
@@ -53,7 +56,7 @@ def run_segal2008():
     line += " --growth_rate 1.0 --decay_rate 1.0 "
     line += " --pe_scalar 0.001 " 
     line += " --pwmpath ./UTESTS/pwm." + baseid + ".txt "
-    line += " --workspace ./UTESTS --tfcoop zeros "
+    line += " --workspace ./UTESTS "
     line += " --maxgd 1 "
     line += " --iid_samples 3000" 
     line += " --eliteproportion 0.0 "            
@@ -80,10 +83,29 @@ def run_segal2008():
 
 
 def write_files(pwmpath, urspath):
+    #
+    # regulatory DNA, (i.e. URSs)
+    #
+    fin = open("segal2008/module_sequence.tab.txt", "r")
+    lines = fin.readlines()
+    fin.close()
+    gene_urs = {}
+    lastgene = None
+    for l in lines:
+        if l.startswith(">"):
+            l = l.strip()
+            gene = re.sub(">", "", l)
+            lastgene = gene
+        elif lastgene != None:
+            l = l.strip()
+            gene_urs[lastgene] = l
+    
+    #
+    # PWMs
+    #
     fin = open("segal2008/tf_weight_matrices.gxw.txt", "r")
     lines = fin.readlines()
     fin.close()
-    
     tf_pwmlines = {}
     lasttf = None
     for l in lines:
@@ -101,31 +123,21 @@ def write_files(pwmpath, urspath):
             wts = re.sub(";", "  ", wts)
             tf_pwmlines[lasttf] += wts + "\n"
     
-    fin = open("segal2008/module_sequence.tab.txt", "r")
-    lines = fin.readlines()
-    fin.close()
-    
-    gene_urs = {}
-    lastgene = None
-    for l in lines:
-        if l.startswith(">"):
-            l = l.strip()
-            gene = re.sub(">", "", l)
-            lastgene = gene
-        elif lastgene != None:
-            l = l.strip()
-            gene_urs[lastgene] = l
-
+    #
+    # Write-out PWMs
+    #
     counttf = 0
     fout = open(pwmpath, "w")
     for tf in tf_pwmlines:
-        #print tf, tf_pwmlines[tf]
         fout.write("# " + tf + "\n")
         fout.write("pwm " + counttf.__str__() + "  0\n")
         fout.write(tf_pwmlines[tf] + "\n")
         counttf += 1
     fout.close()
     
+    #
+    # Write-out URSs
+    #
     countgene = 0
     fout = open(urspath, "w")
     for tf in tf_pwmlines:
@@ -139,7 +151,6 @@ def write_files(pwmpath, urspath):
         fout.write(gene_urs[gene] + "\n")
         countgene += 1
     fout.close()
-    #exit()
 
 run_segal2008()
 

@@ -119,7 +119,7 @@ if rank == 0:
 mpi_check()
 
 #
-# uncomment this code block to run Cprofile.
+# uncomment this code to run Cprofile.
 #
 #if ap.getOptionalArg("--use_cprofile"):
 #   prof_path = "./prof_trace." + (random.random() * 1000000).__str__() + ".cprofile"
