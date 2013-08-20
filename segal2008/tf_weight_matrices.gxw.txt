@@ -1,0 +1,111 @@
+<WeightMatrices>
+<WeightMatrix Name="bicoid" Type="PositionSpecific" LeftPaddingPositions="0" RightPaddingPositions="0" DoubleStrandBinding="false" ZeroWeight="0">
+  <Position Weights="0.0220071;0.515419;0.263775;0.198799"></Position>
+  <Position Weights="0.000313491;0.526394;0.18119;0.292103"></Position>
+  <Position Weights="0.0121258;0.000367034;0.00508651;0.982421"></Position>
+  <Position Weights="0.546444;0.444226;0.0063831;0.0029464"></Position>
+  <Position Weights="0.99918;4.68222e-05;0.000745253;2.75202e-05"></Position>
+  <Position Weights="0.000255355;0.0222943;0.418216;0.559234"></Position>
+  <Position Weights="0.0191077;0.928256;0.000817427;0.0518188"></Position>
+  <Position Weights="0.0299074;0.440646;0.293858;0.235588"></Position>
+  <Position Weights="0.0138446;0.914434;0.00614029;0.0655808"></Position>
+  <Position Weights="0.000288269;0.229073;0.466637;0.304002"></Position>
+  <Position Weights="0.0826914;0.452687;0.393126;0.071496"></Position>
+</WeightMatrix>
+<WeightMatrix Name="hunchback" Type="PositionSpecific" LeftPaddingPositions="0" RightPaddingPositions="0" DoubleStrandBinding="false" ZeroWeight="0">
+  <Position Weights="0.27777;0.26315;0.181401;0.277679"></Position>
+  <Position Weights="0.00270979;0.000123763;0.0883932;0.908773"></Position>
+  <Position Weights="0.000584572;0.00414256;0.00158101;0.993692"></Position>
+  <Position Weights="0.0104974;0.00495818;0.000254465;0.98429"></Position>
+  <Position Weights="4.59965e-06;0.00016729;5.31834e-06;0.999823"></Position>
+  <Position Weights="0.00508718;0.00315507;1.66823e-05;0.991741"></Position>
+  <Position Weights="0.058686;0.00048304;0.0774533;0.863378"></Position>
+  <Position Weights="0.0390574;0.0155406;0.176306;0.769096"></Position>
+  <Position Weights="0.0317847;0.0613744;0.592784;0.314057"></Position>
+  <Position Weights="0.096327;0.0753486;0.259962;0.568363"></Position>
+  <Position Weights="0.0102737;0.2544;0.283242;0.452084"></Position>
+  <Position Weights="0.0354397;0.761812;0.015983;0.186766"></Position>
+</WeightMatrix>
+<WeightMatrix Name="knirps" Type="PositionSpecific" LeftPaddingPositions="0" RightPaddingPositions="0" DoubleStrandBinding="false" ZeroWeight="0">
+  <Position Weights="0.0870015;0.0599188;0.311381;0.541699"></Position>
+  <Position Weights="0.277436;0.212547;0.233255;0.276762"></Position>
+  <Position Weights="0.195469;0.123814;0.444845;0.235872"></Position>
+  <Position Weights="0.0735871;0.00178962;0.832068;0.0925548"></Position>
+  <Position Weights="0.429035;0.329244;0.234906;0.00681441"></Position>
+  <Position Weights="0.298811;0.225884;0.26168;0.213624"></Position>
+  <Position Weights="0.0792072;0.800233;0.120163;0.000396994"></Position>
+  <Position Weights="8.48065e-05;0.666362;0.285952;0.0476009"></Position>
+  <Position Weights="0.0172067;0.366576;0.0388807;0.577337"></Position>
+  <Position Weights="0.363458;0.00738109;0.286919;0.342242"></Position>
+  <Position Weights="0.374447;0.00801737;0.290031;0.327505"></Position>
+  <Position Weights="0.384348;0.307052;0.00672737;0.301873"></Position>
+  <Position Weights="0.360404;0.0141085;0.286344;0.339144"></Position>
+  <Position Weights="0.0113123;0.978757;0.00957059;0.000359584"></Position>
+  <Position Weights="0.596008;0.042435;0.357586;0.00397163"></Position>
+</WeightMatrix>
+<WeightMatrix Name="kruppel" Type="PositionSpecific" LeftPaddingPositions="0" RightPaddingPositions="0" DoubleStrandBinding="false" ZeroWeight="0">
+  <Position Weights="0.365189;0.227702;0.202251;0.204859"></Position>
+  <Position Weights="0.406736;0.364646;0.177105;0.0515127"></Position>
+  <Position Weights="0.447812;0.209462;0.336488;0.00623922"></Position>
+  <Position Weights="0.473665;0.087283;0.334108;0.104943"></Position>
+  <Position Weights="0.000355114;0.00708162;0.988917;0.00364668"></Position>
+  <Position Weights="0.422706;0.00392673;0.518952;0.0544153"></Position>
+  <Position Weights="0.146598;0.107755;0.74385;0.00179809"></Position>
+  <Position Weights="0.0107827;0.00501917;0.00562839;0.97857"></Position>
+  <Position Weights="0.079347;0.000803697;0.0901043;0.829745"></Position>
+</WeightMatrix>
+<WeightMatrix Name="tailless" Type="PositionSpecific" LeftPaddingPositions="0" RightPaddingPositions="0" DoubleStrandBinding="false" ZeroWeight="0">
+  <Position Weights="0.562438;0.342747;0.0395276;0.055288"></Position>
+  <Position Weights="0.00140695;0.0123113;0.060086;0.926196"></Position>
+  <Position Weights="6.87958e-06;0.00440726;0.0313817;0.964204"></Position>
+  <Position Weights="0.0258241;0.0506637;0.00198719;0.921525"></Position>
+  <Position Weights="0.0288031;0.0877996;0.552575;0.330823"></Position>
+  <Position Weights="0.372083;0.218414;0.118176;0.291327"></Position>
+  <Position Weights="0.00259893;0.996535;0.000260707;0.000605627"></Position>
+  <Position Weights="0.00446721;0.275237;0.0691721;0.651124"></Position>
+  <Position Weights="0.0214032;0.0676005;0.386563;0.524433"></Position>
+</WeightMatrix>
+<WeightMatrix Name="caudal" Type="PositionSpecific" LeftPaddingPositions="0" RightPaddingPositions="0" DoubleStrandBinding="false" ZeroWeight="0">
+  <Position Weights="0.0234607;0.402187;0.289507;0.284846"></Position>
+  <Position Weights="0.688368;0.161658;0.107197;0.042777"></Position>
+  <Position Weights="0.239924;0.0606739;0.454358;0.245044"></Position>
+  <Position Weights="0.289073;0.342514;0.00210923;0.366304"></Position>
+  <Position Weights="0.000707865;0.0456334;0.440522;0.513137"></Position>
+  <Position Weights="0.0127335;0.0259124;0.000669409;0.960685"></Position>
+  <Position Weights="0.213556;0.00203559;0.325542;0.458866"></Position>
+  <Position Weights="0.00200461;0.0692035;0.186768;0.742024"></Position>
+  <Position Weights="0.19937;0.0544955;0.000656306;0.745478"></Position>
+  <Position Weights="0.336902;0.172519;0.00271413;0.487865"></Position>
+  <Position Weights="0.238168;0.259835;0.271742;0.230255"></Position>
+  <Position Weights="0.0806889;0.259127;0.659385;0.000798968"></Position>
+  <Position Weights="0.177561;0.616788;0.187554;0.0180964"></Position>
+  <Position Weights="0.301721;0.391669;0.00585002;0.30076"></Position>
+</WeightMatrix>
+<WeightMatrix Name="torRE" Type="PositionSpecific" LeftPaddingPositions="0" RightPaddingPositions="0" DoubleStrandBinding="false" ZeroWeight="0">
+  <Position Weights="0.000621108;0.0140359;0.132812;0.852531"></Position>
+  <Position Weights="0.000330088;0.0147738;0.97199;0.0129057"></Position>
+  <Position Weights="0.00959052;0.948472;0.0411674;0.000770461"></Position>
+  <Position Weights="0.000752751;0.00744799;0.0216704;0.970129"></Position>
+  <Position Weights="0.000444824;0.842953;0.0834776;0.0731247"></Position>
+  <Position Weights="0.896618;0.0318071;0.0140505;0.0575243"></Position>
+  <Position Weights="0.772308;0.00397742;0.134048;0.0896672"></Position>
+  <Position Weights="0.000686277;0.00117922;0.00270403;0.99543"></Position>
+  <Position Weights="0.107079;0.109592;0.781633;0.00169696"></Position>
+  <Position Weights="0.518692;0.0545315;0.424776;0.00200046"></Position>
+  <Position Weights="0.887584;0.0003695;0.0985287;0.013518"></Position>
+</WeightMatrix>
+<WeightMatrix Name="giant" Type="PositionSpecific" LeftPaddingPositions="0" RightPaddingPositions="0" DoubleStrandBinding="false" ZeroWeight="0">
+  <Position Weights="0.108331;0.000260584;0.40099;0.490419"></Position>
+  <Position Weights="0.338012;0.330765;0.328555;0.00266751"></Position>
+  <Position Weights="0.0494527;0.0162143;0.401817;0.532516"></Position>
+  <Position Weights="0.00852966;6.99814e-05;0.132282;0.859119"></Position>
+  <Position Weights="0.730479;0.0645738;0.198979;0.00596865"></Position>
+  <Position Weights="0.138535;0.756956;0.102503;0.00200629"></Position>
+  <Position Weights="9.93048e-05;0.0177887;0.954494;0.0276185"></Position>
+  <Position Weights="0.000200968;0.0129803;0.00733142;0.979487"></Position>
+  <Position Weights="0.48946;0.394575;0.0577422;0.0582227"></Position>
+  <Position Weights="0.412954;0.341415;0.00398076;0.241651"></Position>
+  <Position Weights="0.00828203;0.0772255;0.000117409;0.914375"></Position>
+  <Position Weights="0.692067;0.304123;0.00142287;0.00238716"></Position>
+</WeightMatrix>
+</WeightMatrices>

@@ -206,7 +206,8 @@ class Landscape:
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)          
         pe = self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)        
         pe = pe - 0.5 # This will make pe range from -0.5 to +0.5.  
-        print "landscape.py 209 pe before/after", (pe + 0.5), pe
+        if ap.params["verbosity"] >= 99:
+            print "landscape.py 209 pe before/after", (pe + 0.5), pe
         return pe
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
