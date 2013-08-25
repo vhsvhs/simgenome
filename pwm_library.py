@@ -3,6 +3,8 @@ transcription regulator genes.  The specifities are returned as multi-line strin
 with specifity values ranging from 0.0 to 1.0, and summing to 1.0 for each site in each motif."""
 
 
+import random
+
 def get_random_pwm(n):
     """Returns a random PWM with n sites."""
     line = ""

@@ -48,12 +48,15 @@ def run_segal2008():
     scriptname = "UTESTS/" + baseid + ".run.sh"
     fout = open(scriptname, "w")
     line = "mpirun -np 2 --machinefile hosts.txt python runme.py "
-    line += " --numtr 8 --numreporter 44 --popsize 1 "
+    line += " --numtr 8 "
+    line += " --numreporter 44" 
+    line += " --popsize 1 "
     line += " --patternpath ./UTESTS/rules." + baseid + ".txt "
     line += " --urspath ./UTESTS/urs." + baseid + ".fasta "
     line += " --verbose 91 "
     line += " --runid " + runid 
-    line += " --growth_rate 1.0 --decay_rate 1.0 "
+    line += " --growth_rate 1.0"
+    line += " --decay_rate 1.0 "
     line += " --pe_scalar 0.001 " 
     line += " --pwmpath ./UTESTS/pwm." + baseid + ".txt "
     line += " --workspace ./UTESTS "
@@ -65,7 +68,8 @@ def run_segal2008():
     line += " --cismu " + cismu.__str__() # VARIABLE
     line += " --dbdmu " + dbdmu.__str__() # VARIABLE
     line += " --pwmdeltamax 0.5 "
-    line += " --pwmlenmu 0.0 --pwmmulenmax 2"
+    line += " --pwmlenmu 0.0"
+    line += " --pwmmulenmax 2"
     line += " --urslenmu 0.0 "
     line += " --p2pmu 0.0"
     line += " --p2pmudelta 1.0"
@@ -73,7 +77,8 @@ def run_segal2008():
     line += " --sexual_ratio 0.8"
     line += " --maxgd 1"
     line += " --stop_early 0.8" # stop when the mean pop. f reaches 0.8
-    line += " --maxgenerations 1 --maxtime 1 "
+    line += " --maxgenerations 1"
+    line += " --maxtime 1 "
 
     fout.write(line + "\n")
     fout.close()

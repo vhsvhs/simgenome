@@ -135,31 +135,33 @@ class Population:
                 for i in range(0, n_cis_indels):
                     rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
                     if ap.params["verbosity"] >= 2:
-                        print "\t+ indel in gene ", rand_gene, "in individual", gid
+                        print "\t> mutating length of regulatory region in gene ", rand_gene, "in individual", gid
                     self.genomes[gid].genes[rand_gene].mutate_urs_len()
                 
                 """DBD mutations..."""
                 n_dbd_mutations = int(ap.params["numtr"] * ndbd_norm.rvs() )
-                for i in range(n_dbd_mutations):
+                for  i in range(n_dbd_mutations):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
-                        print "\t+ mutating DBD ", rand_tr_id, "in individual", gid
+                        print "\t> mutating DNA-binding specificity of TF ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
                 
                 """DBD indels"""
                 n_dbd_indels = int(ap.params["numtr"] * ndbdindel_norm.rvs() )
                 for i in range(n_dbd_mutations):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
-                    if ap.params["verbosity"] >= 2:
-                        print "\t+ indel in DBD ", rand_tr_id, "in individual", gid
-                    self.genomes[gid].genes[rand_tr_id].pwm.mutate_len(ap)               
+                    did = self.genomes[gid].genes[rand_tr_id].pwm.mutate_len(ap)               
+                    if did == True:
+                        if ap.params["verbosity"] >= 2:
+                            print "\t> mutating length of PWM for TF ", rand_tr_id, "in individual", gid
+                            
                 
                 """Gamma mutations...."""
                 n_p2p_changes = int(ap.params["numtr"] * np2p_norm.rvs() )
                 for i in range(n_p2p_changes):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
-                        print "\t+ mutating gamma for TR ", rand_tr_id, "in individual", gid
+                        print "\t> mutating gamma for TR ", rand_tr_id, "in individual", gid
                     self.genomes[gid].genes[rand_tr_id].mutate_gamma(ap)
             
             fout.write(gid.__str__() + ("\t%d"%n_point_mutations).__str__() + ("\t%d"%n_cis_indels).__str__() + ("\t%d"%n_dbd_mutations).__str__() + ("\t%d"%n_dbd_indels).__str__() + ("\t%d"%n_p2p_changes).__str__() + "\n" )

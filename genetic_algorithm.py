@@ -109,15 +109,15 @@ class Genetic_Algorithm:
                 timedelta = datetime.utcnow() - time_start_gen
                 sumtime_gen += timedelta.total_seconds()
                 print "\n................................................\n" 
-                print "\n. Generation", i, "required", timedelta.total_seconds(), "sec. to compute."
-                print ". (mean generation time = %.3f"%(sumtime_gen/(i+1)) + " sec.)"
+                print "\n. Generation", i, "required %.3f"%timedelta.total_seconds(), "sec. to compute."
+                print ". Mean generation time so far = %.3f"%(sumtime_gen/(i+1)) + " sec."
                 print ""
-                print "\t. population size =\t", self.population.genomes.__len__()
-                print "\t. maximum fitness =\t%.3f"%max_f
-                print "\t. minimum fitness =\t%.3f"%min_f
-                print "\t. mean fitness =\t%.3f"%mean_f
-                print "\t. median fitness =\t%.3f"%median_f
-                print "\t. s.d. fitness =\t%.3f"%std_f
+                print "\t. Population Size =\t", self.population.genomes.__len__()
+                print "\t. Maximum Fitness =\t%.3f"%max_f
+                print "\t. Minimum Fitness =\t%.3f"%min_f
+                print "\t. Mean Fitness =\t%.3f"%mean_f
+                print "\t. Median Fitness =\t%.3f"%median_f
+                print "\t. StDev of Fitness =\t%.3f"%std_f
                 #
                 # to-do: calculate effective pop. size
                 #

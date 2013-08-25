@@ -237,8 +237,8 @@ def check_world_consistency(ap, population, landscape):
     """Check for out-of-bounds genes"""
     for rid in landscape.rulecollections:
         for rule in landscape.rulecollections[rid].rules:
-            if rule.reporter_id > population.genomes[0].genes.__len__() - 1:
-                print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome only contains", (population.genomes[0].genes.__len__() -1 ), "genes."
+            if rule.reporter_id > population.genomes[0].genes.__len__()-1:
+                print "Ooops. One of your rules uses reporter gene", rule.reporter_id, "but your genome contains", (population.genomes[0].genes.__len__() ), "genes."
                 print "I am quitting."
                 exit(1)
 
@@ -421,7 +421,7 @@ def get_genes_from_file(ap):
         fin.close()
 
     # for debugging:
-    if ap.params["verbosity"] > 5:
+    if ap.params["verbosity"] >= 99:
         print ". Gene Summary:"
         for gene in ret_genes:
             name = "(" + gene.name + ")"
