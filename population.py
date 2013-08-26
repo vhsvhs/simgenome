@@ -225,7 +225,7 @@ class Population:
             new_genomes[child_gid] = Genome(child_gid)                         
             if self.genomes[child_gid].is_elite == True:
                 if ap.params["verbosity"] > 2:
-                    l = "\t+ elite child " + child_gid.__str__() + " = " + child_gid.__str__() + " cloned."
+                    l = "\t> The elite child #" + child_gid.__str__() + " is cloned."# + child_gid.__str__() + " cloned."
                     print l
                     lines.append(l)
                 new_genomes[child_gid].is_elite = True

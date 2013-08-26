@@ -56,7 +56,7 @@ class PWM:
         
         d = random.random() * ap.params["pwmdeltamax"]
         new_p = (self.P[rand_site][ ALPHABET[rand_state] ] + d)%1.0
-        print "\n\n\n* mutating PWM site", rand_site, ALPHABET[rand_state], "%.3f"%self.P[rand_site][ ALPHABET[rand_state]], "to %.3f"%new_p
+        print "\t> mutating PWM site", rand_site, ". ML state =", ALPHABET[rand_state], ", old p = %.3f"%self.P[rand_site][ ALPHABET[rand_state]], ", new p = %.3f"%new_p
 
         self.P[rand_site][ ALPHABET[rand_state] ] = new_p
 
