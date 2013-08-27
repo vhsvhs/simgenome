@@ -146,11 +146,13 @@ def write_files(pwmpath, urspath):
     countgene = 0
     fout = open(urspath, "w")
     for tf in tf_pwmlines:
+        # We don't care about TF URSs, so they get all As. . .
         fout.write("# " + tf + "\n")
         fout.write(">" + countgene.__str__() + " " + tf + "\n")
         fout.write("AAAAAAAAAA\n")
         countgene += 1
     for gene in gene_urs:
+        # URSs for target genes from module_sequence.tab.txt
         fout.write("# " + gene + "\n")
         fout.write(">" + countgene.__str__() + " " + gene + "\n")
         fout.write(gene_urs[gene] + "\n")

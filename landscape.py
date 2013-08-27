@@ -131,7 +131,7 @@ class Landscape:
                                     marka = "[act.]"
                                 elif gene.has_dbd and gene.is_repressor:
                                     marka = "[rep.]"
-                                print "r:", rid, "\tgen.:", ap.params["generation"], "\tt 0", "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: n/a", "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\t\t" + gene.name
+                                print "r:", rid, "\tgen:", ap.params["generation"], "\ttime 0", "\tID", genome.id, "\tgene", gene.id, marka, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice], "\t\t[" + gene.name + "]"
                         print ""
     
                 
@@ -145,6 +145,7 @@ class Landscape:
                         pe = 0.0
                     else:
                         """ Calculate the delta G of binding on the cis-region for every gene.
+                            See the notes in the code for the function "get_expr_modifier".
                             pe ranges from -0.5 (repression) to 0.5 (strong activation)"""
                         pe = self.get_expr_modifier(genome, gene, tf_expr_level, ap)                
                                         
@@ -174,7 +175,7 @@ class Landscape:
                             marka = "[act.]"
                         elif gene.has_dbd and gene.is_repressor:
                             marka = "[rep.]"
-                        print "r:", rid, "\tgen.:", ap.params["generation"], "\tt", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\tpe: %.3f"%pe, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta, "\t" + gene.name 
+                        print "r:", rid, "\tgen:", ap.params["generation"], "\ttime", timeslice+1, "\tID", genome.id, "\tgene", gene.id, marka, "\texpr: %.3f"%genome.gene_expr[ gene.id ][timeslice+1], "\td: %.3f"%expr_delta, "\t[" + gene.name + "]" 
     
                 #
                 # to-do: if gene expression has not changed from the last timeslice
@@ -204,7 +205,11 @@ class Landscape:
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""   
         ptables = ProbTable( ap.params["numtr"], ap.params["maxgd"], gene.urs.__len__() )
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)          
+        
         pe = self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)        
+        # Note: pe is the probability of increasing the expression of the gene. 
+        # It ranges from 0.0 to 1.0.  A value of 0.5 means the gene expression will remain unchanged.
+        
         pe = pe - 0.5 # This will make pe range from -0.5 to +0.5.  
         if ap.params["verbosity"] >= 99:
             print "landscape.py 209 pe before/after", (pe + 0.5), pe
@@ -229,7 +234,7 @@ class Landscape:
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
                             if ap.params["verbosity"] > 100:
-                                print "case 1:", "TF", i, " and TF", j, "distance", d, "site", x, "p=", ret.cpa[i,j,d,x]
+                                print "case 1:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
                             continue
                         if (j < ap.params["numtr"]):  # TF j is real, not the empty slot.
                             if (d < MIN_TF_SEPARATION):
@@ -238,13 +243,13 @@ class Landscape:
                                 # we forbid TFs to bind this close together
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 if ap.params["verbosity"] > 100:
-                                    print "case 4:", "TF", i, " and TF", j, "distance", d, "site", x, "p=", ret.cpa[i,j,d,x]
+                                    print "case 4:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
                                 continue
                             elif (L - self.r[i] - d - self.r[j] < 0):
                                 """CASE 3: TF i and j cannot both fit on the sequence."""
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 if ap.params["verbosity"] > 100:
-                                    print "case 3:", "TF", i, " and TF", j, "distance", d, "site", x, "p=", ret.cpa[i,j,d,x]
+                                    print "case 3:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
                                 continue
                             else:                                
                                 """Case 5: TF i and TF j can fit with distance d between them"""
@@ -252,7 +257,7 @@ class Landscape:
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
                                 if ap.params["verbosity"] > 100:
-                                    print "case 5:", "TF", i, " and TF", j, "distance", d, "site", x, "p=", ret.cpa[i,j,d,x]
+                                    print "case 5:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
                                 continue
                         elif (j == ap.params["numtr"]): # j is the empty slot
                             """CASE 6: no binding here:"""
@@ -260,7 +265,7 @@ class Landscape:
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
                             if ap.params["verbosity"] > 100:
-                                print "case 6:", "TF", i, " and TF", j, "distance", d, "site", x, "p=", ret.cpa[i,j,d,x]
+                                print "case 6:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
                             continue
                 ret.cpt[i,x] = sum_cpt
             ret.cpr[x] = sum_cpr
@@ -425,7 +430,7 @@ class Landscape:
                 #print "438", (site+1).__str__(), ptables.cpt[i, site]
                 sumt = ptables.cpt[tf, site]
                 if line == None:
-                    line = "site " + site.__str__() + ":"
+                    line = "site " + site.__str__()
                 pe = genome.genes[tf].pwm.specificity(site, gene.urs)
                 if genome.genes[tf].is_repressor:
                     tf_type = "[-]"
@@ -435,7 +440,7 @@ class Landscape:
                     p = 0
                 else:
                     p = sumt/sump
-                line += " \t" + tf.__str__() + " " + tf_type + " p=%.3f"%(p) + " e=%.3f"%pe
+                line += " \t" + tf.__str__() + " " + tf_type + " p= %.3f"%(p) + " e= %.3f"%pe
             if line != None:
                 fout.write(line + "\n")
         fout.write("\n")

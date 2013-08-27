@@ -1,6 +1,6 @@
 #####################################################
 #
-# KO.py is derived from genetic_algorithmp.py (GA)
+# KO.py is derived from genetic_algorithm.py (GA)
 # Whereas the GA module parallelizes over individuals,
 # the KO module parallelizes over genes.
 #
