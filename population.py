@@ -125,7 +125,7 @@ class Population:
                 if n_point_mutations < 0:
                     n_point_mutations = 0
                 if ap.params["verbosity"] >= 2:                
-                    print "\t.", n_point_mutations, "cis mutations to individual", gid
+                    print "\t> ID", gid, ":", n_point_mutations, "random cis sequence substitutions."
                 for i in range(0, n_point_mutations):
                     rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
                     self.genomes[gid].genes[rand_gene].mutate_urs()
@@ -135,7 +135,7 @@ class Population:
                 for i in range(0, n_cis_indels):
                     rand_gene = random.randint(0, self.genomes[gid].genes.__len__()-1)
                     if ap.params["verbosity"] >= 2:
-                        print "\t> mutating length of regulatory region in gene ", rand_gene, "in individual", gid
+                        print "\t> ID", gid, ": mutating length of regulatory region in gene", rand_gene
                     self.genomes[gid].genes[rand_gene].mutate_urs_len()
                 
                 """DBD mutations..."""
@@ -143,7 +143,7 @@ class Population:
                 for  i in range(n_dbd_mutations):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
-                        print "\t> mutating DNA-binding specificity of TF ", rand_tr_id, "in individual", gid
+                        print "\t> ID", gid, ": mutating DNA-binding specificity of TF", rand_tr_id
                     self.genomes[gid].genes[rand_tr_id].pwm.mutate(ap)
                 
                 """DBD indels"""
@@ -153,7 +153,7 @@ class Population:
                     did = self.genomes[gid].genes[rand_tr_id].pwm.mutate_len(ap)               
                     if did == True:
                         if ap.params["verbosity"] >= 2:
-                            print "\t> mutating length of PWM for TF ", rand_tr_id, "in individual", gid
+                            print "\t> ID", gid, ": mutating length of PWM for TF", rand_tr_id
                             
                 
                 """Gamma mutations...."""
@@ -161,7 +161,7 @@ class Population:
                 for i in range(n_p2p_changes):
                     rand_tr_id = random.randint(0, ap.params["numtr"]-1)
                     if ap.params["verbosity"] >= 2:
-                        print "\t> mutating gamma for TR ", rand_tr_id, "in individual", gid
+                        print "\t> ID", gid, ": mutating cofactor interactions for TR ", rand_tr_id
                     self.genomes[gid].genes[rand_tr_id].mutate_gamma(ap)
             
             fout.write(gid.__str__() + ("\t%d"%n_point_mutations).__str__() + ("\t%d"%n_cis_indels).__str__() + ("\t%d"%n_dbd_mutations).__str__() + ("\t%d"%n_dbd_indels).__str__() + ("\t%d"%n_p2p_changes).__str__() + "\n" )
@@ -249,7 +249,7 @@ class Population:
                         sextoken = "cross"
                     else:
                         sextoken = "clone"
-                    l = "\t+ child " + sextoken + " " + child_gid.__str__() + " = " + parent1.__str__() + " X " + parent2.__str__()
+                    l = "\t> child " + sextoken + " " + child_gid.__str__() + " = " + parent1.__str__() + " X " + parent2.__str__()
                     print l
                     lines.append(l)
                 new_genomes[child_gid].is_elite = False

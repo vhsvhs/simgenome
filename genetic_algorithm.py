@@ -102,7 +102,6 @@ class Genetic_Algorithm:
                 fout.write(gid.__str__() + "\t%.6f"%(gid_fitness[gid]) + mark + "\n")
             fout.close()
             
-            
             time_end_stats = datetime.utcnow()
             
             if ap.params["verbosity"] >= 1:

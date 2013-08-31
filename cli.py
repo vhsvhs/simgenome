@@ -245,9 +245,10 @@ def check_world_consistency(ap, population, landscape):
 def correct_maxtime_error(implied_max_time, ap):
         if implied_max_time > ap.params["maxtime"]:
             if comm.Get_rank() == 0 and ap.params["verbosity"] >= 1:
-                print "\n. You specified the maximum timepoint to be", ap.params["maxtime"]
-                print "  However, your configuration of inputs and fitness rules implies a maximum timepoint of", implied_max_time
-                print "--> I am setting maximum time to", implied_max_time
+                print "\nWarning! You specified the maximum timepoint to be", ap.params["maxtime"]
+                print "However, your configuration of inputs and fitness rules implies"
+                print "a maximum timepoint of", implied_max_time
+                print "Therefore, I am setting the maximum time to", implied_max_time
             ap.params["maxtime"] = implied_max_time
 
 def get_input_rules_from_file(ap):

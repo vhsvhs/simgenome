@@ -1,3 +1,22 @@
+"""
+Notes on the class PWM.
+
+PWM's are a data structure to express and operate on position-specific affinity matricies (PSAMs).
+PSAMs can be calculated from data gathered with technology such as MITOMI.
+See Foat et al. 2005 Bioinformatics for more information about PSAMs.
+See Fordyce et al. 2010 Nature Biotech. for more information about MITOMI.
+
+PSAMs express the relative affinity difference between nucleotides at DNA-binding sites.
+The values for PSAMs are unbounded. Zero for nucleotide X means that the existence of X
+at the binding site in question will have no effect on the affinity of the protein for the site.
+A positive value indicates that affinity will increase if state X is present, while a negative
+value indicates that affinity will decrease if state X is present.
+In cases where affinity will increase or decrease, the magnitude of change is equal to:
+
+   = e^(value)
+   
+The relative affinity of a sequence is therefore the product of magnitudes for each site.   
+"""
 from configuration import *
 
 class PWM:
@@ -33,14 +52,14 @@ class PWM:
     
     
     def generate_random_site(self):
+        """Generates a hashtable with one key for each letter in the alphabet, and with random values for those
+        keys.  Essentially, this generates one random site in a PSAM."""
         p = {}
         sump = 0.0
         shuffled_alphabet = ALPHABET
         random.shuffle(shuffled_alphabet)
         for c in shuffled_alphabet:
-            thisp = random.uniform(0.0, 1.0 - sump)
-            p[c] = thisp
-            sump += thisp
+            p[c] = random.uniform(-1.0, 1.0)
         return p
     
     def randomize(self):
@@ -56,16 +75,23 @@ class PWM:
         
         d = random.random() * ap.params["pwmdeltamax"]
         new_p = (self.P[rand_site][ ALPHABET[rand_state] ] + d)%1.0
-        print "\t> mutating PWM site", rand_site, ". ML state =", ALPHABET[rand_state], ", old p = %.3f"%self.P[rand_site][ ALPHABET[rand_state]], ", new p = %.3f"%new_p
+        sign_rand = random.uniform(0.0,1.0)
+        if sign_rand > 0.5:
+            new_p *= -1
+        print "\t\t> Site", rand_site, ": ML state =", ALPHABET[rand_state], ", old affinity = %.3f"%self.P[rand_site][ ALPHABET[rand_state]], ", new affinity = %.3f"%new_p
 
         self.P[rand_site][ ALPHABET[rand_state] ] = new_p
 
-        """ Normalize the PWM"""
-        sum_states = 0.0
-        for c in ALPHABET:
-            sum_states += self.P[rand_site][c]
-        for c in ALPHABET:
-            self.P[rand_site][c] = self.P[rand_site][c] / sum_states
+        #
+        # Aug 2013: depricated:
+        # normalization is not required for PSAMs
+        #
+        #""" Normalize the PWM"""
+        #sum_states = 0.0
+        #for c in ALPHABET:
+        #    sum_states += self.P[rand_site][c]
+        #for c in ALPHABET:
+        #   self.P[rand_site][c] = self.P[rand_site][c] / sum_states
 
     def mutate_len(self, ap):
         d = random.random() # mutate or not?
@@ -82,12 +108,25 @@ class PWM:
                 #print "82:", self.P, rand_site
                 for i in range(0, rand_site):
                     #print i
-                    newP.append( copy.deepcopy( self.P[i] ) )
+                    #print "111:", self.P[i-size]
+                    #print "112:", copy.deepcopy(self.P[i-size])
+                    #print "113:", newP
+                    x = {}
+                    for key in self.P[i]:
+                        x[key] = self.P[i][key]
+                    newP.append(x)
                 for i in range(0, size):
                     #print i
                     newP.append( self.generate_random_site() )
                 for i in range(rand_site+size, self.P.__len__()):
-                    newP.append( copy.deepcopy(self.P[i-size]) )
+                    #print "116:", self.P[i-size]
+                    #print "117:", copy.deepcopy(self.P[i-size])
+                    #print "118:", newP
+                    x = {}
+                    for key in self.P[i-size]:
+                        x[key] = self.P[i-size][key]
+                    newP.append(x)
+                    #newP.append( copy.deepcopy(self.P[i-size]) )
 
                 #print dir(copy) 
                 #self.P = copy.deepcopy( newP )
@@ -156,33 +195,57 @@ class PWM:
             for c in ALPHABET:
                 self.P[i][c] = flat_p
     
-    def specificity(self, pos, urs):
-        """What is the probability that the PWM in gene tf will bind the upstream 
-        regulatory region (urs) sequence with the right edge of the PWM at site pos?"""        
+    def affinity(self, pos, urs):
+        """Returns the total affinity of this transcription factor for the
+        upstream regulatory sequence (URS) bound at a given position (pos).
+        Total affinity is the product of affinities at each site.
+        """
+        
+        # If the PWM can't fit on the sequence:
         if (urs.__len__() - pos < self.P.__len__() ):
             return 0.0
+        # If the position is beyond the edge of the sequence:
         if ( pos + 1 > urs.__len__() ):
             return 0.0
+        
         a = ALPHABET.__len__()
-        part = urs[pos:pos+self.P.__len__()] # the partial URS
-        #print "pos=", pos, "part = ", part
-        res1 = 0.0        
-        
-        """In Kevin Bullaughey's original Rescape code he assumed 
-            the affinity of a TF is the sum of the affinity to both
-            strand at this location.
-            But in my code, I'm only dealing with single stranded DNA."""
+        part = urs[pos:pos+self.P.__len__()] # part is the substring of the sequence
+
+        retaff = 1.0 # the affinity, to be returned
         for k in self.rangesites:
-            #if self.P[k][ part[k] ] == 0.0:
-            #    continue
-            #else:
-            res1 += self.P[k][ part[k] ]
-            #print "res1=", res1
-        
-        """In contrast, this is what Kevin's code does:"""
-        #res1 *= a**( self.P.__len__() )
-        
-        return res1
+            retaff *= e**( self.P[k][ part[k] ] )
+        return retaff
+    
+    #
+    # depricated.  Now use the function "affinity"
+    #
+#    def specificity(self, pos, urs):    
+#        """What is the probability that the PWM in gene tf will bind the upstream 
+#        regulatory region (urs) sequence with the right edge of the PWM at site pos?"""        
+#        if (urs.__len__() - pos < self.P.__len__() ):
+#            return 0.0
+#        if ( pos + 1 > urs.__len__() ):
+#            return 0.0
+#        a = ALPHABET.__len__()
+#        part = urs[pos:pos+self.P.__len__()] # the partial URS
+#        #print "pos=", pos, "part = ", part
+#        res1 = 0.0        
+#        
+#        """In Kevin Bullaughey's original Rescape code he assumed 
+#            the affinity of a TF is the sum of the affinity to both
+#            strand at this location.
+#            But in my code, I'm only dealing with single stranded DNA."""
+#        for k in self.rangesites:
+#            #if self.P[k][ part[k] ] == 0.0:
+#            #    continue
+#            #else:
+#            res1 += self.P[k][ part[k] ]
+#            #print "res1=", res1
+#        
+#        """In contrast, this is what Kevin's code does:"""
+#        #res1 *= a**( self.P.__len__() )
+#        
+#        return res1
     
     
     

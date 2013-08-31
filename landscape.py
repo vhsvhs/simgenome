@@ -25,12 +25,13 @@ class Landscape:
             exit()
         
         if comm.Get_rank() == 0:
-            print "\n. Building the fitness landscape described in", ap.getOptionalArg("--patternpath")
+            if ap.params["verbosity"] > 0:
+                print "\n. Building the fitness landscape described in", ap.getOptionalArg("--patternpath")
         self.rulecollections = tp
         
-        if comm.Get_rank() == 0:
-            for t in self.rulecollections:
-                print t
+        #if comm.Get_rank() == 0:
+        #    for t in self.rulecollections:
+        #        print t
         
     def uncollapse(self, data, ap):
         for d in data[0]:
@@ -205,11 +206,9 @@ class Landscape:
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""   
         ptables = ProbTable( ap.params["numtr"], ap.params["maxgd"], gene.urs.__len__() )
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)          
-        
         pe = self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)        
         # Note: pe is the probability of increasing the expression of the gene. 
         # It ranges from 0.0 to 1.0.  A value of 0.5 means the gene expression will remain unchanged.
-        
         pe = pe - 0.5 # This will make pe range from -0.5 to +0.5.  
         if ap.params["verbosity"] >= 99:
             print "landscape.py 209 pe before/after", (pe + 0.5), pe
@@ -223,8 +222,8 @@ class Landscape:
             for i in ap.params["trlist"]:   # foreach transcription factor
                 #print genome.genes[i].gamma
                 
-                pwm_tmp = genome.genes[i].pwm.specificity( x, gene.urs )
-                #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%pwm_tmp, "bits."
+                this_aff = genome.genes[i].pwm.affinity( x, gene.urs )
+                #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%this_aff, "this_aff."
                 sum_cpt = 0.0
                 for j in ap.params["trlist+"]: # +1 to also consider the empty case
                     for d in ap.params["rangegd"]:                        
@@ -234,7 +233,7 @@ class Landscape:
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
                             if ap.params["verbosity"] > 100:
-                                print "case 1:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
+                                print "case 1:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
                             continue
                         if (j < ap.params["numtr"]):  # TF j is real, not the empty slot.
                             if (d < MIN_TF_SEPARATION):
@@ -243,35 +242,32 @@ class Landscape:
                                 # we forbid TFs to bind this close together
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 if ap.params["verbosity"] > 100:
-                                    print "case 4:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
+                                    print "case 4:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
                                 continue
                             elif (L - self.r[i] - d - self.r[j] < 0):
                                 """CASE 3: TF i and j cannot both fit on the sequence."""
                                 ret.cpa[i,j,d,x] = 0 # then P @ x = 0
                                 if ap.params["verbosity"] > 100:
-                                    print "case 3:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
+                                    print "case 3:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
                                 continue
                             else:                                
                                 """Case 5: TF i and TF j can fit with distance d between them"""
-                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp * ( (genome.genes[i].gamma[j, d] + genome.genes[j].gamma[i,d]) * 0.5 )
+                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * this_aff * ( (genome.genes[i].gamma[j, d] + genome.genes[j].gamma[i,d]) * 0.5 )
                                 sum_cpt += ret.cpa[i,j,d,x]
                                 sum_cpr += ret.cpa[i,j,d,x]
                                 if ap.params["verbosity"] > 100:
-                                    print "case 5:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
+                                    print "case 5:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
                                 continue
                         elif (j == ap.params["numtr"]): # j is the empty slot
                             """CASE 6: no binding here:"""
-                            ret.cpa[i,j,d,x] = rel_tf_expr[i] * pwm_tmp;
+                            ret.cpa[i,j,d,x] = rel_tf_expr[i] * this_aff;
                             sum_cpt += ret.cpa[i,j,d,x]
                             sum_cpr += ret.cpa[i,j,d,x]
                             if ap.params["verbosity"] > 100:
-                                print "case 6:", "TF", i, " and TF", j, "distance", d, "site", x, "p= ", ret.cpa[i,j,d,x]
+                                print "case 6:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
                             continue
                 ret.cpt[i,x] = sum_cpt
             ret.cpr[x] = sum_cpr
-        #if gene.id == 2:
-        #    print "\n\nPTABLE FOR GENE 2:"
-        #    print ret
         if ap.params["verbosity"] > 99:
             print ret
         return ret
@@ -377,31 +373,23 @@ class Landscape:
                 tf = this_config[site]
                 if tf < ap.params["numtr"]: # there will be no binding energy for the empty configuration:
                     """Get the strength of TF binding at this site..."""
-                    bits = genome.genes[tf].pwm.specificity(site, gene.urs)
-                    #print "tf", tf, "binds gene", gene.id, "site", site, "bits", bits
+                    this_aff = genome.genes[tf].pwm.affinity(site, gene.urs)
+                    #print "tf", tf, "binds gene", gene.id, "site", site, "this_aff", this_aff
                     if genome.genes[tf].is_repressor:
-                        sum_lambda_rep += bits * tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
+                        sum_lambda_rep += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
                     else:
-                        sum_lambda_act += bits * tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
+                        sum_lambda_act += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
             
             
-            """ 3. Calculate the probability of this configuration."""
-            # this is what Kevin Bullaughey did in his 2011 paper:
-            #pe_sum = (1/(1+math.exp(-1*sum_lambda)))
-
-            # . . . but this is what I'm doing instead.  I'm incorporating the Hill equation:            
-            k_act = sum_lambda_act
-            k_rep = sum_lambda_rep
-            this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(k_act-k_rep) ) ))
+            """ 3. Calculate the probability of this configuration."""         
+            this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(sum_lambda_act-sum_lambda_rep) ) ))
             pe_sum += this_pe
         
         if ap.params["verbosity"] > 3:
             """Print what we've sampled..."""
-            #self.print_configuration(configurations, tf_expr_levels, genome, gene, ap)
             self.print_binding_distribution( ptables, genome, gene, ap )
         return (pe_sum / ap.params["iid_samples"])
    
-    
     def print_binding_distribution(self, ptables, genome, gene, ap):
         """configs is a hashtable of configurations...
             configs[site] = array of triples [gene i, gene j, distance]"""
@@ -413,15 +401,17 @@ class Landscape:
             exit()
 
         if self.t_counter == 0 and gene.id == 0:        
-            fout.write("Notes\n")
-            fout.write("[+] : activator\n")
-            fout.write("[-] : repressor\n")
-            fout.write("p   : proportion of IID samples\n")
-            fout.write("e   : energy bound by TF in this configuration\n\n")
+            fout.write("===================================================\n")
+            fout.write("This file expresses the occupancy distribution for\nindividual " + genome.id.__str__() + " at generation " + self.t_counter.__str__() + ".\n")
+            #fout.write("\nKey:\n")
+            #fout.write("[+] : activator\n")
+            #fout.write("[-] : repressor\n")
+            #fout.write("p   : proportion of IID samples\n")
+            fout.write("===================================================\n\n")
+            #fout.write("e   : energy bound by TF in this configuration\n\n")
         
         #fout.write("#\n# For example, \"site 3 :  1 [-] 0.672 0.120\" indicates that site 3 is bound by repressor 1\n# in 67.2 percent of IID samples with activation energy = 0.120.\n# Activation energies < 0.5 indicate repression, = 0.5 indicate no activation,\n# > 0.5 indicates activation.#\n#\n")
-        fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
-        
+        fout.write(". Time " + self.t_counter.__str__() + " Gene " + gene.id.__str__() + "\tURS: " + gene.urs + "\n")
         
         for site in range(0, ptables.cpr.__len__()):
             sump = ptables.cpr[site]
@@ -430,8 +420,8 @@ class Landscape:
                 #print "438", (site+1).__str__(), ptables.cpt[i, site]
                 sumt = ptables.cpt[tf, site]
                 if line == None:
-                    line = "site " + site.__str__()
-                pe = genome.genes[tf].pwm.specificity(site, gene.urs)
+                    line = "site " + (site+1).__str__() + " : "
+                #pe = genome.genes[tf].pwm.affinity(site, gene.urs)
                 if genome.genes[tf].is_repressor:
                     tf_type = "[-]"
                 else:
@@ -440,7 +430,7 @@ class Landscape:
                     p = 0
                 else:
                     p = sumt/sump
-                line += " \t" + tf.__str__() + " " + tf_type + " p= %.3f"%(p) + " e= %.3f"%pe
+                line += "\t" + tf.__str__() + " " + tf_type + " %.3f"%(p)# " p= %.3f"%(p)# + " e= %.3f"%pe
             if line != None:
                 fout.write(line + "\n")
         fout.write("\n")
@@ -516,7 +506,7 @@ class Landscape:
 #                if tf < ap.params["numtr"]:
 #                    if line == None:
 #                        line = "site " + site.__str__() + " :"
-#                    pe = genome.genes[tf].pwm.specificity(site, gene.urs)
+#                    pe = genome.genes[tf].pwm.affinity(site, gene.urs)
 #                    if genome.genes[tf].is_repressor:
 #                        tf_type = "[-]"
 #                    else:

@@ -21,10 +21,10 @@ def get_random_pwm(n):
     return line
 
 def get_nonspec_pwm(n):
-    """Returns a totally non-specific (all specificities = 0.25), with n sites."""
+    """Returns a totally non-specific PSAM for n sites."""
     line = ""
     for i in range(0, n):
-        line += "0.25 0.25 0.25 0.25\n"
+        line += "0.0 0.0 0.0 0.0\n"
     return line
 
 def get_Aspec(n):
@@ -55,6 +55,20 @@ def get_Tspec(n):
         line += "0.00 0.0 0.0 1.0\n"
     return line
 
+def get_lys14():
+    """Returns the PSAM for Lys14 in C. albicans, from Polly Fordyce.
+    The best motif is GCGCAATG."""
+    line = ""
+    line += "0.474653398561222961    -0.0829157142388699114   1                       -0.0416608562040797284\n"
+    line += "-0.101928274622788917    1                       -0.0707921461242295158   -0.00100000000001574936\n"
+    line += "-0.00100000000000006507  -0.00100000000000080385  1                       -0.0699202566475289333\n"
+    line += "-0.0293058770160917713   1                       0.329377966664113953    -0.00100000000000290915\n"
+    line += "1                       -0.00416970014696930059  0.379755617174315052    -0.163757205410170886\n"
+    line += "1                      -0.371839817608120071    -0.101278995172039116    0.986004882994245158\n"
+    line += "-0.487153158692532506    -0.670115193661296349    -0.69142362885413422     1\n"
+    line += "-0.813458828915116561    -0.810101142967790122    1                       -0.937295231544800989\n"
+    return line
+
 def get_matalpha2():
     # ATTTACATG
     line = ""
@@ -70,6 +84,7 @@ def get_matalpha2():
     return line
 
 def get_ste12():
+    #TGAAACA
     line = ""
     line += "0.01 0.01 0.01 0.97\n"
     line += "0.01 0.01 0.97 0.01\n"
@@ -172,4 +187,17 @@ def get_rob1():
     line += "0.036962    0.925866    0.018585    0.018585\n"
     line += "0.370301    0.036962    0.57415        0.018585\n"
     line += "0.370301    0.592527    0.018585    0.018585\n"
+    return line
+
+def get_TAGTATAAC():
+    line = ""
+    line += "0    0    0    1.0\n"
+    line += "1    0    0    0\n"
+    line += "0    0    1    0\n"
+    line += "0    0    0    1\n"
+    line += "1    0    0    0\n"
+    line += "0    0    0    1\n"
+    line += "1    0    0    0\n"
+    line += "1    0    0    0\n"
+    line += "0    1    0    0\n"
     return line

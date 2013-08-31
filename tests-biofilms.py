@@ -36,11 +36,11 @@ def run_mar_11_13():
     fout.write("RULE 0 16 1 0.0 le\n")
     
     fout.write("# timepatternID, basal_gene_id, time_start, time_stop, expr_level\n")
-    fout.write("INPUT 0 0 0 1 1.00\n")
-    fout.write("INPUT 0 1 0 1 1.00\n")
-    fout.write("INPUT 0 2 0 1 1.00\n")
-    fout.write("INPUT 0 3 0 1 1.00\n")
-    fout.write("INPUT 0 4 0 1 1.00\n")
+    fout.write("INPUT 0 0 0 1 0.00\n")
+    fout.write("INPUT 0 1 0 1 0.00\n")
+    fout.write("INPUT 0 2 0 1 0.00\n")
+    fout.write("INPUT 0 3 0 1 0.00\n")
+    fout.write("INPUT 0 4 0 1 0.00\n")
     fout.write("INPUT 0 5 0 1 1.00\n")
     fout.close()
     
@@ -182,7 +182,8 @@ def write_pwm_file(pathout):
     fout.write("pwm 4 0\n")
     fout.write( get_brg1() )
     fout.write("pwm 5 0\n")
-    fout.write( get_rob1() )
+    #fout.write( get_rob1() )
+    fout.write( get_TAGTATAAC() ) # the start of gene 9
     fout.close()
 
 

@@ -41,7 +41,7 @@ def main():
     if comm.Get_rank() == 0:
         population = Population()
         if ap.params["verbosity"] > 1:
-            print "\n. Buildng the population. . ."
+            print "\n. Building the population. . ."
         popath = ap.getOptionalArg("--pop_path")
         """If --pop_path is specified, it should be accompanied with --start_generation"""
         if popath != False:
@@ -81,6 +81,11 @@ def main():
         ga = Genetic_Algorithm(ap)        
         ga.population = population
         ga.landscape = landscape
+        
+        if rank == 0 and ap.params["verbosity"] > 0:
+            print "\n. Starting the Simulation. . .\n"
+        comm.Barrier()
+        
         ga.runsim(ap)
 
     #
