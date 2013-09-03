@@ -16,7 +16,7 @@ class Genome:
         self.is_elite = False
     
     def init(self, ap, init_genes=None, init_expression=None):
-        if init_genes == None:
+        if init_genes == None: # Make a random set of genes
             """Add ap.params["numtr"] number of transcription factor genes"""
             for i in ap.params["trlist"]:
                 repressor = False
@@ -26,21 +26,13 @@ class Genome:
             """Add N_REPORTER number of transcription factor genes"""
             for i in range(0, ap.params["numreporter"]):
                 self.genes.append( Gene(ap.params["numtr"] + i, ap.params["init_urs_len"], has_dbd=False, ap=ap) )
-        else:
+        
+        else: # Use the initially-provided genes (presumably from the user-specified file).
             self.genes = init_genes
         
         if ap.params["enable_epigenetics"] == True and init_expression != None:
             self.gene_expr = init_expression
-        
-        # init the TF coop matrix:
-        # 10/4 - moved to gene.py
-#        if ap.params["coopinit"] == "random":
-#            self.tfcoop = numpy.random.gamma(2.0,10.0, (ap.params["numtr"], ap.params["numtr"])) - 4.0
-#            # to-do: ensure that values in tfcoop range form -1 to +infinity
-#        else:
-#            self.tfcoop = zeros( (ap.params["numtr"], ap.params["numtr"]), dtype=float)
-#        self.set_gamma(ap)
-        
+                
         self.print_dbds(ap)
         # print the gamma matrix
         self.print_gamma(ap)
@@ -83,7 +75,7 @@ class Genome:
 
     
     def print_gamma(self, ap):
-        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/coop.gen" + ap.params["generation"].__str__() + ".gid" + self.id.__str__() + ".txt"
+        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + COOP_HISTORY + "/coop.gen" + ap.params["generation"].__str__() + ".gid" + self.id.__str__() + ".txt"
         lines = []
         lines.append("dist.\tTFi\tTFj\tgamma")
         for gene in self.genes:
@@ -99,7 +91,7 @@ class Genome:
         fout.close()
 
     def print_dbds(self, ap):
-        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/dbds.gen" + ap.params["generation"].__str__() + ".gid" + self.id.__str__() + ".txt"
+        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + DBD_HISTORY + "/dbds.gen" + ap.params["generation"].__str__() + ".gid" + self.id.__str__() + ".txt"
         lines = []
         for gene in self.genes:
             if gene.has_dbd:

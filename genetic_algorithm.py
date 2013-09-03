@@ -91,7 +91,7 @@ class Genetic_Algorithm:
             [max_f, min_f, mean_f, median_f, std_f] = self.get_fitness_stats(gid_fitness)
 
             """Print LOGS/genX.txt with the fitness of each individual at this generation."""            
-            fout = open(ap.params["workspace"] + "/" + ap.params["runid"] + "/LOGS/gen" + i.__str__() + ".txt", "a")
+            fout = open(ap.params["workspace"] + "/" + ap.params["runid"] + "/" + FITNESS_DIR + "/gen" + i.__str__() + ".txt", "a")
             fout.write("ID\tfitness\n")
             gids = gid_fitness.keys()
             gids.sort()
@@ -152,7 +152,7 @@ class Genetic_Algorithm:
             self.masteronly_bcast(ap)
             time_end_bcast = datetime.utcnow()
         
-            if ap.getOptionalArg("--perftime") == "on":
+            if ap.getOptionalArg("--perftime") == "True":
                 print "\n. Performance data for generation", i, ". . ."
                 ngen = i + 1
                 sumtime_end_calc += (time_end_calc - time_start_gen).total_seconds()
@@ -199,10 +199,10 @@ class Genetic_Algorithm:
                     for geneid in range(0, self.population.genomes[gid].genes.__len__()):
                         gid_terminal_expression[gid][geneid] = [self.population.genomes[gid].gene_expr[geneid][last_timeslice]]
                                     
-            """Send data to master."""
+            """SEND data to master."""
             comm.send( [gid_fitness, gid_terminal_expression], dest=0, tag=11)  
             
-            """Get updated data from master."""
+            """RECIEVE updated data from master."""
             self.slaveonly_recv()
 
     def runsim(self, ap):        

@@ -11,7 +11,7 @@ def check_workspace(ap):
         os.system("mkdir " + ap.params["workspace"])
     if False == os.path.exists(ap.params["workspace"] + "/" + ap.params["runid"]):
         os.system("mkdir " + ap.params["workspace"] + "/" + ap.params["runid"])
-    dirs = [POPPICKLES, "LOGS", "PLOTS", EXPR_PLOTS]
+    dirs = [POPPICKLES, "LOGS", "PLOTS", EXPR_PLOTS, DBD_HISTORY, COOP_HISTORY, CONFIG_HISTORY, FITNESS_DIR]
     for d in dirs:
         if os.path.exists(ap.params["workspace"] + "/" + ap.params["runid"] + "/" + d):
             if ap.params["clearcache"]:
@@ -39,16 +39,17 @@ def main():
     
     """Master builds a population and sends to slaves."""    
     if comm.Get_rank() == 0:
-        population = Population()
+        """Build the Population..."""
+        population = Population() # Creates an population data structure, but with no individuals or genomes
         if ap.params["verbosity"] > 1:
             print "\n. Building the population. . ."
         popath = ap.getOptionalArg("--pop_path")
         """If --pop_path is specified, it should be accompanied with --start_generation"""
         if popath != False:
-            population.init_from_pickle(popath)
+            population.init_from_pickle(popath) # Initializes the population to be a saved population
         else:
             cli_genes = get_genes_from_file(ap)            
-            population.init(ap, init_genes=cli_genes)
+            population.init(ap, init_genes=cli_genes) # Initializes the population to be many clones of the user-spec. genes
         
         if ap.params["verbosity"] > 1:    
             print population.get_info()
@@ -77,7 +78,7 @@ def main():
     #
     # Default behavior is to run the genetic algorithm:
     #
-    if ap.params["doko"] == False:
+    if ap.params["doko"] == False: # we're *not* doing a K.O. test
         ga = Genetic_Algorithm(ap)        
         ga.population = population
         ga.landscape = landscape
@@ -127,7 +128,7 @@ mpi_check()
 # uncomment this code to run Cprofile.
 #
 #if ap.getOptionalArg("--use_cprofile"):
-#   prof_path = "./prof_trace." + (random.random() * 1000000).__str__() + ".cprofile"
+#    prof_path = "./prof_trace." + (random.random() * 1000000).__str__() + ".cprofile"
 #    cProfile.run( 'main()', prof_path )
 #else:
 main()

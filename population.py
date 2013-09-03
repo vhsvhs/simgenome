@@ -96,7 +96,7 @@ class Population:
 
         """Print LOGS/mu.genX.txt with the number of mutations made to each individual at this generation."""            
         fout = open(ap.params["workspace"] + "/" + ap.params["runid"] + "/LOGS/mu.gen" + ap.params["generation"].__str__() + ".txt", "a")
-        fout.write("ID\tN_cis\tN_urslen\tN_PWM\tN_p2p\n")
+        fout.write("ID\tN_cis\tN_urslen\tN_PWM\tN_PWM_Len\tN_p2p\n")
 
 
         """First, we build some relevant probability distributions."""

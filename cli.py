@@ -355,7 +355,7 @@ def get_genes_from_file(ap):
     if False == ap.getOptionalArg("--urspath"):
         return None
     gene_pwms = {} # key = gene_id, value = PWM for this gene
-    gene_regmode = {}
+    gene_regmode = {} # key = gene id, value = True if this gene is a repressor
     fin = open(ap.getOptionalArg("--pwmpath"), "r")
     prev = None
     countsites = -1
@@ -366,7 +366,11 @@ def get_genes_from_file(ap):
             tokens = l.split()
             gene_id = int(tokens[1])
             prev = gene_id
-            reg_mode = int( tokens[2] )
+            reg_mode = tokens[2]
+            if reg_mode == "+" or reg_mode == "1":
+                reg_mode = False
+            elif reg_mode == "-" or reg_mode == "0":
+                reg_mode = True
             gene_pwms[ gene_id ] = PWM()
             gene_regmode[ gene_id ] = reg_mode
             countsites = -1
@@ -388,17 +392,19 @@ def get_genes_from_file(ap):
             print "--> I will build random URSs."
         else:
             print "--> Reading the URSs described in", ap.getOptionalArg("--urspath")
+    
     if False != ap.getOptionalArg("--urspath"):
         ret_genes = []
         urspath = ap.getOptionalArg("--urspath")
         fin = open(urspath, "r")
         lines = fin.readlines()
 
+        # Now search for lines that contain gene names. . .
         for i in range(0, lines.__len__()):
             l = lines[i]
             if l.startswith("#"):
                 continue
-            elif l.startswith(">"):
+            elif l.startswith(">"): # like this: ">id name\n"
                 l = l.strip()
                 tokens = l.split()
                 gene_id = int( re.sub(">", "", tokens[0]) )
@@ -406,6 +412,7 @@ def get_genes_from_file(ap):
                 if gene_name.__len__() < 1:
                     gene_name = gene_id.__str__()
                 
+                # Now read the upstrema regulatory sequence (URS) for this gene. . .
                 j = i+1
                 this_urs = ""
                 while j < lines.__len__():

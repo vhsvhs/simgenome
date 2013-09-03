@@ -22,8 +22,13 @@ except ImportError:
     exit()
 #from tools import *
 
-POPPICKLES = "POP_HISTORY"
-EXPR_PLOTS = "EXPR_HISTORY"
+POPPICKLES = "POPULATIONS"
+EXPR_PLOTS = "LOG_EXPR"
+FITNESS_DIR = "LOG_FITNESS"
+COOP_HISTORY = "LOG_COOP"
+DBD_HISTORY = "LOG_DBD"
+CONFIG_HISTORY = "LOG_OCCUPANCY"
+
 
 """The values in this configuration file will be used as defaults.
 Most of these parameter values can be overrided by command-line values."""
@@ -50,9 +55,9 @@ N_TR = 2
 N_REPORTER = 1
 
 """Mean mutation rate"""
-MU = 0.05
+MU = 1 # yes, do mutation
 ELITE_MU = 0.01
-ELITE_PROPORTION = 0.3
+ELITE_PROPORTION = 0.2
 DBD_MU = 0.5 # how mutations will be made per DBD?
 PWM_MU = 0.5 # how much change occurs to a particular PWM once selected for mutation?
 PWM_LEN_MU = 0.3
@@ -99,10 +104,10 @@ MIN_TF_SEPARATION = 0
 Higher values make k_act higher, which makes it easer for genes to be expressed.
 Lower values make k_act lower, which means that more bound sites are required
 for genes to be activated."""
-PE_SCALAR = 0.1
+PE_SCALAR = 0.01
 
 """Genes are never truly 'off'.  The minimum expression level is MINIMUM_ACTIVITY_LEVEL."""
-MINIMUM_ACTIVITY_LEVEL = 0.001
+MINIMUM_ACTIVITY_LEVEL = 0.00001
 MAXIMUM_ACTIVITY_LEVEL = 1.0
 
 """Larger values make the fitness function sharper around optimal expression, smaller values spread the function's hills further out over poor expression."""

@@ -8,15 +8,16 @@ import random
 def get_random_pwm(n):
     """Returns a random PWM with n sites."""
     line = ""
+    sum = 0
+    
     for i in range(0, n):
         vals = []
-        sum = 0.0
         for i in range(0,4):
-            x = random.random()
+            x = random.uniform(-1.0, 1.0)      
             vals.append( x )
             sum += x
         for val in vals:
-            line += (val/sum).__str__() + " "
+            line += "%.5f"%(val/sum) + " "
         line += "\n"
     return line
 

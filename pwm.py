@@ -149,42 +149,49 @@ class PWM:
                     #print "pwm 88:", self.rangesites
             return True
         return False
-        
-    def read_from_file(self, path, id):
-        """Reads only those lines that correspond to the PWM for TF #id."""
-        self.P = []
-        self.rangesites = []
-        fin = open(path, "r")
-        i = -1
-        found_our_id = False
-        reg_mode = 0
-        for l in fin.readlines():
-            if l.__len__() < 2:
-                continue
-            if l.startswith("#"):
-                continue
-            if l.__contains__("pwm"):
-                tokens = l.split()
-                if tokens[1] == id:
-                    found_our_id = True
-                    reg_mode = int(tokens[2]) # 0 = activator, 1 = repressor
-                else:
-                    if found_our_id == True:
-                        return (found_our_id, reg_mode)
-                    found_our_id = False
-                continue
-            if found_our_id == True:
-                if l.__len__() > 2 and False == l.__contains__("#"):
-                    i += 1
-                    tokens = l.split()
-                    cc = 0
-                    self.P.append( {} )
-                    self.rangesites.append(i)
-                    for c in ALPHABET:
-                        self.P[i][c] = float(tokens[cc])
-                        cc += 1
-        fin.close()
-        return (found_our_id, reg_mode)
+    
+#    #
+#    # Depricated.  Now use cli.py 
+#    #
+#    def read_from_file(self, path, id):
+#        """Reads only those lines that correspond to the PWM for TF #id."""
+#        self.P = []
+#        self.rangesites = []
+#        fin = open(path, "r")
+#        i = -1
+#        found_our_id = False
+#        reg_mode = 0
+#        for l in fin.readlines():
+#            if l.__len__() < 2:
+#                continue
+#            if l.startswith("#"):
+#                continue
+#            if l.__contains__("pwm"):
+#                tokens = l.split()
+#                if tokens[1] == id:
+#                    found_our_id = True
+#                    reg_mode = tokens[2] # 0 = activator, 1 = repressor
+#                    if reg_mode == "+" or reg_mode == "1":
+#                        reg_mode = 0
+#                    elif reg_mode == "-" or reg_mode == "0":
+#                        reg_mode = 1
+#                else:
+#                    if found_our_id == True:
+#                        return (found_our_id, reg_mode)
+#                    found_our_id = False
+#                continue
+#            if found_our_id == True:
+#                if l.__len__() > 2 and False == l.__contains__("#"):
+#                    i += 1
+#                    tokens = l.split()
+#                    cc = 0
+#                    self.P.append( {} )
+#                    self.rangesites.append(i)
+#                    for c in ALPHABET:
+#                        self.P[i][c] = float(tokens[cc])
+#                        cc += 1
+#        fin.close()
+#        return (found_our_id, reg_mode)
     
     def make_flat(self, ap):
         """flattens the P matrix to be non-specific, with length len"""

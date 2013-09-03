@@ -204,8 +204,17 @@ class Landscape:
     
     def get_expr_modifier(self, genome, gene, tf_expr_levels, ap):
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""   
+        
+        # 1. Instantiate ptables
+        # ptables is a multidimensional matrix that holds the occupancy distribution
         ptables = ProbTable( ap.params["numtr"], ap.params["maxgd"], gene.urs.__len__() )
+        
+        # 2. Initialize ptables
+        # Here we fill ptables with values, using a dynamic algorithm similar to the knapsack problem
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)          
+        
+        # 3. Use ptables
+        # Here we sample from the ptables distribution:
         pe = self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)        
         # Note: pe is the probability of increasing the expression of the gene. 
         # It ranges from 0.0 to 1.0.  A value of 0.5 means the gene expression will remain unchanged.
@@ -268,8 +277,8 @@ class Landscape:
                             continue
                 ret.cpt[i,x] = sum_cpt
             ret.cpr[x] = sum_cpr
-        if ap.params["verbosity"] > 99:
-            print ret
+        #if ap.params["verbosity"] > 99:
+        #    print ret
         return ret
         
     def sample_cdf(self, site, ptables, ap):
@@ -382,7 +391,11 @@ class Landscape:
             
             
             """ 3. Calculate the probability of this configuration."""         
-            this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(sum_lambda_act-sum_lambda_rep) ) ))
+            print sum_lambda_act-sum_lambda_rep
+            try:
+                this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(sum_lambda_act-sum_lambda_rep) ) ))
+            except OverflowError:
+                this_pe = 8.218407461554972e+307
             pe_sum += this_pe
         
         if ap.params["verbosity"] > 3:
@@ -393,7 +406,7 @@ class Landscape:
     def print_binding_distribution(self, ptables, genome, gene, ap):
         """configs is a hashtable of configurations...
             configs[site] = array of triples [gene i, gene j, distance]"""
-        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
+        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + CONFIG_HISTORY + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
         try:
             fout = open( foutpath , "a")
         except IOError:
@@ -449,7 +462,7 @@ class Landscape:
 #        
 #        """configs is a hashtable of configurations...
 #            configs[site] = array of triples [gene i, gene j, distance]"""
-#        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + EXPR_PLOTS + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
+#        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + CONFIG_HISTORY + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
 #        try:
 #            fout = open( foutpath , "a")
 #        except IOError:
