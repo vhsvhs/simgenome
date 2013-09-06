@@ -106,6 +106,8 @@ Lower values make k_act lower, which means that more bound sites are required
 for genes to be activated."""
 PE_SCALAR = 0.01
 
+MAX_PE = 8.2184074e+307
+
 """Genes are never truly 'off'.  The minimum expression level is MINIMUM_ACTIVITY_LEVEL."""
 MINIMUM_ACTIVITY_LEVEL = 0.00001
 MAXIMUM_ACTIVITY_LEVEL = 1.0

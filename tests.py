@@ -13,50 +13,39 @@ def get_random_nt(n):
         line += choice(["A", "C", "G", "T"])
     return line
 
-
 #
 # Very Simple
 #
-def run_vs():
-    runid = "vs.08202013"
+def run_timetest():
+    runid = "time092013"
     scriptname = "UTESTS/" + runid + ".run.sh"
     os.system("mkdir UTESTS")
+    
     fout = open(scriptname, "w")
-
-    # KO:
-    fout.write("mpirun -np 2 --machinefile hosts.txt python runme.py --start_generation 0 --numtr 5 ")
-    fout.write("--numreporter 0 --popsize 1 --patternpath ./UTESTS/rules." + runid + ".txt ")
+    fout.write("mpirun -np 25 --machinefile hosts.txt python runme.py --start_generation 0 --numtr 5 ")
+    fout.write("--numreporter 0 --popsize 24 --patternpath ./UTESTS/rules." + runid + ".txt ")
     fout.write("--urspath ./UTESTS/urs." + runid + ".txt --verbose 20 --runid " + runid + " --growth_rate 0.5 ")
     fout.write("--decay_rate 0.5 --pwmpath ./UTESTS/pwm." + runid + ".txt --maxgenerations 1 ")
-    fout.write("--maxtime 1 --workspace ./UTESTS --tfcoop zeros --maxgd 1 --iid_samples 10 ")
+    fout.write("--maxtime 1 --workspace ./UTESTS --tfcoop zeros --maxgd 1 --iid_samples 1000 ")
     fout.write("--pwmlenmu 1.0 --urslenmu 1.0 ")
     fout.write(" --perftime True ")
     fout.write("\n")
-
-    # d - same as c, but pe_scaler changed
-    #fout.write("mpirun -np 25 --machinefile hosts.txt python runme.py --numtr 4 --numreporter 2 --popsize 48 --patternpath ./UTESTS/rules." + runid + ".txt --urspath ./UTESTS/urs." + runid + ".txt --verbose 8 --runid " + runid + " --growth_rate 0.5 --decay_rate 0.5 --pwmpath ./UTESTS/pwm." + runid + ".txt --maxgenerations 1000 --maxtime 1 --workspace ./UTESTS --tfcoop zeros --maxgd 1 --iid_samples 10000 --mu 1 --eliteproportion 0.3 --elitemu 0.0 --p2pmu 0.0 --dbdmu 0.2 --pwmmu 1.0 --pwmlenmu 0.5 --pwmmulenmax 2 --urslenmu 0.1 --cismu 0.5 --sexual_ratio 0.7 --pe_scalar 0.5\n")
-
     fout.close()
     
     fout = open("./UTESTS/rules." + runid + ".txt", "w")
     fout.write("# timepatternID, basal_gene_id, timepoint, expression_level, reporter_gene_ID, rule_type, multiplier\n")
-    #fout.write("RULE 0 0 4 0.01 5 le\n")
-    #fout.write("RULE 0 0 8 0.01 5 le\n")
-    #fout.write("RULE 0 0 4 0.4 4 ge 4\n")
     fout.write("RULE 0 0 0 0.01 le\n")
-    
     fout.write("# timepatternID, basal_gene_id, time_start, time_stop, expr_level\n")
     fout.write("INPUT 0 0 0 1 1.00\n")
     fout.write("INPUT 0 1 0 1 1.00\n")
     fout.close()
     
     fout = open("./UTESTS/urs." + runid + ".txt", "w")
-    fout.write(">0 alpha\n" + get_random_nt(100) + "\n") 
-    fout.write(">1 beta\n" + get_random_nt(100) + "\n")
-    fout.write(">2 gamma\n" + get_random_nt(100) + "\n")
-    fout.write(">3 delta\n" + get_random_nt(100) + "\n")
+    fout.write(">0 alpha\n" + get_random_nt(1000) + "\n") 
+    fout.write(">1 beta\n" + get_random_nt(1000) + "\n")
+    fout.write(">2 gamma\n" + get_random_nt(1000) + "\n")
+    fout.write(">3 delta\n" + get_random_nt(1000) + "\n")
     fout.write(">4 lambda\nGCGCAATGGCGCAATG\n") # Two Lys14 motifs
-    
     fout.close()
     
     fout = open("./UTESTS/pwm." + runid + ".txt", "w")
@@ -65,22 +54,16 @@ def run_vs():
     fout.write("pwm 1 0\n")
     fout.write( get_nonspec_pwm(8) )
     fout.write("pwm 2 0\n")
-    fout.write( get_nonspec_pwm(1) )  
+    fout.write( get_nonspec_pwm(6) )  
     fout.write("pwm 3 0\n")
-    fout.write( get_nonspec_pwm(1) )  
+    fout.write( get_nonspec_pwm(5) )  
     fout.write("pwm 4 0\n")
-    fout.write( get_nonspec_pwm(1) )  
-    
-    #fout.write( get_Aspec(2) )
-    #fout.write("pwm 2 1\n")
-    #fout.write( get_nonspec_pwm(5) )   
-    #fout.write( get_Tspec(1) )
-
+    fout.write( get_nonspec_pwm(3) )  
     fout.close()
+    
     print scriptname
     os.system("source " + scriptname)
     exit()
-
 
 #
 # Random Start Test
@@ -779,10 +762,11 @@ def run_biofilm_prediction():
     6. Is there a correlation between the predicted gene expression and the observed gene expression?
     """
 
+run_timetest()
 #run_vs()
 #run_rand()
 #run_ko()
-run_ffl()
+#run_ffl()
 #run_3genes()
 #run_tune_mu()
 #run_tune_iid()

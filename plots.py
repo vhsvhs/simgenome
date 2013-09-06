@@ -78,5 +78,5 @@ def write_expression_cran(genome, output_filename_seed, title, xlab, ylab, ap):
     fout_cran.write("dev.off();\n")
     fout_cran.close()
     
-    if ap.params["verbosity"] >= 10:
-        os.system("r --no-save --silent < " + output_filename_seed + ".cran")
+    #if ap.params["verbosity"] >= 10:
+    #    os.system("r --no-save --silent < " + output_filename_seed + ".cran")

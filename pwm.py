@@ -202,25 +202,21 @@ class PWM:
             for c in ALPHABET:
                 self.P[i][c] = flat_p
     
-    def affinity(self, pos, urs):
+    def affinity(self, string):
         """Returns the total affinity of this transcription factor for the
         upstream regulatory sequence (URS) bound at a given position (pos).
         Total affinity is the product of affinities at each site.
         """
         
         # If the PWM can't fit on the sequence:
-        if (urs.__len__() - pos < self.P.__len__() ):
+        if (string.__len__() < self.P.__len__() ):
             return 0.0
-        # If the position is beyond the edge of the sequence:
-        if ( pos + 1 > urs.__len__() ):
-            return 0.0
-        
-        a = ALPHABET.__len__()
-        part = urs[pos:pos+self.P.__len__()] # part is the substring of the sequence
 
         retaff = 1.0 # the affinity, to be returned
-        for k in self.rangesites:
-            retaff *= e**( self.P[k][ part[k] ] )
+        site = 0
+        for c in string:
+            retaff *= math.exp( self.P[site][c] )
+            site += 1
         return retaff
     
     #

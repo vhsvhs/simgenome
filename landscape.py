@@ -71,7 +71,7 @@ class Landscape:
         expr_error = expr_error / max_expr_error # Normalize the expression error by the max. possible error
         return math.exp(FITNESS_SCALAR * expr_error) # FITNESS_SCALAR is defined in configuration.py
                     
-    
+                    
     def get_fitness(self, genome, ap, ko=[]):
 
         """Calculates the fitness of the given genome, over all time patterns in the fitness landscape.
@@ -106,7 +106,7 @@ class Landscape:
             """The expression levels for each TF will be stored in this hashtable."""
             tf_expr_level = {} # key = gene id, value = array of expression values for each timeslice
                     
-            for timeslice in range(0, ap.params["maxtime"]):
+            for timeslice in xrange(0, ap.params["maxtime"]):
                 self.t_counter = timeslice
     
                 """Manually set expression values for genes defined in the input rules."""   
@@ -205,17 +205,32 @@ class Landscape:
     def get_expr_modifier(self, genome, gene, tf_expr_levels, ap):
         """returns a floating-point value, the expression level of gene, given the TF expression levels"""   
         
+        #
+        # September 2013: begin ctypes revision here
+        #
+        
         # 1. Instantiate ptables
         # ptables is a multidimensional matrix that holds the occupancy distribution
+        timeon = datetime.utcnow()
         ptables = ProbTable( ap.params["numtr"], ap.params["maxgd"], gene.urs.__len__() )
+        ap.params["sumtime_ptables"] += (datetime.utcnow() - timeon).total_seconds()
         
         # 2. Initialize ptables
         # Here we fill ptables with values, using a dynamic algorithm similar to the knapsack problem
+        timeon = datetime.utcnow()
         ptables = self.calc_prob_tables(genome, gene, tf_expr_levels, ptables, ap)          
+        ap.params["sumtime_calcprobtables"] += (datetime.utcnow() - timeon).total_seconds()  
         
         # 3. Use ptables
         # Here we sample from the ptables distribution:
+        timeon = datetime.utcnow()
         pe = self.prob_expr(genome, ptables, gene, tf_expr_levels, ap)        
+        ap.params["sumtime_probexpr"] += (datetime.utcnow() - timeon).total_seconds()
+        
+        #
+        # September 2013: end ctypes revision here
+        #
+        
         # Note: pe is the probability of increasing the expression of the gene. 
         # It ranges from 0.0 to 1.0.  A value of 0.5 means the gene expression will remain unchanged.
         pe = pe - 0.5 # This will make pe range from -0.5 to +0.5.  
@@ -226,12 +241,13 @@ class Landscape:
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
         """returns a ProbTable object, named ret."""
         L = gene.urs.__len__()        
-        for x in range(0, L): # foreach site in gene's upstream region
+        for x in xrange(0, L): # foreach site in gene's upstream region
             sum_cpr = 0.0
             for i in ap.params["trlist"]:   # foreach transcription factor
                 #print genome.genes[i].gamma
-                
-                this_aff = genome.genes[i].pwm.affinity( x, gene.urs )
+                genei = genome.genes[i]
+                seq = gene.urs[ x: ]
+                this_aff = genei.pwm.affinity(gene.urs[x:x+genei.pwm.P.__len__()])
                 #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%this_aff, "this_aff."
                 sum_cpt = 0.0
                 for j in ap.params["trlist+"]: # +1 to also consider the empty case
@@ -286,6 +302,7 @@ class Landscape:
         ptables.cpr must contain the cumulative marginal distributions.
         This method returns [i,j,d], where TF "i" is binding to site, followed by distance
         "d", and then TF "j" binds."""
+        #return [0,0,0]
         
         # This is the old way:
         # Use Numpy's cumsum method to calculate a cummulative probability distribution for all binding events at site.
@@ -311,27 +328,32 @@ class Landscape:
         totp = ptables.cpr[site]
         
         randp = random.random() * totp
-        if ap.params["verbosity"] > 102:
-            print "320: totp=", totp, "randp=", randp
+        #if ap.params["verbosity"] > 102:
+        #    print "320: totp=", totp, "randp=", randp
         sump = 0.0
         reti = 0
         retj = 0
         retd = 0
         
-        for i in ap.params["trlist"]:
-            reti = i
-            for j in ap.params["trlist+"]:
-                retj = j
-                for d in ap.params["rangegd"]:
-                    retd = d
+        trlist = ap.params["trlist"]
+        trlistp = ap.params["trlist+"]
+        rangegd =  ap.params["rangegd"]
+        
+        for i in trlist:
+            #reti = i
+            for j in trlistp:
+                #retj = j
+                for d in rangegd:
+                    #retd = d
                     sump += ptables.cpa[i,j,d,site]
                     if sump > randp:
+                        return [i, j, d]
                         break
-                if sump > randp:
-                    break
-            if sump > randp:
-                break
-        return [reti, retj, retd]
+                #if sump > randp:
+                #    break
+            #if sump > randp:
+            #    break
+        return [trlist.__len__()-1, trlistp.__len__()-1, rangegd.__len__()-1]
         
     
     def prob_expr(self, genome, ptables, gene, tf_expr_levels, ap, lam=None):        
@@ -341,17 +363,20 @@ class Landscape:
         
         pe_sum = 0
         min_r = min( self.r )
+        urslen = gene.urs.__len__()
         configurations = {}
+        for site in xrange(0, urslen):
+            configurations[site] = []
         """configurations: key = site, value = array of arrays, [i,j,d] samples"""
         
-        for sample in range(0, ap.params["iid_samples"]):
+        for sample in xrange(0, ap.params["iid_samples"]):
             
             """"1. Build a configuration (i.e., the variable named this_config), by sampling 
             cells from ptables.cpa.  Each configuration is a linear collection of transcription
             factors arranged at various sites along the regulatory sequence. """          
             this_config = {} # key = site, value = the TF bound starting at this site.
             site = 0 # a counter we'll increment as we add stuff to this configuration
-            while (site < gene.urs.__len__()):
+            while (site < urslen):
                 if ptables.cpr[site] == 0.0:
                     """Skip sites where nothing is binding...."""
                     site += 1
@@ -361,19 +386,18 @@ class Landscape:
                     this_config[site] = i
                     
                     """Save the configuration..."""
-                    if False == configurations.__contains__(site):
-                        configurations[site] = []
                     configurations[site].append( [i,j,d] )
 
                     """Advance the site counter..."""
-                    if i < ap.params["numtr"]:
-                        site += genome.genes[i].pwm.P.__len__()
-                    if site < gene.urs.__len__():
+                    #if i < ap.params["numtr"]:
+                    site += genome.genes[i].pwm.P.__len__()
+                    if site < urslen:
                         site += d
                     if j < ap.params["numtr"]:
-                        if (site + genome.genes[j].pwm.P.__len__()) < gene.urs.__len__():
+                        jpwmlen = genome.genes[j].pwm.P.__len__()
+                        if (site + jpwmlen) < urslen:
                             this_config[site] = j
-                            site += genome.genes[j].pwm.P.__len__()
+                            site += jpwmlen
                 
             """"2. Calculate the binding energy of the configuration."""
             sum_lambda_act = 0.0
@@ -382,8 +406,9 @@ class Landscape:
                 tf = this_config[site]
                 if tf < ap.params["numtr"]: # there will be no binding energy for the empty configuration:
                     """Get the strength of TF binding at this site..."""
-                    this_aff = genome.genes[tf].pwm.affinity(site, gene.urs)
-                    #print "tf", tf, "binds gene", gene.id, "site", site, "this_aff", this_aff
+                    thispwm = genome.genes[tf].pwm
+                    this_aff = thispwm.affinity(gene.urs[site:site+thispwm.P.__len__()])
+                    
                     if genome.genes[tf].is_repressor:
                         sum_lambda_rep += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
                     else:
@@ -391,11 +416,11 @@ class Landscape:
             
             
             """ 3. Calculate the probability of this configuration."""         
-            print sum_lambda_act-sum_lambda_rep
+            #print sum_lambda_act-sum_lambda_rep
             try:
                 this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(sum_lambda_act-sum_lambda_rep) ) ))
             except OverflowError:
-                this_pe = 8.218407461554972e+307
+                this_pe = MAX_PE
             pe_sum += this_pe
         
         if ap.params["verbosity"] > 3:
@@ -410,8 +435,13 @@ class Landscape:
         try:
             fout = open( foutpath , "a")
         except IOError:
+            fout = open(ap.params["workspace"] + "/" + ap.params["runid"] + "/LOGS/error.txt", "a")
+            #fout.write("\n" + time.localtime() + "\n")
+            fout.write("I had a problem opening " + foutpath + "\n")
+            fout.close()
             print "\n. I had a problem opening", foutpath
-            exit()
+            return
+            #exit()
 
         if self.t_counter == 0 and gene.id == 0:        
             fout.write("===================================================\n")
@@ -426,7 +456,7 @@ class Landscape:
         #fout.write("#\n# For example, \"site 3 :  1 [-] 0.672 0.120\" indicates that site 3 is bound by repressor 1\n# in 67.2 percent of IID samples with activation energy = 0.120.\n# Activation energies < 0.5 indicate repression, = 0.5 indicate no activation,\n# > 0.5 indicates activation.#\n#\n")
         fout.write(". Time " + self.t_counter.__str__() + " Gene " + gene.id.__str__() + "\tURS: " + gene.urs + "\n")
         
-        for site in range(0, ptables.cpr.__len__()):
+        for site in xrange(0, ptables.cpr.__len__()):
             sump = ptables.cpr[site]
             line = None
             for tf in ap.params["trlist"]:
