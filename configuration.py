@@ -17,6 +17,9 @@ try:
     # we also import scipy.stats in the population.do_mutations method
     import sys
     import cProfile
+    
+    import threading
+    
 except ImportError:
     print "\n. Sorry, I had a problem importing one (or more) Python libraries."
     exit()

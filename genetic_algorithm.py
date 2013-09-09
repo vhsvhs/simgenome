@@ -11,14 +11,15 @@ class Genetic_Algorithm:
     def __init__(self, ap):
         id = ap.params["runid"] 
     
-    def find_max_fit_gid(self, gid_fitness):
-        maxf = 0.0
-        maxgid = 0
-        for gid in gid_fitness:
-            if gid_fitness[gid] > maxf:
-                maxf = gid_fitness[gid]
-                maxgid = gid
-        return maxgid
+#    depricated
+#    def find_max_fit_gid(self, gid_fitness):
+#        maxf = 0.0
+#        maxgid = 0
+#        for gid in gid_fitness:
+#            if gid_fitness[gid] > maxf:
+#                maxf = gid_fitness[gid]
+#                maxgid = gid
+#        return maxgid
     
     def masteronly_bcast(self, ap):
         """Broadcast the updated population to MPI slaves."""

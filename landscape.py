@@ -240,7 +240,16 @@ class Landscape:
     
     def calc_prob_tables(self, genome, gene, rel_tf_expr, ret, ap):
         """returns a ProbTable object, named ret."""
-        L = gene.urs.__len__()        
+        # M is num TR
+        M = ap.params["numtr"]
+        D = ap.params["maxgd"]
+        L = gene.urs.__len__()
+        dim1 = D*M*(M+1)
+        dim2 = D*(M+1)
+        dim3 = D
+        
+        # D is max gamma distance
+        # L is URS length       
         for x in xrange(0, L): # foreach site in gene's upstream region
             sum_cpr = 0.0
             for i in ap.params["trlist"]:   # foreach transcription factor
@@ -251,45 +260,47 @@ class Landscape:
                 #print "TF", i, "binds", gene.urs, "at site", x, "with %.3f"%this_aff, "this_aff."
                 sum_cpt = 0.0
                 for j in ap.params["trlist+"]: # +1 to also consider the empty case
-                    for d in ap.params["rangegd"]:                        
+                    for d in ap.params["rangegd"]:
+                        #print x, i, j, d                        
                         if (L-x < self.r[i]): 
                             """ CASE 1: TF i's PWM is too wide to start binding at site x"""
-                            ret.cpa[i,j,d,x] = 0 # P @ x = 0
-                            sum_cpt += ret.cpa[i,j,d,x]
-                            sum_cpr += ret.cpa[i,j,d,x]
+                            ret.cpa[x*dim1 + i*dim2 + j*dim3 + d] = 0 # P @ x = 0
+                            sum_cpt += ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
+                            sum_cpr += ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
                             if ap.params["verbosity"] > 100:
-                                print "case 1:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
+                                print "case 1:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
                             continue
                         if (j < ap.params["numtr"]):  # TF j is real, not the empty slot.
                             if (d < MIN_TF_SEPARATION):
                                 # If d == 0, then this case should never be reached.
                                 """ CASE 4: the distance between TFs i and j is too small."""
                                 # we forbid TFs to bind this close together
-                                ret.cpa[i,j,d,x] = 0 # then P @ x = 0
+                                ret.cpa[x*dim1 + i*dim2 + j*dim3 + d] = 0 # then P @ x = 0
                                 if ap.params["verbosity"] > 100:
-                                    print "case 4:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
+                                    print "case 4:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
                                 continue
                             elif (L - self.r[i] - d - self.r[j] < 0):
                                 """CASE 3: TF i and j cannot both fit on the sequence."""
-                                ret.cpa[i,j,d,x] = 0 # then P @ x = 0
+                                ret.cpa[x*dim1 + i*dim2 + j*dim3 + d] = 0 # then P @ x = 0
                                 if ap.params["verbosity"] > 100:
-                                    print "case 3:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
+                                    print "case 3:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
                                 continue
                             else:                                
                                 """Case 5: TF i and TF j can fit with distance d between them"""
-                                ret.cpa[i,j,d,x] = rel_tf_expr[i] * this_aff * ( (genome.genes[i].gamma[j, d] + genome.genes[j].gamma[i,d]) * 0.5 )
-                                sum_cpt += ret.cpa[i,j,d,x]
-                                sum_cpr += ret.cpa[i,j,d,x]
+                                #print rel_tf_expr[i] * this_aff * ( (genome.genes[i].gamma[j, d] + genome.genes[j].gamma[i,d]) * 0.5 )
+                                ret.cpa[x*dim1 + i*dim2 + j*dim3 + d] = rel_tf_expr[i] * this_aff * ( (genome.genes[i].gamma[j, d] + genome.genes[j].gamma[i,d]) * 0.5 )
+                                sum_cpt += ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
+                                sum_cpr += ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
                                 if ap.params["verbosity"] > 100:
-                                    print "case 5:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
+                                    print "case 5:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
                                 continue
                         elif (j == ap.params["numtr"]): # j is the empty slot
                             """CASE 6: no binding here:"""
-                            ret.cpa[i,j,d,x] = rel_tf_expr[i] * this_aff;
-                            sum_cpt += ret.cpa[i,j,d,x]
-                            sum_cpr += ret.cpa[i,j,d,x]
+                            ret.cpa[x*dim1 + i*dim2 + j*dim3 + d] = rel_tf_expr[i] * this_aff;
+                            sum_cpt += ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
+                            sum_cpr += ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
                             if ap.params["verbosity"] > 100:
-                                print "case 6:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[i,j,d,x]
+                                print "case 6:", "TF", i, " and TF", j, "distance", d, "site", (x+1), "p= ", ret.cpa[x*dim1 + i*dim2 + j*dim3 + d]
                             continue
                 ret.cpt[i,x] = sum_cpt
             ret.cpr[x] = sum_cpr
@@ -304,58 +315,123 @@ class Landscape:
         "d", and then TF "j" binds."""
         #return [0,0,0]
         
-        # This is the old way:
-        # Use Numpy's cumsum method to calculate a cummulative probability distribution for all binding events at site.
-        # c will be a flattened version of ptables.cpa, for the subarray specific to 'site'.
-#        c = cumsum(ptables.cpa[:,:,:,site])
-#        #print "c=", c
-#        # Draw a random value from the CDF. . .
-#        randp = random.random() * ptables.cpr[site]
-#        # Find where that random value lives in ptables.cpa. . .
-#        x = searchsorted(c, randp)
-#        #print "randp=", randp
-#        #print "x=", x
-#        reti = x/(ap.params["numtr"]+1)/MAX_GD
-#        retj = reti/MAX_GD
-#        retd = x%MAX_GD
-#        #print "new answer:", [reti, retj, retd]
-#        return [reti, retj, retd]
-        
-    
         if ptables.cpr[site] == 0.0:
             return None
-       
         totp = ptables.cpr[site]
-        
         randp = random.random() * totp
-        #if ap.params["verbosity"] > 102:
-        #    print "320: totp=", totp, "randp=", randp
-        sump = 0.0
-        reti = 0
-        retj = 0
-        retd = 0
         
-        trlist = ap.params["trlist"]
-        trlistp = ap.params["trlist+"]
-        rangegd =  ap.params["rangegd"]
-        
-        for i in trlist:
-            #reti = i
-            for j in trlistp:
-                #retj = j
-                for d in rangegd:
-                    #retd = d
-                    sump += ptables.cpa[i,j,d,site]
+        x1 = site*ptables.dim1
+        sump = 0.0                
+        for i in ap.params["trlist"]:
+            x2 = i*ptables.dim2
+            for j in ap.params["trlist+"]:
+                x3 = j*ptables.dim3
+                for d in  ap.params["rangegd"]:
+                    sump += ptables.cpa[ x1 + x2 + x3 + d]
                     if sump > randp:
-                        return [i, j, d]
-                        break
-                #if sump > randp:
-                #    break
-            #if sump > randp:
-            #    break
-        return [trlist.__len__()-1, trlistp.__len__()-1, rangegd.__len__()-1]
+                        return [i, j, d, randp]
+        return [M-1, M, D, randp]
         
+        
+    pe_sum = 0.0   
+    lock = threading.Lock()
     
+    def pe_helper(self, genome, ptables, gene, ap):
+        """"1. Build a configuration (i.e., the variable named this_config), by sampling 
+        cells from ptables.cpa.  Each configuration is a linear collection of transcription
+        factors arranged at various sites along the regulatory sequence. """          
+        this_config = {} # key = site, value = the TF bound starting at this site.
+        site = 0 # a counter we'll increment as we add stuff to this configuration
+        while (site < urslen):
+            if ptables.cpr[site] == 0.0:
+                """Skip sites where nothing is binding...."""
+                site += 1
+            else:
+                """Sample a configuration..."""     
+                #[i, j, d, randp] = self.sample_cdf(site, ptables, ap)                                  
+                #print "367:", i, j, d
+                
+                #[i,j,d] = [0,0,0]
+                
+                """An alternative to sample_cdf..."""
+                #if ptables.cpr[site] == 0.0:
+                #    return None
+                
+                totp = ptables.cpr[site]
+                randp = random.random() * totp
+                x1 = site*ptables.dim1
+                sump = 0.0       
+                reti = 0
+                retj = 0
+                retd = 0
+
+                sump = 0.0
+                for i in ap.params["trlist"]:
+                    x2 = i*ptables.dim2
+                    for j in ap.params["trlist+"]:
+                        x3 = j*ptables.dim3
+                        for d in ap.params["rangegd"]:
+                            #sump += 10000
+                            sump += ptables.cpa[ x1 + x2 + x3 + d]
+                            if sump > randp:
+                                reti = i
+                                retj = j
+                                retd = d
+                                #print "401:", reti, retj, retd
+                                break
+                        if sump > randp:
+                            break
+                    if sump > randp:
+                        break
+
+                i = reti
+                j = retj
+                d = retd
+
+                """Regardless of which sample CDF method we use, we next do this:"""
+                this_config[site] = i
+                
+                """Save the configuration..."""
+                configurations[site].append( [i,j,d] )
+
+                """Advance the site counter..."""
+                #if i < ap.params["numtr"]:
+                site += genome.genes[i].pwm.P.__len__()
+                if site < urslen:
+                    site += d
+                if j < ap.params["numtr"]:
+                    jpwmlen = genome.genes[j].pwm.P.__len__()
+                    if (site + jpwmlen) < urslen:
+                        this_config[site] = j
+                        site += jpwmlen
+            
+        """"2. Calculate the binding energy of the configuration."""
+        sum_lambda_act = 0.0
+        sum_lambda_rep = 0.0
+        for site in this_config:
+            tf = this_config[site]
+            if tf < ap.params["numtr"]: # there will be no binding energy for the empty configuration:
+                """Get the strength of TF binding at this site..."""
+                thispwm = genome.genes[tf].pwm
+                this_aff = thispwm.affinity(gene.urs[site:site+thispwm.P.__len__()])
+                
+                if genome.genes[tf].is_repressor:
+                    sum_lambda_rep += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
+                else:
+                    sum_lambda_act += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
+        
+        
+        """ 3. Calculate the probability of this configuration."""         
+        #print sum_lambda_act-sum_lambda_rep
+        try:
+            this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(sum_lambda_act-sum_lambda_rep) ) ))
+        except OverflowError:
+            this_pe = MAX_PE
+        lock.acquire()
+        pe_sum += this_pe
+        lock.release()
+
+
     def prob_expr(self, genome, ptables, gene, tf_expr_levels, ap, lam=None):        
         """Returns a floating-point value corresponding to the expression level of gene,
         given the ProbTable ptables"""        
@@ -369,60 +445,128 @@ class Landscape:
             configurations[site] = []
         """configurations: key = site, value = array of arrays, [i,j,d] samples"""
         
-        for sample in xrange(0, ap.params["iid_samples"]):
-            
-            """"1. Build a configuration (i.e., the variable named this_config), by sampling 
-            cells from ptables.cpa.  Each configuration is a linear collection of transcription
-            factors arranged at various sites along the regulatory sequence. """          
-            this_config = {} # key = site, value = the TF bound starting at this site.
-            site = 0 # a counter we'll increment as we add stuff to this configuration
-            while (site < urslen):
-                if ptables.cpr[site] == 0.0:
-                    """Skip sites where nothing is binding...."""
-                    site += 1
-                else:
-                    """Sample a configuration..."""        
-                    [i, j, d] = self.sample_cdf(site, ptables, ap)                                  
-                    this_config[site] = i
-                    
-                    """Save the configuration..."""
-                    configurations[site].append( [i,j,d] )
-
-                    """Advance the site counter..."""
-                    #if i < ap.params["numtr"]:
-                    site += genome.genes[i].pwm.P.__len__()
-                    if site < urslen:
-                        site += d
-                    if j < ap.params["numtr"]:
-                        jpwmlen = genome.genes[j].pwm.P.__len__()
-                        if (site + jpwmlen) < urslen:
-                            this_config[site] = j
-                            site += jpwmlen
-                
-            """"2. Calculate the binding energy of the configuration."""
-            sum_lambda_act = 0.0
-            sum_lambda_rep = 0.0
-            for site in this_config:
-                tf = this_config[site]
-                if tf < ap.params["numtr"]: # there will be no binding energy for the empty configuration:
-                    """Get the strength of TF binding at this site..."""
-                    thispwm = genome.genes[tf].pwm
-                    this_aff = thispwm.affinity(gene.urs[site:site+thispwm.P.__len__()])
-                    
-                    if genome.genes[tf].is_repressor:
-                        sum_lambda_rep += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
-                    else:
-                        sum_lambda_act += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
-            
-            
-            """ 3. Calculate the probability of this configuration."""         
-            #print sum_lambda_act-sum_lambda_rep
-            try:
-                this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(sum_lambda_act-sum_lambda_rep) ) ))
-            except OverflowError:
-                this_pe = MAX_PE
-            pe_sum += this_pe
+        # September 2013:
+        maxi = ap.params["trlist"][ ap.params["trlist"].__len__()-1 ]
+        maxj = maxi + 1
+        maxd = ap.params["rangegd"][ ap.params["rangegd"].__len__()-1 ]
         
+        for sample in xrange(0, ap.params["iid_samples"]):
+            t = threading.Thread(target = self.pe_helper, args=(genome, ptables, gene, ap))
+            #thread.start_new_thread(pe_helper, (genome, ptables, gene, ap))
+#            """"1. Build a configuration (i.e., the variable named this_config), by sampling 
+#            cells from ptables.cpa.  Each configuration is a linear collection of transcription
+#            factors arranged at various sites along the regulatory sequence. """          
+#            this_config = {} # key = site, value = the TF bound starting at this site.
+#            site = 0 # a counter we'll increment as we add stuff to this configuration
+#            while (site < urslen):
+#                if ptables.cpr[site] == 0.0:
+#                    """Skip sites where nothing is binding...."""
+#                    site += 1
+#                else:
+#                    """Sample a configuration..."""     
+#                    #[i, j, d, randp] = self.sample_cdf(site, ptables, ap)                                  
+#                    #print "367:", i, j, d
+#                    
+#                    #[i,j,d] = [0,0,0]
+#                    
+#                    """An alternative to sample_cdf..."""
+#                    #if ptables.cpr[site] == 0.0:
+#                    #    return None
+#                    
+#                    totp = ptables.cpr[site]
+#                    randp = random.random() * totp
+#                    x1 = site*ptables.dim1
+#                    sump = 0.0       
+#                    reti = 0
+#                    retj = 0
+#                    retd = 0
+#
+##
+## C-based version:
+##
+#                    #i = _chi2.chi2(site, totp, randp, ptables.cpa)
+#                    #j = 0
+#                    #d = 0
+#
+## The while-loop version appears to be slower than the for-loop version.                    
+##                    q = 0
+##                    while q < ptables.dim1:
+##                        sump += ptables.cpa[q]
+##                        if sump > randp:
+##                            reti = int(q / ptables.dim2)
+##                            retj = int(q / ptables.dim3)
+##                            retd = q - reti*ptables.dim2 - retj*ptables.dim3 
+##                            #print "388:", q, reti, retj, retd
+##                            q = ptables.dim1
+##                        q += 1
+#                    
+##
+## V2:
+##
+#                    sump = 0.0
+#                    for i in ap.params["trlist"]:
+#                        x2 = i*ptables.dim2
+#                        for j in ap.params["trlist+"]:
+#                            x3 = j*ptables.dim3
+#                            for d in ap.params["rangegd"]:
+#                                #sump += 10000
+#                                sump += ptables.cpa[ x1 + x2 + x3 + d]
+#                                if sump > randp:
+#                                    reti = i
+#                                    retj = j
+#                                    retd = d
+#                                    #print "401:", reti, retj, retd
+#                                    break
+#                            if sump > randp:
+#                                break
+#                        if sump > randp:
+#                            break
+#
+#                    i = reti
+#                    j = retj
+#                    d = retd
+#
+#                    """Regardless of which sample CDF method we use, we next do this:"""
+#                    this_config[site] = i
+#                    
+#                    """Save the configuration..."""
+#                    configurations[site].append( [i,j,d] )
+#
+#                    """Advance the site counter..."""
+#                    #if i < ap.params["numtr"]:
+#                    site += genome.genes[i].pwm.P.__len__()
+#                    if site < urslen:
+#                        site += d
+#                    if j < ap.params["numtr"]:
+#                        jpwmlen = genome.genes[j].pwm.P.__len__()
+#                        if (site + jpwmlen) < urslen:
+#                            this_config[site] = j
+#                            site += jpwmlen
+#                
+#            """"2. Calculate the binding energy of the configuration."""
+#            sum_lambda_act = 0.0
+#            sum_lambda_rep = 0.0
+#            for site in this_config:
+#                tf = this_config[site]
+#                if tf < ap.params["numtr"]: # there will be no binding energy for the empty configuration:
+#                    """Get the strength of TF binding at this site..."""
+#                    thispwm = genome.genes[tf].pwm
+#                    this_aff = thispwm.affinity(gene.urs[site:site+thispwm.P.__len__()])
+#                    
+#                    if genome.genes[tf].is_repressor:
+#                        sum_lambda_rep += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
+#                    else:
+#                        sum_lambda_act += this_aff #* tf_expr_levels[tf] #Aug22,2013, Victor: add this multiplier clause tf_expr_levels[tf]
+#            
+#            
+#            """ 3. Calculate the probability of this configuration."""         
+#            #print sum_lambda_act-sum_lambda_rep
+#            try:
+#                this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(sum_lambda_act-sum_lambda_rep) ) ))
+#            except OverflowError:
+#                this_pe = MAX_PE
+#            pe_sum += this_pe
+#        
         if ap.params["verbosity"] > 3:
             """Print what we've sampled..."""
             self.print_binding_distribution( ptables, genome, gene, ap )
@@ -478,87 +622,5 @@ class Landscape:
                 fout.write(line + "\n")
         fout.write("\n")
         fout.close()
-                
-
-    #
-    # This function is depricated, replaced by "print_binding_distribution"
-    #
-#    def print_configuration(self, configs, tf_expr_levels, genome, gene, ap):         
-#        
-#        #if gene.id == 2:
-#        #    for key in configs:
-#        #        for c in configs[key]:
-#        #            print key, c, configs[key].__len__()
-#        
-#        """configs is a hashtable of configurations...
-#            configs[site] = array of triples [gene i, gene j, distance]"""
-#        foutpath = ap.params["workspace"] + "/" + ap.params["runid"] + "/" + CONFIG_HISTORY + "/config.gen" + ap.params["generation"].__str__() + ".gid" + genome.id.__str__() + ".txt"
-#        try:
-#            fout = open( foutpath , "a")
-#        except IOError:
-#            print "\n. I had a problem opening", foutpath
-#            exit()
-#
-#        if self.t_counter == 0 and gene.id == 0:        
-#            fout.write("Notes\n")
-#            fout.write("[+] : activator\n")
-#            fout.write("[-] : repressor\n")
-#            fout.write("p   : proportion of IID samples\n")
-#            fout.write("e   : energy bound by TF in this configuration\n\n")
-#        
-#        #fout.write("#\n# For example, \"site 3 :  1 [-] 0.672 0.120\" indicates that site 3 is bound by repressor 1\n# in 67.2 percent of IID samples with activation energy = 0.120.\n# Activation energies < 0.5 indicate repression, = 0.5 indicate no activation,\n# > 0.5 indicates activation.#\n#\n")
-#        fout.write(". TIME " + self.t_counter.__str__() + " GENE " + gene.id.__str__() + "\t" + gene.urs + "\n")
-#        
-#            
-#        """configs is array of arrays, [site, tf_i, tf_j, distance between i and j]"""
-#        sites = configs.keys()
-#        sites.sort()
-#        tf_count = {} # key = site, value = hash, with key = tf, value = proportion of samples
-#        for site in sites:
-#            if site not in tf_count:
-#                tf_count[site] = {}
-#            
-#        # transform configs into tf_count
-#        for site in sites:
-#            print "462:", site, configs[site].__len__()
-#            for c in configs[site]:
-#                #print "464:", c
-#                i = c[0]
-#                j = c[1]
-#                d = c[2]
-#                if i not in tf_count[site]:
-#                    tf_count[site][i] = 0.0
-#                tf_count[site][i] += tf_expr_levels[i] * 1.0 / ap.params["iid_samples"]
-#                
-##                if j < ap.params["numtr"]:
-##                    adj_site = site + self.r[i] + d
-##                    if adj_site + self.r[j] < gene.urs.__len__():                
-##                        if adj_site not in sites:
-##                            tf_count[adj_site] = {}
-##                        if False == tf_count[adj_site].__contains__(j):
-##                            tf_count[adj_site][j] = 0.0
-##                        tf_count[adj_site][j] += 1.0 / ap.params["iid_samples"]
-#
-#        # print tf_count
-#        insites = tf_count.keys()
-#        insites.sort()
-#        for site in insites:
-#            #fout.write("site " + site.__str__() + ":" + configs[site].__str__() + "\n")
-#            line = None
-#            for tf in tf_count[site]:
-#                if tf < ap.params["numtr"]:
-#                    if line == None:
-#                        line = "site " + site.__str__() + " :"
-#                    pe = genome.genes[tf].pwm.affinity(site, gene.urs)
-#                    if genome.genes[tf].is_repressor:
-#                        tf_type = "[-]"
-#                    else:
-#                        tf_type = "[+]"
-#                    line += " \t" + tf.__str__() + " " + tf_type + " p=%.3f"%tf_count[site][tf] + " e=%.3f"%pe
-#            if line != None:
-#                fout.write(line + "\n")
-#        fout.write("\n")
-#        fout.close()
-        
         
         

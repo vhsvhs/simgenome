@@ -23,6 +23,9 @@ def check_workspace(ap):
 
 def main():
     ap = ArgParser(sys.argv)
+    if rank == 0:
+        ap.params["sumtime_main"] = datetime.utcnow()
+    
     read_cli(ap)
 
     if rank == 0:
@@ -101,8 +104,12 @@ def main():
             print "--> KO on each gene in individual " + ap.params["kogenome"].__str__()
             print "--> Assessing fitness at generation " + ap.params["generation"].__str__()
         ko.runko(ap)
-        
+
     if rank == 0:
+        if ap.getOptionalArg("--perftime") == "True":
+            ap.params["sumtime_main"] = (datetime.utcnow() - ap.params["sumtime_main"]).total_seconds()
+            print "\n\t. Total time in main: ", ap.params["sumtime_main"]
+            print "\n. Goodbye.\n"
         return [population, landscape]
     else:
         return None
