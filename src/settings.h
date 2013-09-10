@@ -5,8 +5,12 @@ typedef struct __Settings {
 	int pwmlenmumax;
 	double ddgmu;
 
-	char* outdir;
+	char* outdir; /* The directory into which output is written */
+
+	char* psampath;
+	char* urspath;
 
 }settings;
 
 settings* make_settings();
+t_gene** read_genes_from_file(settings *ss, int &ngenes);

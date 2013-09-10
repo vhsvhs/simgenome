@@ -24,12 +24,21 @@ void rand_init_psam(psam *p) {
 }
 
 void print_psam(psam *p) {
-	for (int ii=0; ii < p->nsites; ii++){ // ii = site
-		for (int jj=0; jj < p->nstates; jj++){ // jj = state
-			printf("\n. site %d state %d ddG %f", ii, jj, p->data[ii*p->nstates + jj]);
+	for (int ii=0; ii < p->nsites; ii++){ // sites
+		for (int jj=0; jj < p->nstates; jj++){ //states
+			char state = int2nt( jj );
+			double value = p->data[ii*p->nstates + jj];
+			printf("%c (%f)\t", state, value );
 		}
+		printf("\n");
 	}
-	printf("\n.");
+
+//	for (int ii=0; ii < p->nsites; ii++){ // ii = site
+//		for (int jj=0; jj < p->nstates; jj++){ // jj = state
+//			printf("\n. site %d state %d ddG %f", ii, jj, p->data[ii*p->nstates + jj]);
+//		}
+//	}
+//	printf("\n.");
 }
 
 /* Returns the summed delta-delta-G affinity for the entire sequence. */

@@ -5,6 +5,13 @@
 #define GENE_NAME_MAX 100
 #define FILEPATH_LEN_MAX 300
 
+/* MAXLEN is the max line length for user-specified file.
+ * This value should always be longer than URSLEN_DEFAULT
+ */
+#define MAXLEN 1200
+#define MAX_TOKENS 6
+#define MAX_PSAM_LEN 100
+
 #define MAX_DDG 2.0
 #define MIN_DDG -2.0
 

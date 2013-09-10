@@ -1,11 +1,16 @@
 /* The order of these include statements matters. */
 #include <stdlib.h>
 #include <stdio.h>
+#include <stddef.h>
+#include <string.h>
 #include <time.h>
+
 #include "configuration.h"
 #include "psam.h"
-#include "settings.h"
+#include "ptable.h"
+
 #include "gene.h"
+#include "settings.h"
 #include "genome.h"
 #include "population.h"
 

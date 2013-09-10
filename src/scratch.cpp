@@ -10,14 +10,32 @@ int main( int argc, const char* argv[] )
 		printf( "(scratch 8) arg %d: %s\n", i, argv[i] );
 	}
 
-	psam *p = make_psam(6,4);
+	//psam *p = make_psam(6,4);
 	//printf("(line 12) %d %d\n", p->nsites, p->nstates);
-	rand_init_psam(p);
-	print_psam(p);
-	shuffle_psam(p);
-	print_psam(p);
+	//rand_init_psam(p);
+	//print_psam(p);
+	//shuffle_psam(p);
+	//print_psam(p);
 
 	settings *ss = make_settings();
+	char urspath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.urs";
+	ss->urspath = urspath;
+	char psampath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.psam";
+	ss->psampath = psampath;
+
+	t_gene** mygenes;
+	int ngenes;
+	mygenes = read_genes_from_file(ss, ngenes);
+
+	printf("(scratch 30) I found %d genes\n", ngenes);
+	for(int ii=0; ii<ngenes; ii++){
+		printf("\n Gene %d:\n", ii);
+		print_urs( mygenes[ii]->urs, mygenes[ii]->urslen);
+		print_psam( mygenes[ii]->dbd );
+	}
+
+	return 1;
+
 	//printf("(scratch 23) %f %d %f\n", ss->pwmlenmu, ss->pwmlenmumax, ss->ddgmu);
 
 //	ss->verbosity = 101;
@@ -64,4 +82,9 @@ int main( int argc, const char* argv[] )
 	pop = make_population(4, -1, ss);
 	char outpath[] = "./psams.txt";
 	write_psams(pop->genomes[0], ss, outpath);
+
+	t_ptable *pt;
+	pt = make_ptable(4, 3, 1000);
+	//print_ptable(pt);
+
 }
