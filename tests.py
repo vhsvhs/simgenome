@@ -26,7 +26,7 @@ def run_timetest():
     fout.write("--numreporter 0 --popsize 1 --patternpath ./UTESTS/rules." + runid + ".txt ")
     fout.write("--urspath ./UTESTS/urs." + runid + ".txt --verbose 20 --runid " + runid + " --growth_rate 0.5 ")
     fout.write("--decay_rate 0.5 --pwmpath ./UTESTS/pwm." + runid + ".txt --maxgenerations 1 ")
-    fout.write("--maxtime 1 --workspace ./UTESTS --tfcoop zeros --maxgd 1 --iid_samples 10000 ")
+    fout.write("--maxtime 1 --workspace ./UTESTS --tfcoop zeros --maxgd 1 --iid_samples 1000 ")
     fout.write("--pwmlenmu 1.0 --urslenmu 1.0 ")
     fout.write(" --perftime True ")
     fout.write("\n")
@@ -79,7 +79,8 @@ def run_rand():
     fout.write("--numreporter 1 --popsize 4 --patternpath ./UTESTS/rules." + runid + ".txt ")
     fout.write("--urspath ./UTESTS/urs." + runid + ".txt --verbose 20 --runid " + runid + " --growth_rate 0.5 ")
     fout.write("--decay_rate 0.5 --pwmpath ./UTESTS/pwm." + runid + ".txt --maxgenerations 10 ")
-    fout.write("--maxtime 1 --workspace ./UTESTS --tfcoop zeros --maxgd 1 --iid_samples 10 ")
+    fout.write("--maxtime 1 --workspace ./UTESTS --tfcoop zeros --maxgd 1 --iid_samples 100 ")
+    fout.write(" --perftime True ")
     fout.write("--pwmlenmu 1.0 --urslenmu 1.0\n")
 
     # d - same as c, but pe_scaler changed
@@ -98,10 +99,11 @@ def run_rand():
     fout.close()
     
     fout = open("./UTESTS/urs." + runid + ".txt", "w")
-    fout.write(">0 alpha\n" + get_random_nt(100) + "\n") 
-    fout.write(">1 beta\n" + get_random_nt(100) + "\n")
-    fout.write(">2 gamma\n" + get_random_nt(100) + "\n")
-    
+    fout.write(">0 alpha\n" + get_random_nt(1000) + "\n") 
+    fout.write(">1 beta\n" + get_random_nt(1000) + "\n")
+    fout.write(">2 gamma\n" + get_random_nt(1000) + "\n")
+    fout.write(">3 lambda\n" + get_random_nt(1000) + "\n")
+    fout.write(">4 sigma\n" + get_random_nt(1000) + "\n")    
     fout.close()
     
     fout = open("./UTESTS/pwm." + runid + ".txt", "w")
@@ -139,7 +141,7 @@ def run_ffl():
     fout.write("--growth_rate 0.5 --decay_rate 0.5 ")
     fout.write("--pwmpath ./UTESTS/pwm." + runid + ".txt ")
     fout.write("--maxgenerations 1000 --maxtime 1 --workspace ./UTESTS --tfcoop random --maxgd 3 ")
-    fout.write("--iid_samples 4000\n")
+    fout.write("--iid_samples 10000\n")
     fout.close()
     
     fout = open("./UTESTS/rules." + runid + ".txt", "w")
