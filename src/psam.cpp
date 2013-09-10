@@ -11,13 +11,13 @@ psam* make_psam(int nsites, int nstates) {
 	return p;
 }
 
-void shuffle_sites(psam *p) {
+void shuffle_psam(psam *p) {
 	shuffle(p->data, p->nstates*p->nsites);
 }
 
 void rand_init(psam *p) {
 	for( int ii = 0; ii < p->nstates*p->nsites; ii++) {
-		p->data[ii] = (double)rand() / (double)RAND_MAX * (MAX_DDG - MIN_DDG) / 2.0;
+		p->data[ii] = get_random_ddg();
 		if (p->data[ii] < 0.5) { p->data[ii] *= -1; }
 		//printf("\n(psam 21) %d\n", ii);
 	}
@@ -31,3 +31,13 @@ void print_psam(psam *p) {
 	}
 	printf("\n.");
 }
+
+/* Returns the summed delta-delta-G affinity for the entire sequence. */
+double get_affinity(psam *p, int *seq, int len) {
+	double sum = 0.0;
+	for (int ii=0; ii < len; ii++) {
+		sum += p->data[ ii*p->nstates + seq[ii] ];
+	}
+	return sum;
+}
+
