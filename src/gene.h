@@ -6,6 +6,8 @@ typedef struct __Gene {
 	bool has_dbd;
 	psam* dbd;
 	bool is_repressor;
+
+	// to-do: add code to init these arrays
 	double* tfcoop; /* tfcoop[gene] = my relative affinity for gene */
 	int tfcooplen;
 	double* gamma; /* gamma[gene][d] = my cofactor affinity for gene at distance d */

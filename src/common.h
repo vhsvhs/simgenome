@@ -7,6 +7,7 @@
 #include "settings.h"
 #include "gene.h"
 #include "genome.h"
+#include "population.h"
 
 #include "mutate.h"
 #include "fout.h"

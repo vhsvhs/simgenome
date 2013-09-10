@@ -46,20 +46,22 @@ int main( int argc, const char* argv[] )
 //	aff = get_affinity(g->dbd, seq, 6);
 //	printf("(scratch 44) aff = %f\n", aff);
 
-	printf("\n. Random Genome:\n");
-	t_genome *gn;
-	gn = make_genome_random(NGENES_DEFAULT);
-	for (int ii=0; ii<NGENES_DEFAULT; ii++){
-		printf("\n. Gene %d\n", ii);
-		if (gn->genes[ii]->has_dbd) {
-			print_psam( gn->genes[ii]->dbd );
-			if (gn->genes[ii]->is_repressor){
-				printf(" -> is a repressor\n");
-			}
-		}
-		//print_urs( g->urs, g->urslen );
-	}
+//	printf("\n. Random Genome:\n");
+//	t_genome *gn;
+//	gn = make_genome_random(NGENES_DEFAULT);
+//	for (int ii=0; ii<NGENES_DEFAULT; ii++){
+//		printf("\n. Gene %d\n", ii);
+//		if (gn->genes[ii]->has_dbd) {
+//			print_psam( gn->genes[ii]->dbd );
+//			if (gn->genes[ii]->is_repressor){
+//				printf(" -> is a repressor\n");
+//			}
+//		}
+//		//print_urs( g->urs, g->urslen );
+//	}
 
+	t_pop *pop;
+	pop = make_population(4, -1, ss);
 	char outpath[] = "./psams.txt";
-	write_psams(gn, ss, outpath);
+	write_psams(pop->genomes[0], ss, outpath);
 }

@@ -7,8 +7,8 @@ EXECUTABLE=hello
 
 all: hello
 
-hello: common.o gene.o fout.o genome.o mutate.o psam.o settings.o scratch.o
-	$(CC) common.o gene.o fout.o genome.o mutate.o psam.o settings.o scratch.o -o scratch
+hello: common.o gene.o fout.o genome.o mutate.o population.o psam.o settings.o scratch.o
+	$(CC) common.o gene.o fout.o genome.o mutate.o population.o psam.o settings.o scratch.o -o scratch
 
 gene.o: gene.cpp
 	$(CC) -c gene.cpp
@@ -24,6 +24,9 @@ scratch.o: scratch.cpp
 
 settings.o: settings.cpp
 	$(CC) -c settings.cpp
+
+population.o: population.cpp
+	$(CC) -c population.cpp
 
 psam.o: psam.cpp
 	$(CC) -c psam.cpp

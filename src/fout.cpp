@@ -1,5 +1,6 @@
 #include "common.h"
 
+/* Write all the PSAMs in genome gn to the file located at outpath. */
 void write_psams(t_genome *gn, settings *ss, char* outpath){
 	FILE *fp;
 	fp = fopen(outpath,"w");
