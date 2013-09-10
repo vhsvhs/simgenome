@@ -34,7 +34,24 @@ int main( int argc, const char* argv[] )
 		print_psam( mygenes[ii]->dbd );
 	}
 
-	return 1;
+
+	t_genome *gn = make_genome(ngenes, mygenes, ss);
+	printf("\n\n(scratch 39) I built a genome from the genes:\n", ngenes);
+	for(int ii=0; ii < gn->ngenes; ii++){
+		printf("\n Gene %d:\n", ii);
+		print_urs( gn->genes[ii]->urs, gn->genes[ii]->urslen);
+		print_psam( gn->genes[ii]->dbd );
+	}
+
+	t_pop *pop = make_population(10, gn, ss);
+
+	printf("\n. I'm freeing the population....\n");
+	free_pop( pop );
+//	for(int ii=0; ii < pop->genomes[0]->ngenes; ii++){
+//		printf("\n Gene %d:\n", ii);
+//		print_urs( pop->genomes[0]->genes[ii]->urs, pop->genomes[0]->genes[ii]->urslen);
+//		print_psam( pop->genomes[0]->genes[ii]->dbd );
+//	}
 
 	//printf("(scratch 23) %f %d %f\n", ss->pwmlenmu, ss->pwmlenmumax, ss->ddgmu);
 
@@ -78,13 +95,13 @@ int main( int argc, const char* argv[] )
 //		//print_urs( g->urs, g->urslen );
 //	}
 
-	t_pop *pop;
-	pop = make_population(4, -1, ss);
-	char outpath[] = "./psams.txt";
-	write_psams(pop->genomes[0], ss, outpath);
-
-	t_ptable *pt;
-	pt = make_ptable(4, 3, 1000);
-	//print_ptable(pt);
+//	t_pop *pop;
+//	pop = make_population(4, -1, ss);
+//	char outpath[] = "./psams.txt";
+//	write_psams(pop->genomes[0], ss, outpath);
+//
+//	t_ptable *pt;
+//	pt = make_ptable(4, 3, 1000);
+//	print_ptable(pt);
 
 }

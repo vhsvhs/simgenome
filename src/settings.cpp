@@ -14,7 +14,8 @@ settings* make_settings(){
 	return ss;
 }
 
-/* Returns an array of pointers to genes. */
+/* Returns an array of pointers to genes.
+ * Upon completion, ngenes is also set to the correct value. */
 t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 
 	FILE *fp; /* File for psam specs */
@@ -52,8 +53,6 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		}
 	}
 
-	//ret_ngenes = ngenes;
-	//printf("\n. I found %d genes.", ngenes);
 	t_gene** genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
 
 	/* Get URSes */
@@ -81,8 +80,14 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		}
 	}
 
+	/* Get PSAMS */
+	bool *has_dbd = (bool *)malloc(ngenes*sizeof(bool));
+	for(int ii=0; ii<ngenes; ii++){
+		has_dbd[ii] = false;
+	}
 	int *psamlengths = (int *)malloc(ngenes*sizeof(int)); // key = gene ID, value = length of psam
 	double **psams = (double **)malloc(ngenes*sizeof(double*)); // key = gene ID, value = 1-d array of doubles
+	bool *reg_modes = (bool *)malloc(ngenes*sizeof(bool));
 	this_gene = -1;
 	int count = 0;
 	while ( fgets(line, MAXLEN, fp)  ){
@@ -103,8 +108,10 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 					&& token[2] == 'a'
 					&& token[3] == 'm') {
 				token = strtok(NULL, " ");
-				//printf("(settings 100), token=%s\n", token);
 				this_gene = atoi( token );
+				has_dbd[this_gene] = true;
+				token = strtok(NULL, " ");
+				reg_modes[ this_gene ]= (bool)atoi( token );
 				count = 0;
 				psams[this_gene] = (double *)malloc(MAX_PSAM_LEN*sizeof(double)); //reset this_psam
 				psamlengths[this_gene] = 0;
@@ -127,13 +134,17 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		}
 	}
 
+	/* Build the genes, using the URSes and PSAMs we previously found. */
 	for (int ii=0; ii<ngenes; ii++){ // ii = gene
 		genes[ii] = make_gene(psamlengths[ii], urslengths[ii]);
 		for (int jj=0; jj<urslengths[ii]; jj++){ // jj = site
 			genes[ii]->urs[jj] = nt2int( urses[ii][jj] );
 		}
-		for (int jj=0; jj<N_STATES*psamlengths[ii]; jj++){
-			genes[ii]->dbd->data[jj] = psams[ii][jj];
+		if (has_dbd[ii]){
+			for (int jj=0; jj<N_STATES*psamlengths[ii]; jj++){
+				genes[ii]->dbd->data[jj] = psams[ii][jj];
+			}
+			genes[ii]->reg_mode = reg_modes[ii];
 		}
 	}
 

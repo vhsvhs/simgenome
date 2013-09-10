@@ -5,6 +5,8 @@ typedef struct __PSAM {
 }psam;
 
 psam* make_psam(int nsites, int nstates);
+void free_psam(psam* p);
+void copy_psam(psam *to, psam *from );
 void shuffle_psam(psam *p);
 void rand_init_psam(psam *p);
 void print_psam(psam *p);

@@ -11,6 +11,24 @@ psam* make_psam(int nsites, int nstates) {
 	return p;
 }
 
+void free_psam(psam* p){
+	free(p->data);
+}
+
+/* Copies a psam, assuming the memory has already been allocated. */
+void copy_psam(psam *to, psam *from ) {
+	/* If the PSAMs have different dimensions, then re-allocate memory */
+	if (to->nstates*to->nsites != from->nstates*from->nsites){
+		free(to->data);
+		to->data = (double*)malloc(from->nstates*from->nsites*sizeof(double));
+	}
+	to->nstates = from->nstates;
+	to->nsites = from->nsites;
+	for(int ii=0; ii<from->nstates*from->nsites; ii++){
+		to->data[ii] = from->data[ii];
+	}
+}
+
 void shuffle_psam(psam *p) {
 	shuffle(p->data, p->nstates*p->nsites);
 }
@@ -32,13 +50,6 @@ void print_psam(psam *p) {
 		}
 		printf("\n");
 	}
-
-//	for (int ii=0; ii < p->nsites; ii++){ // ii = site
-//		for (int jj=0; jj < p->nstates; jj++){ // jj = state
-//			printf("\n. site %d state %d ddG %f", ii, jj, p->data[ii*p->nstates + jj]);
-//		}
-//	}
-//	printf("\n.");
 }
 
 /* Returns the summed delta-delta-G affinity for the entire sequence. */
