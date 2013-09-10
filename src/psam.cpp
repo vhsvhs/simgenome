@@ -15,11 +15,11 @@ void shuffle_psam(psam *p) {
 	shuffle(p->data, p->nstates*p->nsites);
 }
 
-void rand_init(psam *p) {
+/* Assigns a random affinity for all states and all sites */
+void rand_init_psam(psam *p) {
 	for( int ii = 0; ii < p->nstates*p->nsites; ii++) {
 		p->data[ii] = get_random_ddg();
 		if (p->data[ii] < 0.5) { p->data[ii] *= -1; }
-		//printf("\n(psam 21) %d\n", ii);
 	}
 }
 

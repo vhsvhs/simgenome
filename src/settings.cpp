@@ -8,5 +8,8 @@ settings* make_settings(){
 	ss->pwmlenmu = PWMLENMU;
 	ss->pwmlenmumax = PWMLENMUMAX;
 	ss->ddgmu = DDGMU;
+
+	ss->outdir = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+
 	return ss;
 }

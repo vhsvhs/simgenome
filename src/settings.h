@@ -4,6 +4,9 @@ typedef struct __Settings {
 	double pwmlenmu;
 	int pwmlenmumax;
 	double ddgmu;
+
+	char* outdir;
+
 }settings;
 
 settings* make_settings();

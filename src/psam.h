@@ -6,6 +6,6 @@ typedef struct __PSAM {
 
 psam* make_psam(int nsites, int nstates);
 void shuffle_psam(psam *p);
-void rand_init(psam *p);
+void rand_init_psam(psam *p);
 void print_psam(psam *p);
 double get_affinity(psam *p, int *seq, int len);
