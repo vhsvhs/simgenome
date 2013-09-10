@@ -14,3 +14,7 @@ t_pop* make_population(int popsize, int ngenes, settings *ss){
 	}
 	return pop;
 }
+
+void reproduce(t_pop* pop, settings* ss) {
+	int x;
+}
