@@ -16,6 +16,7 @@
 #include "mutate.h"
 #include "fout.h"
 #include "landscape.h"
+#include "fitness.h"
 
 void shuffle(double *array, size_t n);
 int filexists(char *filename);

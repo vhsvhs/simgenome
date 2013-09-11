@@ -23,6 +23,8 @@
 #define PSAMLEN_DEFAULT 6
 #define NGENES_DEFAULT 10
 
+#define MINIMUM_EXPRESSION_LEVEL 0.00001
+
 /* Output directory path defaults */
 #define POPDIR "LOG_POPS"
 #define EXPRDIR "LOG_EXPR"

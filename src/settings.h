@@ -11,6 +11,10 @@ typedef struct __Settings {
 	char* urspath;
 	char* rulepath;
 
+	bool inherit_expression;
+
+	int gen_counter;
+
 }settings;
 
 settings* make_settings();

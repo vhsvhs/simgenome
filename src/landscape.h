@@ -30,11 +30,12 @@ typedef struct __Ruleset{
 typedef struct __Landscape {
 	t_ruleset** rulesets;
 	int nrulesets;
-	int* r; /* r[gene id] = PSAM length */
+	int ntime;
+	//int* r; /* r[gene id] = PSAM length */
 }t_landscape;
 
 
 t_rule* make_rule(int timepoint, int repid, double expr, int ruletype, double weight);
 t_input* make_input(int start, int stop, int gid, double expr);
 t_ruleset* make_ruleset(int id, int nrules, int ninputs);
-t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n);
+t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime);

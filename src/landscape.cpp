@@ -40,7 +40,7 @@ t_ruleset* make_ruleset(int id, int nrules, int ninputs){
  * Upon completion, ret_n will hold the number of t_ruleset object
  * that were built into the return value.
  */
-t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n){
+t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	FILE *fr; /* File for psam specs */
 	fr = fopen(ss->rulepath,"r");
 	if (fr == NULL) {
@@ -158,6 +158,9 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n){
 					tokens[0][2] == 'L' &&
 					tokens[0][3] == 'E') {
 				int timepoint = atoi( strtok(NULL, " ") );
+				if (timepoint > ntime){
+					ntime = timepoint;
+				}
 				double expr = atof( strtok(NULL, " ") );
 				int ruletype = atoi( strtok(NULL, " ") );
 				double weight = atof( strtok(NULL, " ") );
@@ -172,6 +175,9 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n){
 					tokens[0][4] == 'T') {
 				int timestart = atoi(strtok(NULL, " ") );
 				int timestop = atoi(strtok(NULL, " ") );
+				if (timestop > ntime){
+					ntime = timestop;
+				}
 				double expr = atof(strtok(NULL, " ") );
 				rulesets[this_rs]->inputs[ ruleset_countinput[this_rs] ] = make_input(timestart, timestop, geneid, expr);
 				ruleset_countinput[this_rs]++;

@@ -10,6 +10,8 @@ settings* make_settings(){
 	ss->ddgmu = DDGMU;
 
 	ss->outdir = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	ss->inherit_expression = false;
+	ss->gen_counter = 0;
 
 	return ss;
 }

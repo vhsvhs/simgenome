@@ -7,10 +7,13 @@ t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss) {
 	gn = (t_genome*)malloc(1*sizeof(t_genome));
 	gn->ngenes = ngenes;
 	gn->genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
+	gn->ntfs = 0;
 	for (int ii=0; ii<ngenes; ii++){
-		t_gene *this_gene;
 		gn->genes[ii] = make_gene(ingenes[ii]->dbd->nsites, ingenes[ii]->urslen);
 		copy_gene(gn->genes[ii], ingenes[ii]);
+		if (gn->genes[ii]->has_dbd){
+			gn->ntfs++;
+		}
 	}
 	return gn;
 }
@@ -29,6 +32,7 @@ void copy_genome(t_genome* to, t_genome* from){
 	}
 	to->ngenes = from->ngenes;
 	to->is_elite = from->is_elite;
+	to->ntfs = from->ntfs;
 }
 
 void free_genome(t_genome* gn){
@@ -45,11 +49,15 @@ t_genome* make_genome_default(int ngenes, settings *ss){
 	gn = (t_genome*)malloc(1*sizeof(t_genome));
 	gn->ngenes = ngenes;
 	gn->genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
+	gn->ntfs = 0;
 	for (int ii=0; ii<ngenes; ii++){
 		t_gene *this_gene;
 		this_gene = make_gene(PSAMLEN_DEFAULT, URSLEN_DEFAULT);
 		gn->genes[ii] = (t_gene*)this_gene;
 		gn->genes[ii]->id = ii;
+		if (gn->genes[ii]->has_dbd){
+			gn->ntfs++;
+		}
 	}
 	return gn;
 }
@@ -89,3 +97,14 @@ t_genome* make_genome_random(int ngenes){
 	return gn;
 }
 
+/*
+ * Build timeslice-related genomic data.
+ * Do this only after you've built the landscape
+ * and, thus, know how many timeslices are required
+ * per individual.
+ */
+void init_lifespan(t_genome* g, int t){
+	g->gene_expr = (double *)malloc(g->ngenes*t*sizeof(double));
+	/* gene_expr[gene->id * ngenes + timeslice] = value ranging from 0.0 to 1.0 */
+	g->expr_timeslices = t;
+}

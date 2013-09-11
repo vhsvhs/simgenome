@@ -50,16 +50,17 @@ int main( int argc, const char* argv[] )
 	printf("(scratch 48) %d\n", pop->ngenomes);
 	print_population(pop, ss);
 
-	printf("\n. I'm freeing the population....\n");
-	free_pop( pop );
+
 
 	printf("\n. I'm building a landscape....\n");
+	t_landscape *l = (t_landscape *)malloc(sizeof(t_landscape));
+
 	char rulepath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.rules.txt";
 	ss->rulepath = rulepath;
-	int nrs;
-	t_ruleset** rs = read_rulesets_from_file(ss, nrs);
-	printf("\n. I found %d rulesets.\n", nrs);
-	for (int ii=0; ii < nrs; ii++) {
+	t_ruleset** rs = read_rulesets_from_file(ss, l->nrulesets, l->ntime);
+	l->rulesets = rs;
+	printf("\n. I found %d rulesets.\n", l->nrulesets);
+	for (int ii=0; ii < l->nrulesets; ii++) {
 		printf("\n. ruleset %d:\n", ii);
 		for (int jj=0; jj < rs[ii]->ninputs; jj++){
 			printf("\n. input %d start %d stop %d gid %d expr %f\n", jj, rs[ii]->inputs[jj]->start, rs[ii]->inputs[jj]->stop, rs[ii]->inputs[jj]->gid, rs[ii]->inputs[jj]->expr_level);
@@ -69,6 +70,17 @@ int main( int argc, const char* argv[] )
 		}
 
 	}
+
+	for(int ii = 0; ii<pop->ngenomes; ii++){
+		init_lifespan(pop->genomes[ii], l->ntime);
+	}
+
+	double f = get_fitness(pop->genomes[0], l, ss);
+
+
+
+	printf("\n. I'm freeing the population....\n");
+	free_pop( pop );
 
 	/* This next block should raise an exception
 	 * because the population was garbage collected.

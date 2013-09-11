@@ -7,8 +7,8 @@ EXECUTABLE=hello
 
 all: scratch
 
-scratch: common.o gene.o fout.o genome.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o
-	$(CC) common.o gene.o fout.o genome.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o -o scratch
+scratch: common.o gene.o fout.o genome.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o
+	$(CC) common.o gene.o fout.o genome.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o -o scratch
 
 gene.o: gene.cpp
 	$(CC) -c gene.cpp
@@ -45,6 +45,9 @@ mutate.o: mutate.cpp
 	
 landscape.o: landscape.cpp
 	$(CC) -c landscape.cpp
+
+fitness.o: fitness.cpp
+	$(CC) -c fitness.cpp
 
 clean:
 	rm -rf *o hello
