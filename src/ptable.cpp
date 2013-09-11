@@ -32,9 +32,10 @@ void print_ptable(t_ptable *p){
 		for (int jj=0; jj<p->M; jj++){
 			printf(" tf %d cpt=%f\n", jj, p->cpt[ii*p->M + jj]);
 		}
+		printf("\n");
 	}
 	printf("\n");
-	printf("CPR\nsite\tbalue\n");
+	printf("CPR\nsite\tvalue\n");
 	for (int ii=0; ii<p->L; ii++){
 		printf("Site %d cpr=%f\n", ii, p->cpr[ii]);
 	}

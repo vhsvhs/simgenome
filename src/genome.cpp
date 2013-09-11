@@ -42,6 +42,7 @@ void free_genome(t_genome* gn){
 	}
 	free(gn->genes);
 	free(gn->gene_expr);
+	free(gn->r);
 }
 
 t_genome* make_genome_default(int ngenes, settings *ss){
@@ -105,6 +106,6 @@ t_genome* make_genome_random(int ngenes){
  */
 void init_lifespan(t_genome* g, int t){
 	g->gene_expr = (double *)malloc(g->ngenes*t*sizeof(double));
-	/* gene_expr[gene->id * ngenes + timeslice] = value ranging from 0.0 to 1.0 */
+	/* gene_expr[gene->id * ntimeslices + timeslice] = value ranging from 0.0 to 1.0 */
 	g->expr_timeslices = t;
 }

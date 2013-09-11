@@ -14,6 +14,8 @@
 
 #define MAX_DDG 2.0
 #define MIN_DDG -2.0
+#define MAX_GD 3
+#define MIN_TF_SEPARATION 0
 
 #define PWMLENMU 0.3
 #define PWMLENMUMAX 2
@@ -24,6 +26,23 @@
 #define NGENES_DEFAULT 10
 
 #define MINIMUM_EXPRESSION_LEVEL 0.00001
+#define MAXIMUM_EXPRESSION_LEVEL 1.0
+
+#define NIID 10000 // N I.I.D. samples
+
+#define GROWTH_RATE 1.0 /* Controls how fast genes are turned on. */
+#define DECAY_RATE 1.0 /* Controls how fast gene expression lowers when RNA Pol. is removed */
+
+/* PE_SCALAR is inversely proportion to URS length.
+Higher values make k_act higher, which makes it easer for genes to be expressed.
+Lower values make k_act lower, which means that more bound sites are required
+for genes to be activated.*/
+#define PE_SCALAR 0.01
+
+/* Larger values make the fitness function sharper around
+ * optimal expression, smaller values spread the function's
+ * hills further out over poor expression. */
+#define FITNESS_SCALAR -3.0
 
 /* Output directory path defaults */
 #define POPDIR "LOG_POPS"

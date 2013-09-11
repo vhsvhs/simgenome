@@ -1,4 +1,5 @@
 /* The order of these include statements matters. */
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>

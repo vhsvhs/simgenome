@@ -38,19 +38,17 @@ int main( int argc, const char* argv[] )
 
 	t_genome *gn = make_genome(ngenes, mygenes, ss);
 	printf("\n\n(scratch 39) I built a genome from the genes.\n", ngenes);
-	for(int ii=0; ii < gn->ngenes; ii++){
-		printf("\n Gene %d:\n", ii);
-		print_urs( gn->genes[ii]->urs, gn->genes[ii]->urslen);
-		print_psam( gn->genes[ii]->dbd );
-	}
+//	for(int ii=0; ii < gn->ngenes; ii++){
+//		printf("\n Gene %d:\n", ii);
+//		print_urs( gn->genes[ii]->urs, gn->genes[ii]->urslen);
+//		print_psam( gn->genes[ii]->dbd );
+//	}
 
 	printf("\n. I'm building a population....\n");
 
 	t_pop *pop = make_population(10, gn, ss);
-	printf("(scratch 48) %d\n", pop->ngenomes);
-	print_population(pop, ss);
-
-
+	//printf("(scratch 48) %d\n", pop->ngenomes);
+	//print_population(pop, ss);
 
 	printf("\n. I'm building a landscape....\n");
 	t_landscape *l = (t_landscape *)malloc(sizeof(t_landscape));
@@ -62,13 +60,12 @@ int main( int argc, const char* argv[] )
 	printf("\n. I found %d rulesets.\n", l->nrulesets);
 	for (int ii=0; ii < l->nrulesets; ii++) {
 		printf("\n. ruleset %d:\n", ii);
-		for (int jj=0; jj < rs[ii]->ninputs; jj++){
-			printf("\n. input %d start %d stop %d gid %d expr %f\n", jj, rs[ii]->inputs[jj]->start, rs[ii]->inputs[jj]->stop, rs[ii]->inputs[jj]->gid, rs[ii]->inputs[jj]->expr_level);
+		for (int jj=0; jj < l->rulesets[ii]->ninputs; jj++){
+			printf("\n. input %d start %d stop %d gid %d expr %f\n", jj, l->rulesets[ii]->inputs[jj]->start, l->rulesets[ii]->inputs[jj]->stop, l->rulesets[ii]->inputs[jj]->gid, l->rulesets[ii]->inputs[jj]->expr_level);
 		}
-		for (int jj=0; jj < rs[ii]->nrules; jj++){
-			printf("\n. rule %d timepoint %d repid %d expr %f type %d weight %f\n", jj, rs[ii]->rules[jj]->timepoint, rs[ii]->rules[jj]->repid, rs[ii]->rules[jj]->expr_level, rs[ii]->rules[jj]->rule_type, rs[ii]->rules[jj]->weight);
+		for (int jj=0; jj < l->rulesets[ii]->nrules; jj++){
+			printf("\n. rule %d timepoint %d repid %d expr %f type %d weight %f\n", jj, l->rulesets[ii]->rules[jj]->timepoint, l->rulesets[ii]->rules[jj]->repid, l->rulesets[ii]->rules[jj]->expr_level, l->rulesets[ii]->rules[jj]->rule_type, l->rulesets[ii]->rules[jj]->weight);
 		}
-
 	}
 
 	for(int ii = 0; ii<pop->ngenomes; ii++){
@@ -76,7 +73,6 @@ int main( int argc, const char* argv[] )
 	}
 
 	double f = get_fitness(pop->genomes[0], l, ss);
-
 
 
 	printf("\n. I'm freeing the population....\n");

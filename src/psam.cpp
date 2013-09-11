@@ -53,10 +53,13 @@ void print_psam(psam *p) {
 }
 
 /* Returns the summed delta-delta-G affinity for the entire sequence. */
-double get_affinity(psam *p, int *seq, int len) {
+double get_affinity(psam *p, int *seq, int seqlen, int startsite) {
 	double sum = 0.0;
-	for (int ii=0; ii < len; ii++) {
-		sum += p->data[ ii*p->nstates + seq[ii] ];
+	if (seqlen-startsite > p->nsites){
+		seqlen = startsite + p->nsites;
+	}
+	for (int ii=startsite; ii < seqlen; ii++) {
+		sum += p->data[ (ii-startsite)*p->nstates + seq[ii] ];
 	}
 	return sum;
 }

@@ -474,7 +474,7 @@ class Landscape:
         given the ProbTable ptables"""        
         #print "prob_expr, gene", gene.id, gene.urs
         
-        pe_sum = 0
+        self.pe_sum = 0
         #min_r = min( self.r )
         urslen = gene.urs.__len__()
         
@@ -524,24 +524,7 @@ class Landscape:
                     retj = 0
                     retd = 0
 
-#
-#                    #C-based version:
-#
-                    #i = _chi2.chi2(site, totp, randp, ptables.cpa)
-                    #j = 0
-                    #d = 0
 
-#                    #The while-loop version appears to be slower than the for-loop version.                    
-#                    q = 0
-#                    while q < ptables.dim1:
-#                        sump += ptables.cpa[q]
-#                        if sump > randp:
-#                            reti = int(q / ptables.dim2)
-#                            retj = int(q / ptables.dim3)
-#                            retd = q - reti*ptables.dim2 - retj*ptables.dim3 
-#                            #print "388:", q, reti, retj, retd
-#                            q = ptables.dim1
-#                        q += 1
                     
                     #
                     # V2:
@@ -609,7 +592,8 @@ class Landscape:
                 this_pe = (1/( 1+math.exp(-1*ap.params["pe_scalar"]*(sum_lambda_act-sum_lambda_rep) ) ))
             except OverflowError:
                 this_pe = MAX_PE
-            pe_sum += this_pe
+            self.pe_sum += this_pe
+    
         
         if ap.params["verbosity"] > 3:
             """Print what we've sampled..."""

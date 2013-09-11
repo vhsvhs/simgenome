@@ -10,4 +10,4 @@ void copy_psam(psam *to, psam *from );
 void shuffle_psam(psam *p);
 void rand_init_psam(psam *p);
 void print_psam(psam *p);
-double get_affinity(psam *p, int *seq, int len);
+double get_affinity(psam *p, int *seq, int seqlen, int startsite);

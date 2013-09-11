@@ -15,6 +15,14 @@ typedef struct __Settings {
 
 	int gen_counter;
 
+	int maxgd; /* The maximum distance, in sites, over which two co-factors can interact. */
+	int niid;
+
+	double pe_scalar;
+
+	double growth_rate;
+	double decay_rate;
+
 }settings;
 
 settings* make_settings();

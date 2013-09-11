@@ -194,6 +194,7 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		if (has_dbd[ii]){
 			for (int jj=0; jj<N_STATES*psamlengths[ii]; jj++){
 				genes[ii]->dbd->data[jj] = psams[ii][jj];
+				genes[ii]->has_dbd = true;
 			}
 			genes[ii]->reg_mode = reg_modes[ii];
 		}
