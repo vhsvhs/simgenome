@@ -9,8 +9,9 @@ typedef struct __Settings {
 
 	char* psampath;
 	char* urspath;
+	char* rulepath;
 
 }settings;
 
 settings* make_settings();
-t_gene** read_genes_from_file(settings *ss, int &ngenes);
+

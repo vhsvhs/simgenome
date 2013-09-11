@@ -19,3 +19,4 @@ void free_gene(t_gene* g);
 void copy_gene(t_gene* to, t_gene* from);
 int* get_random_seq(int len);
 void print_urs(int* urs, int urslen);
+t_gene** read_genes_from_file(settings *ss, int &ngenes);

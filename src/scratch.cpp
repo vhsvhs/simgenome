@@ -1,14 +1,22 @@
 #include "common.h"
 
+/* This main method is a sandbox for testing the objects
+ * and methods of simgenome-c.
+ */
 int main( int argc, const char* argv[] )
 {
 	srand(time(0));
 
 	// Prints each argument on the command line.
 	for( int i = 0; i < argc; i++ )
-	{
-		printf( "(scratch 8) arg %d: %s\n", i, argv[i] );
+	{	printf( "(scratch 8) arg %d: %s\n", i, argv[i] );
 	}
+
+	settings *ss = make_settings();
+	char urspath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.urs";
+	ss->urspath = urspath;
+	char psampath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.psam";
+	ss->psampath = psampath;
 
 	//psam *p = make_psam(6,4);
 	//printf("(line 12) %d %d\n", p->nsites, p->nstates);
@@ -17,36 +25,54 @@ int main( int argc, const char* argv[] )
 	//shuffle_psam(p);
 	//print_psam(p);
 
-	settings *ss = make_settings();
-	char urspath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.urs";
-	ss->urspath = urspath;
-	char psampath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.psam";
-	ss->psampath = psampath;
-
 	t_gene** mygenes;
 	int ngenes;
 	mygenes = read_genes_from_file(ss, ngenes);
 
 	printf("(scratch 30) I found %d genes\n", ngenes);
-	for(int ii=0; ii<ngenes; ii++){
-		printf("\n Gene %d:\n", ii);
-		print_urs( mygenes[ii]->urs, mygenes[ii]->urslen);
-		print_psam( mygenes[ii]->dbd );
-	}
-
+//	for(int ii=0; ii<ngenes; ii++){
+//		printf("\n Gene %d:\n", ii);
+//		print_urs( mygenes[ii]->urs, mygenes[ii]->urslen);
+//		print_psam( mygenes[ii]->dbd );
+//	}
 
 	t_genome *gn = make_genome(ngenes, mygenes, ss);
-	printf("\n\n(scratch 39) I built a genome from the genes:\n", ngenes);
+	printf("\n\n(scratch 39) I built a genome from the genes.\n", ngenes);
 	for(int ii=0; ii < gn->ngenes; ii++){
 		printf("\n Gene %d:\n", ii);
 		print_urs( gn->genes[ii]->urs, gn->genes[ii]->urslen);
 		print_psam( gn->genes[ii]->dbd );
 	}
 
+	printf("\n. I'm building a population....\n");
+
 	t_pop *pop = make_population(10, gn, ss);
+	printf("(scratch 48) %d\n", pop->ngenomes);
+	print_population(pop, ss);
 
 	printf("\n. I'm freeing the population....\n");
 	free_pop( pop );
+
+	printf("\n. I'm building a landscape....\n");
+	char rulepath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.rules.txt";
+	ss->rulepath = rulepath;
+	int nrs;
+	t_ruleset** rs = read_rulesets_from_file(ss, nrs);
+	printf("\n. I found %d rulesets.\n", nrs);
+	for (int ii=0; ii < nrs; ii++) {
+		printf("\n. ruleset %d:\n", ii);
+		for (int jj=0; jj < rs[ii]->ninputs; jj++){
+			printf("\n. input %d start %d stop %d gid %d expr %f\n", jj, rs[ii]->inputs[jj]->start, rs[ii]->inputs[jj]->stop, rs[ii]->inputs[jj]->gid, rs[ii]->inputs[jj]->expr_level);
+		}
+		for (int jj=0; jj < rs[ii]->nrules; jj++){
+			printf("\n. rule %d timepoint %d repid %d expr %f type %d weight %f\n", jj, rs[ii]->rules[jj]->timepoint, rs[ii]->rules[jj]->repid, rs[ii]->rules[jj]->expr_level, rs[ii]->rules[jj]->rule_type, rs[ii]->rules[jj]->weight);
+		}
+
+	}
+
+	/* This next block should raise an exception
+	 * because the population was garbage collected.
+	 */
 //	for(int ii=0; ii < pop->genomes[0]->ngenes; ii++){
 //		printf("\n Gene %d:\n", ii);
 //		print_urs( pop->genomes[0]->genes[ii]->urs, pop->genomes[0]->genes[ii]->urslen);

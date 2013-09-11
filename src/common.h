@@ -4,18 +4,18 @@
 #include <stddef.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "configuration.h"
 #include "psam.h"
 #include "ptable.h"
-
-#include "gene.h"
 #include "settings.h"
+#include "gene.h"
 #include "genome.h"
 #include "population.h"
-
 #include "mutate.h"
 #include "fout.h"
+#include "landscape.h"
 
 void shuffle(double *array, size_t n);
 int filexists(char *filename);

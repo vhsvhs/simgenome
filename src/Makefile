@@ -5,10 +5,10 @@ SOURCES=common.cpp gene.cpp mutate.cpp psam.cpp scratch.cpp settings.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=hello
 
-all: hello
+all: scratch
 
-hello: common.o gene.o fout.o genome.o mutate.o population.o psam.o ptable.o settings.o scratch.o
-	$(CC) common.o gene.o fout.o genome.o mutate.o population.o psam.o ptable.o settings.o scratch.o -o scratch
+scratch: common.o gene.o fout.o genome.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o
+	$(CC) common.o gene.o fout.o genome.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o -o scratch
 
 gene.o: gene.cpp
 	$(CC) -c gene.cpp
@@ -18,6 +18,9 @@ genome.o: genome.cpp
 	
 fout.o: fout.cpp
 	$(CC) -c fout.cpp
+
+main.o: main.cpp
+	$(CC) -c main.cpp
 
 scratch.o: scratch.cpp
 	$(CC) -c scratch.cpp
@@ -39,6 +42,9 @@ common.o: common.cpp
 
 mutate.o: mutate.cpp
 	$(CC) -c mutate.cpp
+	
+landscape.o: landscape.cpp
+	$(CC) -c landscape.cpp
 
 clean:
 	rm -rf *o hello
