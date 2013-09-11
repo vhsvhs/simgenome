@@ -13,7 +13,8 @@ int main( int argc, const char* argv[] )
 	}
 
 	settings *ss = make_settings();
-	char urspath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.urs";
+	//char urspath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.urs";
+	char urspath[] = "/Users/victor/Applications/simgenome-c-beta/examples/urs.time092013.txt";
 	ss->urspath = urspath;
 	char psampath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.psam";
 	ss->psampath = psampath;

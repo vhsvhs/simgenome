@@ -28,7 +28,7 @@
 #define MINIMUM_EXPRESSION_LEVEL 0.00001
 #define MAXIMUM_EXPRESSION_LEVEL 1.0
 
-#define NIID 10000 // N I.I.D. samples
+#define NIID 4000 // N I.I.D. samples
 
 #define GROWTH_RATE 1.0 /* Controls how fast genes are turned on. */
 #define DECAY_RATE 1.0 /* Controls how fast gene expression lowers when RNA Pol. is removed */
