@@ -17,6 +17,8 @@
 #define MAX_GD 3
 #define MIN_TF_SEPARATION 0
 
+#define URSMU 0.01
+#define PSAMMU 0.1
 #define PWMLENMU 0.3
 #define PWMLENMUMAX 2
 #define DDGMU 0.5
@@ -29,6 +31,8 @@
 #define MAXIMUM_EXPRESSION_LEVEL 1.0
 
 #define NIID 4000 // N I.I.D. samples
+
+#define MAX_GENS 1000
 
 #define GROWTH_RATE 1.0 /* Controls how fast genes are turned on. */
 #define DECAY_RATE 1.0 /* Controls how fast gene expression lowers when RNA Pol. is removed */

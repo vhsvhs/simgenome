@@ -7,7 +7,13 @@ t_gene* make_gene(int psamlen, int urslen) {
 	g->name = (char *)malloc(GENE_NAME_MAX*sizeof(char));
 	g->urslen = urslen;
 	g->urs = (int *)malloc(urslen*sizeof(int));
-	g->dbd = make_psam(psamlen, N_STATES);
+	if (psamlen > 0){
+		g->has_dbd = true;
+		g->dbd = make_psam(psamlen, N_STATES);
+	}
+	else{
+		g->has_dbd = false;
+	}
 	return g;
 }
 
@@ -25,7 +31,7 @@ void copy_gene(t_gene* to, t_gene* from) {
 	// This strcpy is safe because gene names are always GENE_NAME_MAX characters long.
 	strcpy( to->name, from->name );
 
-	// Ensure that the URS lenghts match
+	// Ensure that the URS lengths match
 	if (to->urslen != from->urslen){
 		free(to->urs);
 		to->urs = (int *)malloc(from->urslen*sizeof(int));
@@ -37,7 +43,9 @@ void copy_gene(t_gene* to, t_gene* from) {
 
 	to->urslen = from->urslen;
 	to->has_dbd = from->has_dbd;
-	copy_psam( to->dbd, from->dbd );
+	if (to->has_dbd == true){
+		copy_psam( to->dbd, from->dbd );
+	}
 	to->reg_mode = from->reg_mode;
 }
 

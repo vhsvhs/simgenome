@@ -12,9 +12,14 @@ settings* make_settings(){
 	ss->outdir = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->inherit_expression = false;
 	ss->gen_counter = 0;
+	ss->max_gens = MAX_GENS;
 
 	ss->maxgd = MAX_GD;
 	ss->niid = NIID;
+
+	ss->do_mutation = true;
+	ss->urs_mu_rate = URSMU; // subs per seq site
+	ss->psam_mu_rate = PSAMMU;  // subs per psam site
 
 	ss->pe_scalar = PE_SCALAR;
 

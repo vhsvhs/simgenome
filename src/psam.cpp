@@ -54,6 +54,9 @@ void print_psam(psam *p) {
 
 /* Returns the summed delta-delta-G affinity for the entire sequence. */
 double get_affinity(psam *p, int *seq, int seqlen, int startsite) {
+	//printf("psam 57 %d %d\n", seqlen, startsite);
+	//print_psam(p);
+
 	double sum = 0.0;
 	if (seqlen-startsite > p->nsites){
 		seqlen = startsite + p->nsites;

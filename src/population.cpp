@@ -36,8 +36,70 @@ void free_pop(t_pop* pop){
 	free(pop->genomes);
 }
 
-void reproduce(t_pop* pop, settings* ss) {
-	int x;
+/* f is an array of fitness scores */
+void reproduce(t_pop* pop, settings* ss, double* f) {
+	if (ss->verbosity > 2){
+		printf("\n. The population is selectively reproducing. . .\n");
+	}
+
+	/* Build the population at t+1 */
+	t_pop *newpop;
+	newpop = (t_pop*)malloc(1*sizeof(t_pop));
+	newpop->genomes = (t_genome**)malloc(pop->ngenomes*sizeof(t_genome));
+	newpop->ngenomes = pop->ngenomes;
+
+	for (int ii = 0; ii < pop->ngenomes; ii++){
+		/* Elite individuals are cloned. */
+		if (pop->genomes[ii]->is_elite == true){
+			newpop->genomes[ii] = dup_genome( pop->genomes[ii]);
+		}
+		else{
+			/* Pick random parents */
+			int parent1 = sample_from_cdf(f, pop->ngenomes);
+			int parent2 = sample_from_cdf(f, pop->ngenomes);
+			/* Mate those parents */
+			newpop->genomes[ii] = mate(pop->genomes[parent1],
+					pop->genomes[parent2]);
+		}
+
+	}
+}
+
+/* Mates two genomes, and returns their child as a new object.*/
+t_genome* mate(t_genome* par1, t_genome* par2){
+	t_genome *f1; /* The F1 cross of parent par1 with parent par2 */
+	f1 = (t_genome*)malloc(1*sizeof(t_genome));
+	f1->genes = (t_gene**)malloc(par1->ngenes*sizeof(t_gene));
+
+	/* For each gene */
+	for (int gg = 0; gg < par1->ngenes; gg++){
+		/* Flip a coin for the child to get par1's copy of the gene
+		 * versus par2's copy.
+		 */
+		double flip = (float)rand() / (float)RAND_MAX;
+		int psamlen = 0;
+		int urslen = 0;
+		if (flip > 0.5){
+			if (par1->genes[gg]->has_dbd){
+				psamlen = par1->genes[gg]->dbd->nsites;
+				urslen = par1->genes[gg]->urslen;
+			}
+			f1->genes[gg] = make_gene(psamlen, urslen);
+			copy_gene(f1->genes[gg], par1->genes[gg]);
+		}
+		else{
+			if (par2->genes[gg]->has_dbd){
+				psamlen = par2->genes[gg]->dbd->nsites;
+				urslen = par2->genes[gg]->urslen;
+			}
+			f1->genes[gg] = make_gene(psamlen, urslen);
+			copy_gene(f1->genes[gg], par2->genes[gg]);
+		}
+	}
+
+	init_lifespan(f1, par1->expr_timeslices);
+
+	return f1;
 }
 
 void print_population(t_pop* pop, settings* ss){
@@ -50,3 +112,4 @@ void print_population(t_pop* pop, settings* ss){
 		}
 	}
 }
+

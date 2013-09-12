@@ -26,6 +26,8 @@ int main( int argc, const char* argv[] )
 	//shuffle_psam(p);
 	//print_psam(p);
 
+	ss->niid = 100;
+
 	t_gene** mygenes;
 	int ngenes;
 	mygenes = read_genes_from_file(ss, ngenes);
@@ -46,14 +48,12 @@ int main( int argc, const char* argv[] )
 //	}
 
 	printf("\n. I'm building a population....\n");
-
-	t_pop *pop = make_population(10, gn, ss);
+	t_pop *pop = make_population(1, gn, ss);
 	//printf("(scratch 48) %d\n", pop->ngenomes);
 	//print_population(pop, ss);
 
 	printf("\n. I'm building a landscape....\n");
 	t_landscape *l = (t_landscape *)malloc(sizeof(t_landscape));
-
 	char rulepath[] = "/Users/victor/Applications/simgenome-c-beta/examples/five.rules.txt";
 	ss->rulepath = rulepath;
 	t_ruleset** rs = read_rulesets_from_file(ss, l->nrulesets, l->ntime);
@@ -69,11 +69,15 @@ int main( int argc, const char* argv[] )
 		}
 	}
 
-	for(int ii = 0; ii<pop->ngenomes; ii++){
-		init_lifespan(pop->genomes[ii], l->ntime);
-	}
+	printf("\n. I'm building a G.A.\n");
+	t_ga* ga = make_ga();
+	ga->pop = pop;
+	ga->l = l;
 
-	double f = get_fitness(pop->genomes[0], l, ss);
+	printf("\n. I'm running the G.A.\n");
+	runsim(ga, ss);
+
+	//double f = get_fitness(pop->genomes[0], l, ss);
 
 
 	printf("\n. I'm freeing the population....\n");

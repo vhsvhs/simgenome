@@ -5,6 +5,7 @@
  */
 double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
+
 	/* Build the r vector */
 	g->r = (int *)malloc(g->ngenes*sizeof(int));
 	for (int ii=0; ii<g->ngenes; ii++){
@@ -30,12 +31,10 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			}
 		}
 
-		//printf("fitness 33, l->ntime= %d\n", l->ntime);
-
 		/* For each timeslice */
 		for (int t=0; t < l->ntime; t++){
 
-			printf("\n. TIME %d\n", t);
+			//printf("\n. TIME %d\n", t);
 
 			/* Manually set expression levels
 			 * for genes defined in the rule set
@@ -58,6 +57,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
 
 			/* Print a special line for the 0th timeslice. */
+			/*
 			if (t == 0 && ss->verbosity > 1){
 				for (int gid=0; gid< g->ngenes; gid++){
 					char mark = ' ';
@@ -67,11 +67,11 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 					else if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 1) {
 						mark = 'a';
 					}
-					printf("r: %d\tgenr: %d\ttime: 0\tID: %d\tgene: %d\t%c\texpr: %f\n",
+					printf("r: %d\tgenr %d\ttime: 0\tID: %d\tgene: %d\t%c\texpr: %f\n",
 							rid, ss->gen_counter, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
 				}
 			}
-
+			*/
 
 			/* If t is not the last timeslice,
 			 * then update expression.
@@ -84,7 +84,6 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				for (int gid=0; gid< g->ngenes; gid++){
 					/* To-do: if gid is in the knock-out, then actually knock it out here.*/
 
-					// to-do:
 					double pe = get_expr_modifier(g, gid, t, ss);
 					if (pe > 0.0){
 						pe *= ss->growth_rate * pe;
@@ -105,6 +104,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 					g->gene_expr[gid * g->expr_timeslices + t+1] = new_expr_level;
 				}
 			}
+
 			for (int gid=0; gid< g->ngenes; gid++){
 				char mark = ' ';
 				if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 0){
@@ -114,8 +114,9 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 					mark = 'a';
 				}
 				printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
-						rid, ss->gen_counter, g->id, t, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
+						rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
 			}
+
 		} // end for t
 
 		/* Now score this genome's gene expression vs. the ruleset rid */
@@ -138,7 +139,13 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			}
 			max_error += MAXIMUM_EXPRESSION_LEVEL * rul->weight;
 		}
-		error = error / max_error;
+		if (max_error == 0.0){
+			error = 0.0;
+		}
+		else{
+			error = error / max_error;
+		}
+		printf("fitness 143: error= %f\n", error);
 		my_fit += exp( FITNESS_SCALAR * error);
 
 	} // end for ruleset
@@ -162,8 +169,10 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
  */
 double get_expr_modifier(t_genome *g, int gid, int t, settings *ss){
 	t_ptable *ptable = make_ptable( g->ntfs, ss->maxgd, g->genes[gid]->urslen);
+	//printf("fitness 184\n");
 	//print_ptable( ptable );
 	fill_prob_table(g, gid, ptable, t, ss);
+	//printf("fitness 186\n");
 	//print_ptable( ptable );
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
@@ -179,7 +188,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 		double sum_cpr = 0.0;
 		for (int ii = 0; ii < g->ntfs; ii++){ // for each transcription factor
 			double aff = get_affinity(g->genes[ii]->dbd, g->genes[gid]->urs, g->genes[gid]->urslen, xx);
-			//printf("\n fitness 113 xx %d ii %d aff %f\n", xx, ii, aff);
+			//printf("\n fitness 204 xx %d ii %d aff %f\n", xx, ii, aff);
 			double sum_cpt = 0.0;
 			for (int jj = 0; jj < g->ntfs + 1; jj++){ // for co-factors, +1 is the empty slot, i.e. no cofactor.
 				for (int dd = 0; dd < ret->D; dd++){ // for possible distance between TF and co-factor

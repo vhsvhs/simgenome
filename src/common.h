@@ -14,12 +14,19 @@
 #include "gene.h"
 #include "genome.h"
 #include "population.h"
-#include "mutate.h"
 #include "fout.h"
+
 #include "landscape.h"
+#include "ga.h"
 #include "fitness.h"
+#include "mutate.h"
+
 
 void shuffle(double *array, size_t n);
 int filexists(char *filename);
 char int2nt(int x);
 int nt2int(char c);
+
+double drand();
+double random_normal();
+int sample_from_cdf(double* p, int len);

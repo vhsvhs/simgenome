@@ -48,3 +48,29 @@ int nt2int(char c) {
 	return i;
 }
 
+
+double drand() {   /* uniform distribution, (0..1] */
+  return (rand()+1.0)/(RAND_MAX+1.0);
+}
+
+double random_normal() {  /* normal distribution, centered on 0, std dev 1 */
+  return sqrt(-2*log(drand())) * cos(2*M_PI*drand());
+}
+
+int sample_from_cdf(double* p, int len){
+	double sum = 0.0;
+	for (int ii = 0; ii < len; ii++){
+		sum += p[ii];
+	}
+
+	double randp = drand();
+	double c = 0.0;
+	for (int ii = 0; ii < len; ii++){
+		c += p[ii];
+		if (c > randp){
+			return ii;
+		}
+	}
+	return len-1;
+}
+

@@ -59,7 +59,10 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 		//printf("landscape 43: line:%s\n", line);
 		const char* tokens[MAX_TOKENS] = {};
 		tokens[0] = strtok(line, " ");
-		if (tokens[0][0] == '\n') {
+		if (tokens[0][0] == '#'){
+			continue;
+		}
+		else if (tokens[0][0] == '\n') {
 			continue;
 		}
 		else if (tokens[0]){ // Does this token contain content?
@@ -73,7 +76,7 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	}
 
 	//printf("\n. landscape 54 maxrs= %d nrs= %d\n", maxrs, nrs);
-
+	//exit(1);
 	/* Pass 2: count the number of rules and inputs for each ruleset */
 	int *nrules = (int *)malloc(nrs*sizeof(int));
 	int *ninputs = (int *)malloc(nrs*sizeof(int));
@@ -86,6 +89,9 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	while ( fgets(line, MAXLEN, fr) ){
 		const char* tokens[MAX_TOKENS] = {};
 		tokens[0] = strtok(line, " ");
+		if (tokens[0][0] == '#'){
+			continue;
+		}
 		if (tokens[0][0] == '\n') {
 			continue;
 		}
@@ -140,6 +146,9 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	while ( fgets(line, MAXLEN, fr) ){
 		const char* tokens[MAX_TOKENS] = {};
 		tokens[0] = strtok(line, " ");
+		if (tokens[0][0] == '#'){
+			continue;
+		}
 		if (tokens[0][0] == '\n') {
 			continue;
 		}

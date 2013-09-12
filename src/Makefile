@@ -7,8 +7,11 @@ EXECUTABLE=hello
 
 all: scratch
 
-scratch: common.o gene.o fout.o genome.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o
-	$(CC) common.o gene.o fout.o genome.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o -o scratch
+scratch: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o
+	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o -o scratch
+
+ga.o: ga.cpp
+	$(CC) -c ga.cpp
 
 gene.o: gene.cpp
 	$(CC) -c gene.cpp

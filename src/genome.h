@@ -10,10 +10,12 @@ typedef struct __Genome {
 }t_genome;
 
 t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss);
+void copy_genome(t_genome* to, t_genome* from);
 t_genome* make_genome_default(int ngenes, settings *ss);
 t_genome* make_genome_random(int ngenes);
 void init_lifespan(t_genome* g, int t);
-
-void copy_genome(t_genome* to, t_genome* from);
+void reset_lifespan(t_genome* g);
+t_genome* dup_genome(t_genome *org);
 void free_genome(t_genome* gn);
-
+int count_urslen(t_genome* g);
+int count_psamlen(t_genome* g);
