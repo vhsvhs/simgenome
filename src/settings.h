@@ -1,8 +1,13 @@
+#include <getopt.h>
+
 typedef struct __Settings {
 	int verbosity;
 	/* Mutation rates */
-	double pwmlenmu;
-	int pwmlenmumax;
+	bool do_mutation;
+	double urs_mu_rate;
+	double psam_mu_rate;
+	double psamlenmu;
+	int psamlenmumax;
 	double ddgmu;
 
 	char* outdir; /* The directory into which output is written */
@@ -19,9 +24,7 @@ typedef struct __Settings {
 	int maxgd; /* The maximum distance, in sites, over which two co-factors can interact. */
 	int niid;
 
-	bool do_mutation;
-	double urs_mu_rate;
-	double psam_mu_rate;
+
 
 	double pe_scalar;
 
@@ -31,4 +34,6 @@ typedef struct __Settings {
 }settings;
 
 settings* make_settings();
-
+void read_cli(int argc, char **argv, settings* ss);
+void read_path_from_cli(char* target);
+void print_settings(settings *ss);

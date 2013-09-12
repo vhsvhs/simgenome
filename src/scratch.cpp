@@ -27,6 +27,7 @@ int main( int argc, const char* argv[] )
 	//print_psam(p);
 
 	ss->niid = 100;
+	ss->verbosity = 25;
 
 	t_gene** mygenes;
 	int ngenes;

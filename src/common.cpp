@@ -74,3 +74,13 @@ int sample_from_cdf(double* p, int len){
 	return len-1;
 }
 
+int Filexists(char *filename)
+{
+  FILE *fp;
+  fp =fopen(filename,"r");
+  if (fp) {
+    fclose(fp);
+    return 1;
+  } else
+    return 0;
+}

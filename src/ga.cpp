@@ -103,3 +103,7 @@ void get_fitness_stats(double *f, int len, double &max, double &min, double &mea
 	// to-do: median and stdev
 }
 
+void free_ga(t_ga* ga){
+	free_pop(ga->pop);
+	free_landscape(ga->l);
+}

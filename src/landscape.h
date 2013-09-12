@@ -39,3 +39,4 @@ t_rule* make_rule(int timepoint, int repid, double expr, int ruletype, double we
 t_input* make_input(int start, int stop, int gid, double expr);
 t_ruleset* make_ruleset(int id, int nrules, int ninputs);
 t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime);
+void free_landscape(t_landscape* l);

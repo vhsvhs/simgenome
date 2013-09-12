@@ -5,10 +5,16 @@ SOURCES=common.cpp gene.cpp mutate.cpp psam.cpp scratch.cpp settings.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=hello
 
-all: scratch
+all: simreg
 
 scratch: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o
 	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o -o scratch
+
+simreg: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o main.o
+	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o main.o -o simreg
+
+argp.o: argp.cpp
+	$(CC) -c argp.cpp
 
 ga.o: ga.cpp
 	$(CC) -c ga.cpp

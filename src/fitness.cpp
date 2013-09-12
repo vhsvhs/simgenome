@@ -145,7 +145,6 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 		else{
 			error = error / max_error;
 		}
-		printf("fitness 143: error= %f\n", error);
 		my_fit += exp( FITNESS_SCALAR * error);
 
 	} // end for ruleset
