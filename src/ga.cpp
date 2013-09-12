@@ -14,7 +14,7 @@ void runsim(t_ga* ga, settings* ss){
 	/* For each generation */
 	int start_gen = ss->gen_counter;
 	for (int ii = start_gen;
-			ii < ss->gen_counter + ss->max_gens;
+			ii < (start_gen + ss->max_gens);
 			ii++){
 
 		ss->gen_counter = ii;

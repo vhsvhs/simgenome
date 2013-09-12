@@ -4,10 +4,10 @@ int main( int argc, char **argv )
 {
 	srand(time(0));
 
+	print_splash();
 	settings *ss = make_settings();
 	read_cli(argc, argv, ss);
 	print_settings(ss);
-	exit(1);
 
 	char urspath[] = "/Users/victor/Applications/simgenome-c-beta/examples/urs.time092013.txt";
 	ss->urspath = urspath;

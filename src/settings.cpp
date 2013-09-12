@@ -5,11 +5,17 @@ settings* make_settings(){
 	ss = (settings *)malloc(1*sizeof(settings));
 
 	ss->verbosity = DEF_VERBOSITY; //(int)DEF_VERBOSITY;
+
 	ss->psamlenmu = PWMLENMU;
 	ss->psamlenmumax = PWMLENMUMAX;
 	ss->ddgmu = DDGMU;
 
 	ss->outdir = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	ss->psampath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	ss->urspath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	ss->rulepath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+
+
 	ss->inherit_expression = false;
 	ss->gen_counter = 0;
 	ss->max_gens = MAX_GENS;
@@ -39,7 +45,6 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"urspath",		required_argument,	NULL,	3},
 			{"rulepath",	required_argument,	NULL,	4},
 
-
 			{"do_mu", 		no_argument, 		NULL, 	100},
 			{"pwmlenmu", 	required_argument, 	NULL, 	101},
 			{"pwnlenmumax", required_argument, 	NULL, 	102},
@@ -47,7 +52,9 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"urs_mu",		required_argument,	NULL,	104},
 			{"psam_mu",		required_argument,	NULL,	105},
 
-
+			{"niid",		required_argument, 	NULL,	200},
+			{"maxgen",		required_argument, 	NULL,	201},
+			{"startgen",	required_argument,	NULL,	202},
 
 			{0,0,0,0}
 	};
@@ -111,18 +118,31 @@ void read_cli(int argc, char **argv, settings* ss){
 				break;
 			}
 
+			case 200:{
+				ss->niid = atoi(optarg);
+				break;
+			}
+			case 201:{
+				ss->max_gens = atoi(optarg);
+				printf("\n. settings 127: %d", ss->max_gens);
+				break;
+			}
+			case 202:{
+				ss->gen_counter = atoi(optarg);
+				break;
+			}
 
 
-		  	  case 1000:
-		  	  {
-		  		  printf("\n. I found --hello\n");
-		  		  break;
-		  	  }
-		  	  default:
-		  	  {
-		  		  //usage();
-		  		  break;
-		  	  }
+			case 1000:
+			{
+				printf("\n. I found --hello\n");
+				break;
+			}
+			default:
+			{
+				//usage();
+				break;
+			}
 		} // end of switch
 
 	} // end of while c = getopt
@@ -160,14 +180,23 @@ void read_path_from_cli(char* target) {
 	else
 	  {
 			strcpy(target, optarg);
-			printf("\n. I found a valid path: %s\n", target);
 	  }
 	free(tmp);
 }
 
-
+void print_splash(){
+	printf("\n");
+	printf("==========================================\n");
+	printf("SIMREG:\n");
+	printf("    simulated directed evolution\n");
+	printf("    of transcription regulatory circuits.\n");
+	printf("\n");
+	printf("Written by Victor Hanson-Smith\n");
+	printf("    University of California, San Francisco\n");
+}
 
 void print_settings(settings *ss){
+	printf("\n");
 	printf("==========================================\n");
 	printf("Current Settings:\n");
 	printf(". verbosity: %d\n", ss->verbosity);
@@ -178,12 +207,12 @@ void print_settings(settings *ss){
 	printf("\n");
 	printf(". starting generation: %d\n", ss->gen_counter);
 	printf(". generation limit: %d\n", ss->max_gens);
+	printf("\n");
 	if (ss->do_mutation) { printf(". mutations: enabled\n"); }
 	else { printf(". mutations: disabled\n"); }
 	printf(". URS mu rate: %f\n", ss->urs_mu_rate);
 	printf(". PSAM mu rate: %f\n", ss->psam_mu_rate);
 	printf(". cofactor mu rate: %f\n", ss->ddgmu);
-	// to-do: indels
 	printf("\n");
 	printf(". n I.I.D. samples: %d\n", ss->niid);
 	printf(". pe scalar: %f\n", ss->pe_scalar);
