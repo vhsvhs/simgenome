@@ -73,6 +73,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			}
 			*/
 
+
 			/* If t is not the last timeslice,
 			 * then update expression.
 			 */
@@ -115,8 +116,12 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				}
 				printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
 						rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
-			}
 
+				printf("fitness 120: %d, %d\n", gid, t);
+				if (ss->verbosity > 10){
+					log_expr(g, gid, t, ss);
+				}
+			}
 		} // end for t
 
 		/* Now score this genome's gene expression vs. the ruleset rid */

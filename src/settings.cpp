@@ -46,8 +46,8 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"rulepath",	required_argument,	NULL,	4},
 
 			{"do_mu", 		no_argument, 		NULL, 	100},
-			{"pwmlenmu", 	required_argument, 	NULL, 	101},
-			{"pwnlenmumax", required_argument, 	NULL, 	102},
+			{"psamlenmu", 	required_argument, 	NULL, 	101},
+			{"psamlenmumax", required_argument, 	NULL, 	102},
 			{"ddgmu", 		required_argument, 	NULL, 	103},
 			{"urs_mu",		required_argument,	NULL,	104},
 			{"psam_mu",		required_argument,	NULL,	105},
@@ -76,19 +76,20 @@ void read_cli(int argc, char **argv, settings* ss){
 				break;
 			}
 			case 1:{ // output directory
-				read_path_from_cli(ss->outdir);
-			    break;
+				read_path_from_cli(ss->outdir, true);
+				build_output_folders(ss);
+				break;
 			} // end case 1
 			case 2:{
-				read_path_from_cli(ss->psampath);
+				read_path_from_cli(ss->psampath, false);
 				break;
 			}
 			case 3:{
-				read_path_from_cli(ss->urspath);
+				read_path_from_cli(ss->urspath, false);
 				break;
 			}
 			case 4:{
-				read_path_from_cli(ss->rulepath);
+				read_path_from_cli(ss->rulepath, false);
 				break;
 			}
 
@@ -152,7 +153,7 @@ void read_cli(int argc, char **argv, settings* ss){
  * from the getopts library, and then writes that path to
  * target.
  */
-void read_path_from_cli(char* target) {
+void read_path_from_cli(char* target, bool build) {
 	char *tmp;
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	if(strlen(optarg) > FILEPATH_LEN_MAX)
@@ -166,7 +167,7 @@ void read_path_from_cli(char* target) {
 			if(!scanf("%c",&choix)) exit(0);
 			exit(0);
 	  }
-	else if (! Filexists (optarg))
+	else if (! Filexists (optarg) && build == false)
 	  {
 			char choix;
 			strcpy (tmp, "\n. Sorry, the directory '");
@@ -177,6 +178,11 @@ void read_path_from_cli(char* target) {
 			if(!scanf("%c",&choix)) exit(0);
 			exit(0);
 	  }
+	else if( ! Filexists (optarg) && build == true){
+		/* Make the file, if it doesn't exist */
+		printf("\n. I'm making %s\n", optarg);
+		mkdir(optarg, 0700);
+	}
 	else
 	  {
 			strcpy(target, optarg);

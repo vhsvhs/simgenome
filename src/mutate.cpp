@@ -23,11 +23,13 @@ void mutate(t_pop* pop, settings* ss){
 		/*
 		 * n mutations to upstream regulatory sequence
 		 */
-		int n = random_normal()
-				* count_urslen( pop->genomes[ii] )
+		int n = count_urslen( pop->genomes[ii] )
 				* ss->urs_mu_rate;
 		if (n < 0){
 			n = 0;
+		}
+		if (ss->verbosity > 20){
+			printf("\n. I'm making %d URS point mutations to ID %d.\n", n, ii );
 		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ngenes;
@@ -36,13 +38,14 @@ void mutate(t_pop* pop, settings* ss){
 		/*
 		 * n mutations to PSAMs
 		 */
-		n = random_normal()
-				* count_psamlen( pop->genomes[ii] )
-				* ss->urs_mu_rate;
+		n = count_psamlen( pop->genomes[ii] )
+				* ss->psam_mu_rate;
 		if (n < 0){
 			n = 0;
 		}
-
+		if (ss->verbosity > 20){
+			printf("\n. I'm making %d PSAM point mutations to ID %d.\n", n, ii );
+		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ntfs;
 			mutate_psam(pop->genomes[ii]->genes[rand_gene]->dbd, ss);
@@ -67,7 +70,7 @@ void mutate_psam(psam *p, settings *ss) {
 	int rand_ii = (double)rand() / (double)RAND_MAX * (p->nsites*p->nstates);
 	double old = p->data[rand_ii];
 	p->data[rand_ii] = get_random_ddg();
-	if (ss->verbosity > 100) {
+	if (ss->verbosity > 30) {
 		printf("\n. Mutating PSAM rand_ii %d old %f new %f\n", rand_ii, old, p->data[rand_ii]);
 	}
 }
@@ -82,7 +85,7 @@ void mutate_urs(t_gene *g, settings *ss) {
 	}
 	int old = g->urs[ rand_site ];
 	g->urs[ rand_site ] = rand_state;
-	if (ss->verbosity > 100){
+	if (ss->verbosity > 30){
 		printf("\n. Mutating URS rand_site %d rand_state %d old %d new %d\n",
 				rand_site, rand_state, old, g->urs[ rand_site ]);
 	}

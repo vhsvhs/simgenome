@@ -35,6 +35,6 @@ typedef struct __Settings {
 
 settings* make_settings();
 void read_cli(int argc, char **argv, settings* ss);
-void read_path_from_cli(char* target);
+void read_path_from_cli(char* target, bool build);
 void print_splash();
 void print_settings(settings *ss);

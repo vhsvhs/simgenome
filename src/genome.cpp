@@ -170,4 +170,5 @@ int count_psamlen(t_genome* g){
 			c += g->genes[ii]->dbd->nsites;
 		}
 	}
+	return c;
 }

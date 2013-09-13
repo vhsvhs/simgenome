@@ -66,6 +66,8 @@ void runsim(t_ga* ga, settings* ss){
 		}
 		printf("==================================\n");
 
+		log_fitness(f, ga->pop->ngenomes, ss);
+
 		/*
 		 * SELECTIVELY REPRODUCE
 		 */

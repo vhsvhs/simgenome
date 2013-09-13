@@ -52,12 +52,18 @@ void reproduce(t_pop* pop, settings* ss, double* f) {
 		/* Elite individuals are cloned. */
 		if (pop->genomes[ii]->is_elite == true){
 			newpop->genomes[ii] = dup_genome( pop->genomes[ii]);
+			if (ss->verbosity > 2){
+				printf("\n\t. Elite individual %d will be cloned.", ii);
+			}
 		}
 		else{
 			/* Pick random parents */
 			int parent1 = sample_from_cdf(f, pop->ngenomes);
 			int parent2 = sample_from_cdf(f, pop->ngenomes);
 			/* Mate those parents */
+			if (ss->verbosity > 2){
+				printf("\n\t. Elite individual ", ii);
+			}
 			newpop->genomes[ii] = mate(pop->genomes[parent1],
 					pop->genomes[parent2]);
 		}
