@@ -18,7 +18,6 @@ t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss) {
 			psamlen = ingenes[ii]->dbd->nsites;
 		}
 		gn->genes[ii] = make_gene(psamlen, ingenes[ii]->urslen);
-		//printf("genome 17\n");
 		copy_gene(gn->genes[ii], ingenes[ii]);
 		if (gn->genes[ii]->has_dbd == true){
 			gn->ntfs++;

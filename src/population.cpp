@@ -21,8 +21,11 @@ t_pop* make_population(t_genome* gn, settings *ss){
 	pop = (t_pop*)malloc(1*sizeof(t_pop));
 	pop->genomes = (t_genome**)malloc(ss->popsize*sizeof(t_genome));
 	pop->ngenomes = ss->popsize;
-	for(int ii=0; ii<ss->popsize; ii++){
-		pop->genomes[ii] = make_genome(gn->ngenes, gn->genes, ss);
+	/* Copy the gn into each individual */
+	for(int ii=0; ii< ss->popsize; ii++){
+		pop->genomes[ii] = (t_genome*)malloc(1*sizeof(t_genome));
+		copy_genome(pop->genomes[ii], gn);
+		//pop->genomes[ii] = make_genome(gn->ngenes, gn->genes, ss);
 		pop->genomes[ii]->id = ii;
 	}
 	return pop;

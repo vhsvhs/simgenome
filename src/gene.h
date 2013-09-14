@@ -15,6 +15,9 @@ typedef struct __Gene {
 }t_gene;
 
 t_gene* make_gene(int psamlen, int urslen);
+
+void build_coop(t_gene* g, int ntfs, int maxd);
+void init_coop(t_gene* g);
 void free_gene(t_gene* g);
 void copy_gene(t_gene* to, t_gene* from);
 int* get_random_seq(int len);

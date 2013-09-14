@@ -218,6 +218,7 @@ void print_settings(settings *ss){
 	printf("\n");
 	printf(". starting generation: %d\n", ss->gen_counter);
 	printf(". generation limit: %d\n", ss->max_gens);
+	printf(". population size: %d\n", ss->popsize);
 	printf("\n");
 	if (ss->do_mutation) { printf(". mutations: enabled\n"); }
 	else { printf(". mutations: disabled\n"); }

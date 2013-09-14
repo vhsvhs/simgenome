@@ -14,7 +14,19 @@ t_gene* make_gene(int psamlen, int urslen) {
 	else{
 		g->has_dbd = false;
 	}
+	g->gammalen = 0;
 	return g;
+}
+
+void build_coop(t_gene* g, int ntfs, int maxd){
+	g->gammalen = ntfs*maxd;
+	g->gamma = (double*)malloc(g->gammalen*sizeof(double));
+}
+
+void init_coop(t_gene* g){
+	for (int ii = 0; ii < g->gammalen; ii++){
+		g->gamma[ii] = 1.0;
+	}
 }
 
 /* Garbage collection for a gene */
@@ -23,6 +35,7 @@ void free_gene(t_gene* g){
 	free(g->urs);
 	free_psam(g->dbd);
 	free(g->dbd);
+	free(g->gamma);
 }
 
 /* Copies a gene, assuming that memory has already been allocated. */
@@ -30,23 +43,27 @@ void copy_gene(t_gene* to, t_gene* from) {
 	to->id = from->id;
 	// This strcpy is safe because gene names are always GENE_NAME_MAX characters long.
 	strcpy( to->name, from->name );
-
 	// Ensure that the URS lengths match
 	if (to->urslen != from->urslen){
 		free(to->urs);
 		to->urs = (int *)malloc(from->urslen*sizeof(int));
 	}
-
 	for(int ii=0; ii<from->urslen; ii++){
 		to->urs[ii] = from->urs[ii];
 	}
-
 	to->urslen = from->urslen;
 	to->has_dbd = from->has_dbd;
 	if (to->has_dbd == true){
 		copy_psam( to->dbd, from->dbd );
 	}
 	to->reg_mode = from->reg_mode;
+	if (to->gammalen == 0){
+		to->gamma = (double*)malloc(from->gammalen*sizeof(double));
+	}
+	to->gammalen = from->gammalen;
+	for(int ii=0; ii<from->gammalen; ii++){
+		to->gamma[ii] = from->gamma[ii];
+	}
 }
 
 void print_urs(int* urs, int urslen) {
@@ -201,18 +218,29 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	}
 
 	/* Build the genes, using the URSes and PSAMs we previously found. */
+	int ntfs = 0;
 	for (int ii=0; ii<ngenes; ii++){ // ii = gene
 		genes[ii] = make_gene(psamlengths[ii], urslengths[ii]);
 		for (int jj=0; jj<urslengths[ii]; jj++){ // jj = site
 			genes[ii]->urs[jj] = nt2int( urses[ii][jj] );
 		}
 		if (has_dbd[ii]){
+			ntfs++;
 			for (int jj=0; jj<N_STATES*psamlengths[ii]; jj++){
 				genes[ii]->dbd->data[jj] = psams[ii][jj];
 				genes[ii]->has_dbd = true;
 			}
 			genes[ii]->reg_mode = reg_modes[ii];
 		}
+	}
+
+	/* Setup cofactor variables */
+	for (int ii=0; ii<ntfs; ii++){
+		//printf("\n. gene 239 %d", ii);
+		build_coop(genes[ii], ntfs, ss->maxgd);
+		//printf("\n. gene 241 %d", ii);
+		init_coop(genes[ii]);
+		//printf("\n. gene 243 %d", ii);
 	}
 
 	return genes;

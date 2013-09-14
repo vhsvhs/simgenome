@@ -18,11 +18,26 @@ void build_output_folders(settings* ss){
 	free(tmp);
 
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-	strcat( strcat(tmp, ss->outdir), "/EXPR/");
+	strcat( strcat(tmp, ss->outdir), "/OCCUPANCY/");
 	if (!Filexists(tmp)){
 		mkdir(tmp, 0700);
 	}
 	free(tmp);
+
+	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat( strcat(tmp, ss->outdir), "/COOP/");
+	if (!Filexists(tmp)){
+		mkdir(tmp, 0700);
+	}
+	free(tmp);
+
+	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat( strcat(tmp, ss->outdir), "/DBD/");
+	if (!Filexists(tmp)){
+		mkdir(tmp, 0700);
+	}
+	free(tmp);
+
 }
 
 /* Write all the PSAMs in genome gn to the file located at outpath. */
@@ -111,7 +126,7 @@ void log_expr(t_genome *g, int t, t_ptable* ptable, settings* ss){
 			strcat(
 			strcat(
 			strcat(p, ss->outdir),
-			"/EXPR/expr.gen"),
+			"/OCCUPANCY/occ.gen"),
 			gc),
 		".id"),
 		gs),
@@ -129,8 +144,6 @@ void log_expr(t_genome *g, int t, t_ptable* ptable, settings* ss){
 			  p);
 	  exit(1);
 	}
-
-
 
 	for (int jj = 0; jj < g->ngenes; jj++){
 		char* gs;
@@ -208,12 +221,52 @@ void log_expr(t_genome *g, int t, t_ptable* ptable, settings* ss){
 	free(p);
 
 	fclose(fp);
-
-
 }
 
 void log_cofactor(t_genome *g, settings* ss){
+	char* gc;
+	gc = (char*)malloc(10*sizeof(char));
+	sprintf(gc, "%d", ss->gen_counter);
 
+	char* gs;
+	gs = (char*)malloc(4*sizeof(char));
+	sprintf(gs, "%d", g->id);
+
+	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat(
+		strcat(
+			strcat(
+			strcat(
+			strcat(
+			strcat(p, ss->outdir),
+			"/COOP/coop.gen"),
+			gc),
+		".id"),
+		gs),
+	".txt");
+
+	FILE *fp;
+	fp = fopen(p, "w");
+	if (fp == NULL) {
+	  fprintf(stderr, "Error: can't open output file %s!\n",
+			  p);
+	  exit(1);
+	}
+
+	for (int ii = 0; ii < g->ntfs; ii++){
+		for (int jj = 0; jj < g->ntfs; jj++){
+			for (int dd = 0; dd < ss->maxgd; ss++){
+				fprintf(fp, "%d\t%d\t%d\t%f\n",
+						ii, jj, dd, g->genes[ii]->gamma[jj*g->ntfs*dd + jj]);
+			}
+		}
+	}
+
+	free(gc);
+	free(gs);
+	free(p);
+
+	fclose(fp);
 }
 
 

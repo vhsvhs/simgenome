@@ -176,7 +176,10 @@ double get_expr_modifier(t_genome *g, int gid, int t, settings *ss){
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
 
-	log_expr(g, t, ptable, ss);
+	if (ss->verbosity > 10){
+		log_expr(g, t, ptable, ss);
+		log_cofactor(g, ss);
+	}
 
 	return pe;
 }
