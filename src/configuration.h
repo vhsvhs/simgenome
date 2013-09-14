@@ -30,6 +30,7 @@
 #define MINIMUM_EXPRESSION_LEVEL 0.00001
 #define MAXIMUM_EXPRESSION_LEVEL 1.0
 
+#define POPSIZE 24
 #define NIID 4000 // N I.I.D. samples
 
 #define MAX_GENS 1000

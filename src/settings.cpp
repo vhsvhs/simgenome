@@ -15,6 +15,7 @@ settings* make_settings(){
 	ss->urspath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->rulepath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 
+	ss->popsize = POPSIZE;
 
 	ss->inherit_expression = false;
 	ss->gen_counter = 0;
@@ -55,6 +56,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"niid",		required_argument, 	NULL,	200},
 			{"maxgen",		required_argument, 	NULL,	201},
 			{"startgen",	required_argument,	NULL,	202},
+			{"popsize",		required_argument,	NULL,	203},
 
 			{0,0,0,0}
 	};
@@ -125,11 +127,14 @@ void read_cli(int argc, char **argv, settings* ss){
 			}
 			case 201:{
 				ss->max_gens = atoi(optarg);
-				printf("\n. settings 127: %d", ss->max_gens);
 				break;
 			}
 			case 202:{
 				ss->gen_counter = atoi(optarg);
+				break;
+			}
+			case 203:{
+				ss->popsize = atoi(optarg);
 				break;
 			}
 

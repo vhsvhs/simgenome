@@ -91,24 +91,18 @@ void log_fitness(double* f, int len, settings* ss){
 	free(p);
 }
 
-void log_expr(t_genome *g, int gid, int t, settings* ss){
+void log_expr(t_genome *g, int t, t_ptable* ptable, settings* ss){
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));
 	sprintf(gc, "%d", ss->gen_counter);
 
-	char* ts;
-	ts = (char*)malloc(4*sizeof(char));
-	sprintf(ts, "%d", t);
-
 	char* gs;
 	gs = (char*)malloc(4*sizeof(char));
-	sprintf(gs, "%d", gid);
+	sprintf(gs, "%d", g->id);
 
-	char* us;
-	us = (char*)malloc(g->genes[gid]->urslen*sizeof(char));
-	for (int ii = 0; ii < g->genes[gid]->urslen; ii++){
-		us[ii] = int2nt( g->genes[gid]->urs[ii] );
-	}
+	char* ts;
+	ts = (char*)malloc(100*sizeof(char));
+	sprintf(ts, "%d", t);
 
 	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat(
@@ -116,47 +110,106 @@ void log_expr(t_genome *g, int gid, int t, settings* ss){
 			strcat(
 			strcat(
 			strcat(
-			strcat(
-			strcat(
-					strcat(p, ss->outdir),
-					"/EXPR/expr.gen"),
+			strcat(p, ss->outdir),
+			"/EXPR/expr.gen"),
 			gc),
-		".t"),
-		ts),
 		".id"),
 		gs),
 	".txt");
 
 	FILE *fp;
-	fp = fopen(p, "w");
+	if (t == 0){
+		fp = fopen(p, "w");
+	}
+	else{
+		fp = fopen(p, "a");
+	}
 	if (fp == NULL) {
 	  fprintf(stderr, "Error: can't open output file %s!\n",
 			  p);
 	  exit(1);
 	}
 
-	char *header = (char *)malloc(MAXLEN*sizeof(char));
-	strcat(
-	strcat(
-	strcat(
-	strcat(
-	strcat(
-	strcat(
-	strcat( header, ". t "),
-	ts),
-	" gene "),
-	gs),
-	" URS: "),
-	us),
-	"\n");
-	fprintf(fp, "%s", header);
+
+
+	for (int jj = 0; jj < g->ngenes; jj++){
+		char* gs;
+		gs = (char*)malloc(100*sizeof(char));
+		sprintf(gs, "%d", jj);
+
+		char *header = (char *)malloc(MAXLEN*sizeof(char));
+		strcat(
+			strcat(
+				strcat(
+				strcat(
+					strcat( header, ". t "),
+					ts),
+				" gene "),
+				gs),
+			"\n");
+		//printf("fout.cpp genome %d 150: %s\n", g->id, header);
+		fprintf(fp, "%s", header);
+
+		// Lines look like this:
+		// site 1 :        0 a 0.632     1 r 0.368
+		// where a is for activator
+		// and r is for repressor
+		for (int site = 0; site <  g->genes[jj]->urslen; site++){
+			char* sss = (char*)malloc(10*sizeof(char));
+			sprintf(sss, "%d", site);
+			fprintf(fp, "site %s :", sss);
+
+			double sump = ptable->cpr[site];
+			for (int tf = 0; tf < g->ntfs; tf++){
+				char* tfs = (char*)malloc(10*sizeof(char));
+				sprintf(tfs, "%d", tf);
+
+				char* rms = (char*)malloc(10*sizeof(char));
+				if (g->genes[jj]->has_dbd && g->genes[jj]->reg_mode == 0){
+					sprintf(rms, "r");
+				}
+				else if (g->genes[jj]->has_dbd && g->genes[jj]->reg_mode == 1){
+					sprintf(rms, "a");
+				}
+
+				double sumt = ptable->cpt[site*ptable->M + tf];
+
+				//if (sumt < 100 || sumt > 100){
+				//	printf("fout:177 %d %d %d %f\n",site, tf, ptable->M, sumt);
+				//}
+
+				double this_val = 0.0;
+				if (sump > 0.0 && sumt > 0.0){
+					this_val = sumt/sump;
+				}
+
+				fprintf(fp, "\t%s", tfs);
+				fprintf(fp, " %s", rms);
+				fprintf(fp, " %f", this_val);
+
+				free(tfs);
+				free(rms);
+			}
+			fprintf(fp, "\n");
+
+		}
+
+		/* Reset the header */
+		for (int qq = 0; qq < MAXLEN; qq++){
+			header[qq] = NULL;
+		}
+
+		free(header);
+		free(gs);
+	}
+	free(ts);
+	free(gc);
+	free(gs);
+	free(p);
 
 	fclose(fp);
-	free(gc);
-	free(ts);
-	free(gs);
-	free(us);
-	free(p);
+
+
 }
 
 void log_cofactor(t_genome *g, settings* ss){

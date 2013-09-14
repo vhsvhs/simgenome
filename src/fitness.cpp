@@ -4,8 +4,6 @@
  * landscape described by l.
  */
 double get_fitness(t_genome* g, t_landscape* l, settings* ss){
-
-
 	/* Build the r vector */
 	g->r = (int *)malloc(g->ngenes*sizeof(int));
 	for (int ii=0; ii<g->ngenes; ii++){
@@ -117,10 +115,6 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
 						rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
 
-				printf("fitness 120: %d, %d\n", gid, t);
-				if (ss->verbosity > 10){
-					log_expr(g, gid, t, ss);
-				}
 			}
 		} // end for t
 
@@ -178,8 +172,12 @@ double get_expr_modifier(t_genome *g, int gid, int t, settings *ss){
 	fill_prob_table(g, gid, ptable, t, ss);
 	//printf("fitness 186\n");
 	//print_ptable( ptable );
+	//exit(1);
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
+
+	log_expr(g, t, ptable, ss);
+
 	return pe;
 }
 
@@ -189,11 +187,13 @@ double get_expr_modifier(t_genome *g, int gid, int t, settings *ss){
  */
 void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 	for (int xx = 0; xx < ret->L; xx++){ // for each site in the upstream regulatory sequence
+
 		double sum_cpr = 0.0;
 		for (int ii = 0; ii < g->ntfs; ii++){ // for each transcription factor
 			double aff = get_affinity(g->genes[ii]->dbd, g->genes[gid]->urs, g->genes[gid]->urslen, xx);
 			//printf("\n fitness 204 xx %d ii %d aff %f\n", xx, ii, aff);
-			double sum_cpt = 0.0;
+
+			double sum_cpt = 0.0; // the sum of cpt values over this jj.
 			for (int jj = 0; jj < g->ntfs + 1; jj++){ // for co-factors, +1 is the empty slot, i.e. no cofactor.
 				for (int dd = 0; dd < ret->D; dd++){ // for possible distance between TF and co-factor
 					if (ret->L-xx < g->r[ii]){
@@ -203,8 +203,8 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 						sum_cpt += value;
 						sum_cpr += value;
 						if (ss->verbosity > 100){
-							printf("case 1: tfs %d %d distance %d p= %f\n",
-									ii, jj, dd, value);
+							printf("site %d case 1: tfs %d %d distance %d p= %f\n",
+									xx, ii, jj, dd, value);
 						}
 					}
 					if (jj < g->ntfs) // jj is real, not the empty slot.
@@ -214,8 +214,8 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 							double value = 0.0;
 							ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
 							if (ss->verbosity > 100){
-								printf("case 4: tfs %d %d distance %d p= %f\n",
-										ii, jj, dd, value);
+								printf("site %d case 4: tfs %d %d distance %d p= %f\n",
+										xx, ii, jj, dd, value);
 							}
 						}
 						else if (ret->L - g->r[ii] - dd - g->r[jj] < 0){
@@ -225,8 +225,8 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 							double value = 0.0;
 							ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
 							if (ss->verbosity > 100){
-								printf("case 3: tfs %d %d distance %d p= %f\n",
-										ii, jj, dd, value);
+								printf("site %d case 3: tfs %d %d distance %d p= %f\n",
+										xx, ii, jj, dd, value);
 							}
 						}
 						else{
@@ -236,8 +236,8 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 							sum_cpt += value;
 							sum_cpr += value;
 							if (ss->verbosity > 100){
-								printf("case 5: tfs %d %d distance %d p= %f\n",
-										ii, jj, dd, value);
+								printf("site %d case 5: tfs %d %d distance %d p= %f\n",
+										xx, ii, jj, dd, value);
 							}
 						}
 					}
@@ -248,13 +248,14 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 						sum_cpt += value;
 						sum_cpr += value;
 						if (ss->verbosity > 100){
-							printf("case 6: tfs %d %d distance %d p= %f\n",
-									ii, jj, dd, value);
+							printf("site %d case 6: tfs %d %d distance %d p= %f\n",
+									xx, ii, jj, dd, value);
 						}
 					}
 				}
 			} // end for jj
 			ret->cpt[xx * ret->M + ii] = sum_cpt;
+
 		} // end for ii
 		ret->cpr[xx] = sum_cpr;
 	}

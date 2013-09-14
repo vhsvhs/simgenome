@@ -14,7 +14,7 @@ t_ptable* make_ptable(int M, int D, int L) {
 		p->cpa[ii] = 0.0;
 	}
 	p->cpt = (double *)malloc(M*L*sizeof(double));
-	for (int ii=0; ii<L*M; ii++){
+	for (int ii=0; ii<M*L; ii++){
 		p->cpt[ii] = 0.0;
 	}
 	p->cpr = (double *)malloc(L*sizeof(double));

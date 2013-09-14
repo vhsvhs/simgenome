@@ -64,6 +64,8 @@ double get_affinity(psam *p, int *seq, int seqlen, int startsite) {
 	for (int ii=startsite; ii < seqlen; ii++) {
 		sum += p->data[ (ii-startsite)*p->nstates + seq[ii] ];
 	}
+
+
 	return sum;
 }
 

@@ -87,6 +87,7 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 
 	FILE *fu; /* File for urs specs */
 	fu = fopen(ss->urspath,"r");
+	//printf("\n gene 90: urspath=%s\n", ss->urspath);
 	if (fu == NULL) {
 	  fprintf(stderr, "Error: can't open URS file %s!\n",
 			  ss->urspath);
@@ -124,12 +125,18 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 			this_gene += 1;
 		}
 		else {
+			//printf("\ngene 127 urs=%s\n", line);
 			int ii = 0;
 			int count = 0;
-			while(line[ii] != '\n'){
+			while (line[ii] == 'A'
+					|| line[ii] == 'C'
+					|| line[ii] == 'T'
+					|| line[ii] == 'G')
+			{
 				count++;
 				ii++;
 			}
+			//printf("gene 133, this_gene %d count= %d\n", this_gene, count);
 			urslengths[this_gene] = count;
 			urses[this_gene] = (char *)malloc(urslengths[this_gene]*sizeof(char));
 			for(int ii=0; ii< urslengths[this_gene]; ii++){

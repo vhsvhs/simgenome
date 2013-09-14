@@ -23,7 +23,7 @@ typedef struct __Settings {
 
 	int maxgd; /* The maximum distance, in sites, over which two co-factors can interact. */
 	int niid;
-
+	int popsize;
 
 
 	double pe_scalar;

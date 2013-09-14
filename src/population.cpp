@@ -16,12 +16,12 @@ t_pop* make_population_random(int popsize, int ngenes, settings *ss){
 }
 
 /* Builds a population that is 'popsize' copies of the genome 'gn'. */
-t_pop* make_population(int popsize, t_genome* gn, settings *ss){
+t_pop* make_population(t_genome* gn, settings *ss){
 	t_pop *pop;
 	pop = (t_pop*)malloc(1*sizeof(t_pop));
-	pop->genomes = (t_genome**)malloc(popsize*sizeof(t_genome));
-	pop->ngenomes = popsize;
-	for(int ii=0; ii<popsize; ii++){
+	pop->genomes = (t_genome**)malloc(ss->popsize*sizeof(t_genome));
+	pop->ngenomes = ss->popsize;
+	for(int ii=0; ii<ss->popsize; ii++){
 		pop->genomes[ii] = make_genome(gn->ngenes, gn->genes, ss);
 		pop->genomes[ii]->id = ii;
 	}
