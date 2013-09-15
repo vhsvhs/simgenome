@@ -22,12 +22,16 @@ void runsim(t_ga* ga, settings* ss){
 		/*
 		 * Pre-fitness Setup
 		 */
-		if (ii == 0){
+		if (ii == 0){ // Only do this for generation zero
 			for(int ii = 0; ii < ga->pop->ngenomes; ii++){
-				/* Ensure that each genome has a gene expression
-				 * array that can accommodate all the timeslices.
-				 */
-				init_lifespan(ga->pop->genomes[ii], ga->l->ntime);
+				// allocate memory AND init gene expression
+				build_lifespan(ga->pop->genomes[ii], ga->l->ntime);
+			}
+		}
+		else{
+			for (int gid = 0; gid < ga->pop->ngenomes; gid++){
+				// just re-init gene expression (don't re-allocate memory)
+				reset_lifespan( ga->pop->genomes[gid]);
 			}
 		}
 
@@ -68,6 +72,8 @@ void runsim(t_ga* ga, settings* ss){
 
 		log_fitness(f, ga->pop->ngenomes, ss);
 
+		exit(1);
+
 		/*
 		 * SELECTIVELY REPRODUCE
 		 */
@@ -77,18 +83,6 @@ void runsim(t_ga* ga, settings* ss){
 		 * MUTATION
 		 */
 		mutate(ga->pop, ss);
-
-		/*
-		 * End-of-generation business. . .
-		 */
-		if (ii == 0){
-			for(int ii = 0; ii < ga->pop->ngenomes; ii++){
-				/* Ensure that each genome has a gene expression
-				 * array that can accommodate all the timeslices.
-				 */
-				reset_lifespan(ga->pop->genomes[ii]);
-			}
-		}
 	}
 }
 

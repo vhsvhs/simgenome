@@ -194,6 +194,7 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 		}
 	}
 	ntime += 1;// to offset for 0.
+	ss->maxtime = ntime;
 	ret_n = nrs;
 	return rulesets;
 }

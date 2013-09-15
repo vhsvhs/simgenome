@@ -24,12 +24,20 @@ typedef struct __Settings {
 	int maxgd; /* The maximum distance, in sites, over which two co-factors can interact. */
 	int niid;
 	int popsize;
-
+	int maxtime;
 
 	double pe_scalar;
 
 	double growth_rate;
 	double decay_rate;
+
+	/* true = remove all files from the output directory
+	 * before starting the genetic algorithm.  This prevents
+	 * "stale" files from previous runs form polluting
+	 * the output of this run.
+	 */
+
+	bool run_clean;
 
 }settings;
 

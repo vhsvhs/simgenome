@@ -23,6 +23,7 @@ settings* make_settings(){
 
 	ss->maxgd = MAX_GD;
 	ss->niid = NIID;
+	ss->maxtime = MAX_TIME;
 
 	ss->do_mutation = true;
 	ss->urs_mu_rate = URSMU; // subs per seq site
@@ -32,6 +33,8 @@ settings* make_settings(){
 
 	ss->growth_rate = GROWTH_RATE;
 	ss->decay_rate = DECAY_RATE;
+
+	ss->run_clean = false;
 
 	return ss;
 }
@@ -57,6 +60,9 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"maxgen",		required_argument, 	NULL,	201},
 			{"startgen",	required_argument,	NULL,	202},
 			{"popsize",		required_argument,	NULL,	203},
+			{"maxgd",		required_argument,	NULL,	204}, // maximum co-factor distance
+
+			{"run_clean",	no_argument,		NULL, 	300},
 
 			{0,0,0,0}
 	};
@@ -137,6 +143,19 @@ void read_cli(int argc, char **argv, settings* ss){
 				ss->popsize = atoi(optarg);
 				break;
 			}
+			case 204:{
+				ss->maxgd = atoi(optarg);
+				if (ss->maxgd < 1){
+					ss->maxgd = 1;
+				}
+				break;
+			}
+
+
+			case 300:{
+				ss->run_clean = true;
+				break;
+			}
 
 
 			case 1000:
@@ -152,6 +171,15 @@ void read_cli(int argc, char **argv, settings* ss){
 		} // end of switch
 
 	} // end of while c = getopt
+
+
+	/* Now we do some post-parsing business */
+	if (ss->run_clean == true){
+		char *qq = (char*)malloc(FILEPATH_LEN_MAX*sizeof(char));
+		strcat( strcat( strcat(qq, "rm -rf"), ss->outdir), "/*");
+		system( qq );
+		build_output_folders(ss);
+	}
 }
 
 /* Reads a file path or directory path from the OPTARG variable

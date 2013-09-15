@@ -24,8 +24,8 @@ t_pop* make_population(t_genome* gn, settings *ss){
 	/* Copy the gn into each individual */
 	for(int ii=0; ii< ss->popsize; ii++){
 		pop->genomes[ii] = (t_genome*)malloc(1*sizeof(t_genome));
-		copy_genome(pop->genomes[ii], gn);
-		//pop->genomes[ii] = make_genome(gn->ngenes, gn->genes, ss);
+		pop->genomes[ii] = copy_genome(gn);
+		// The copy's ID won't be same as the input genome:
 		pop->genomes[ii]->id = ii;
 	}
 	return pop;
@@ -54,7 +54,7 @@ void reproduce(t_pop* pop, settings* ss, double* f) {
 	for (int ii = 0; ii < pop->ngenomes; ii++){
 		/* Elite individuals are cloned. */
 		if (pop->genomes[ii]->is_elite == true){
-			newpop->genomes[ii] = dup_genome( pop->genomes[ii]);
+			newpop->genomes[ii] = copy_genome( pop->genomes[ii]);
 			if (ss->verbosity > 2){
 				printf("\n\t. Elite individual %d will be cloned.", ii);
 			}
@@ -65,11 +65,12 @@ void reproduce(t_pop* pop, settings* ss, double* f) {
 			int parent2 = sample_from_cdf(f, pop->ngenomes);
 			/* Mate those parents */
 			if (ss->verbosity > 2){
-				printf("\n\t. Elite individual ", ii);
+				printf("\n\t. ID %d mating with ID %d", parent1, parent2);
 			}
 			newpop->genomes[ii] = mate(pop->genomes[parent1],
 					pop->genomes[parent2]);
 		}
+		build_lifespan(newpop->genomes[ii], ss->maxtime);
 
 	}
 }
@@ -94,7 +95,7 @@ t_genome* mate(t_genome* par1, t_genome* par2){
 				urslen = par1->genes[gg]->urslen;
 			}
 			f1->genes[gg] = make_gene(psamlen, urslen);
-			copy_gene(f1->genes[gg], par1->genes[gg]);
+			f1->genes[gg] = copy_gene(par1->genes[gg]);
 		}
 		else{
 			if (par2->genes[gg]->has_dbd){
@@ -102,12 +103,9 @@ t_genome* mate(t_genome* par1, t_genome* par2){
 				urslen = par2->genes[gg]->urslen;
 			}
 			f1->genes[gg] = make_gene(psamlen, urslen);
-			copy_gene(f1->genes[gg], par2->genes[gg]);
+			f1->genes[gg] = copy_gene(par2->genes[gg]);
 		}
 	}
-
-	init_lifespan(f1, par1->expr_timeslices);
-
 	return f1;
 }
 

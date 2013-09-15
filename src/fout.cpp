@@ -106,7 +106,7 @@ void log_fitness(double* f, int len, settings* ss){
 	free(p);
 }
 
-void log_expr(t_genome *g, int t, t_ptable* ptable, settings* ss){
+void log_occupancy(t_genome *g, int t, t_ptable* ptable, settings* ss){
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));
 	sprintf(gc, "%d", ss->gen_counter);
@@ -253,11 +253,13 @@ void log_cofactor(t_genome *g, settings* ss){
 	  exit(1);
 	}
 
+	//printf("\n fout 256 g->ntfs = %d %s", g->ntfs, p);
+	fprintf(fp, "a->\tb\t@d\tmultiplier\n");
 	for (int ii = 0; ii < g->ntfs; ii++){
 		for (int jj = 0; jj < g->ntfs; jj++){
-			for (int dd = 0; dd < ss->maxgd; ss++){
-				fprintf(fp, "%d\t%d\t%d\t%f\n",
-						ii, jj, dd, g->genes[ii]->gamma[jj*g->ntfs*dd + jj]);
+			for (int dd = 0; dd < ss->maxgd; dd++){
+				//printf("\n. fout 260 ntfs %d ii %d jj %d dd %d", g->ntfs, ii, jj, dd);
+				fprintf(fp, "%d\t%d\t%d\t%f\n", ii, jj, dd, g->genes[ii]->gamma[jj*ss->maxgd + dd] );
 			}
 		}
 	}
@@ -271,6 +273,55 @@ void log_cofactor(t_genome *g, settings* ss){
 
 
 void log_dbds(t_genome *g, settings* ss){
+	char* gc;
+	gc = (char*)malloc(10*sizeof(char));
+	sprintf(gc, "%d", ss->gen_counter);
 
+	char* gs;
+	gs = (char*)malloc(4*sizeof(char));
+	sprintf(gs, "%d", g->id);
+
+	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat(
+		strcat(
+			strcat(
+			strcat(
+			strcat(
+			strcat(p, ss->outdir),
+			"/DBD/dbd.gen"),
+			gc),
+		".id"),
+		gs),
+	".txt");
+
+	FILE *fp;
+	fp = fopen(p, "w");
+	if (fp == NULL) {
+	  fprintf(stderr, "Error: can't open output file %s!\n",
+			  p);
+	  exit(1);
+	}
+
+
+	for (int ii = 0; ii < g->ngenes; ii++){
+		if (g->genes[ii]->has_dbd == true){
+			psam *x = g->genes[ii]->dbd;
+			fprintf(fp, "Gene %d\n", ii);
+			for (int jj = 0; jj < x->nsites; jj++){
+				fprintf(fp, "site %d A: %f C: %f G: %f T: %f\n",
+						jj,
+						x->data[ii*x->nstates],
+						x->data[ii*x->nstates+1],
+						x->data[ii*x->nstates+2],
+						x->data[ii*x->nstates+3]
+						);
+			}
+		}
+	}
+
+	fclose(fp);
+	free(gs);
+	free(gc);
+	free(p);
 }
 

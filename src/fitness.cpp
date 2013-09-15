@@ -54,24 +54,6 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			//TBD
 
 
-			/* Print a special line for the 0th timeslice. */
-			/*
-			if (t == 0 && ss->verbosity > 1){
-				for (int gid=0; gid< g->ngenes; gid++){
-					char mark = ' ';
-					if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 0){
-						mark = 'r';
-					}
-					else if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 1) {
-						mark = 'a';
-					}
-					printf("r: %d\tgenr %d\ttime: 0\tID: %d\tgene: %d\t%c\texpr: %f\n",
-							rid, ss->gen_counter, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
-				}
-			}
-			*/
-
-
 			/* If t is not the last timeslice,
 			 * then update expression.
 			 */
@@ -157,6 +139,11 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				my_fit);
 	}
 
+	if (ss->verbosity > 10){
+		log_cofactor(g, ss);
+		log_dbds(g, ss);
+	}
+
 	return my_fit;
 }
 
@@ -177,8 +164,7 @@ double get_expr_modifier(t_genome *g, int gid, int t, settings *ss){
 	pe = pe - 0.5;
 
 	if (ss->verbosity > 10){
-		log_expr(g, t, ptable, ss);
-		log_cofactor(g, ss);
+		log_occupancy(g, t, ptable, ss);
 	}
 
 	return pe;
@@ -234,7 +220,9 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 						}
 						else{
 							/* Case 5: ii and jj can both fit here. */
-							double value = g->gene_expr[ii*g->expr_timeslices + t] * aff; // to-do: gamma! * g->genes[ii]->gamma;
+							double value = g->gene_expr[ii*g->expr_timeslices + t]
+							                            * aff
+							                            * g->genes[ii]->gamma[jj*ss->maxgd + dd];
 							ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
 							sum_cpt += value;
 							sum_cpr += value;
@@ -246,7 +234,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 					}
 					else if (jj == g->ntfs){
 						/* Case 6: no cofactor */
-						double value = g->gene_expr[ii*g->expr_timeslices + t] * aff; // to-do: gamma! * g->genes[ii]->gamma;
+						double value = g->gene_expr[ii*g->expr_timeslices + t] * aff;
 						ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
 						sum_cpt += value;
 						sum_cpr += value;

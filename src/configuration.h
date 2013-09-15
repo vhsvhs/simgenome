@@ -14,7 +14,7 @@
 
 #define MAX_DDG 2.0
 #define MIN_DDG -2.0
-#define MAX_GD 3
+#define MAX_GD 1
 #define MIN_TF_SEPARATION 0
 
 #define URSMU 0.01
@@ -34,9 +34,16 @@
 #define NIID 4000 // N I.I.D. samples
 
 #define MAX_GENS 1000
+#define MAX_TIME 1
 
 #define GROWTH_RATE 1.0 /* Controls how fast genes are turned on. */
 #define DECAY_RATE 1.0 /* Controls how fast gene expression lowers when RNA Pol. is removed */
+
+/*This rate gets used in the function coopfunc (in Landscape) to
+control the rate of decay of the cooperative or competitive interactions
+between TFs.  Big values facilitate cooperative binding across long distances,
+whereas small values make the coopfunc dropoff quickly.*/
+#define V_RATE_OF_COOP_DECAY 3
 
 /* PE_SCALAR is inversely proportion to URS length.
 Higher values make k_act higher, which makes it easer for genes to be expressed.

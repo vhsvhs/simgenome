@@ -15,14 +15,11 @@
 #include "configuration.h"
 #include "psam.h"
 #include "ptable.h"
-
 #include "settings.h"
-
 #include "gene.h"
+
 #include "genome.h"
 #include "population.h"
-
-
 #include "landscape.h"
 #include "ga.h"
 #include "fitness.h"

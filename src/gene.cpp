@@ -1,6 +1,12 @@
 #include "common.h"
 
-/* Makes memory for one gene */
+/* Makes memory for one gene
+ *
+ * NOTE: The returned gene will not yet have memory allocated
+ * for the gamma array (i.e. the co-factor affinity matrix).
+ * The gamma array can be build manualy, or by using the
+ * function build_coop followed by init_coop.
+ * */
 t_gene* make_gene(int psamlen, int urslen) {
 	t_gene *g;
 	g = (t_gene *)malloc(1*sizeof(t_gene));
@@ -15,17 +21,103 @@ t_gene* make_gene(int psamlen, int urslen) {
 		g->has_dbd = false;
 	}
 	g->gammalen = 0;
+	g->tfcooplen = 0;
 	return g;
 }
 
+/* Copies a gene 'from' into an entirely new gene, which is returned */
+t_gene* copy_gene(t_gene* from) {
+	t_gene* to = (t_gene*)malloc(sizeof(t_gene));
+
+	to->id = from->id;
+	// This strcpy is safe because gene names are always GENE_NAME_MAX characters long.
+
+	/* name */
+	to->name = (char *)malloc(GENE_NAME_MAX*sizeof(char));
+	strcpy( to->name, from->name );
+
+	/* urs */
+	to->urs = (int *)malloc(from->urslen*sizeof(int));
+	for(int ii=0; ii<from->urslen; ii++){
+		to->urs[ii] = from->urs[ii];
+	}
+	to->urslen = from->urslen;
+
+	/* psam */
+	to->has_dbd = from->has_dbd;
+	if (to->has_dbd == true){
+		to->dbd = make_psam(from->dbd->nsites, from->dbd->nstates);
+		copy_psam( to->dbd, from->dbd );
+	}
+	to->reg_mode = from->reg_mode;
+
+	/* If the cofactor affinity matrix (i.e. the gamma array)
+	 * has not been allocated, then let's allocate it here.
+	 */
+
+	if (to->has_dbd == true){
+		if (to->gammalen == 0) {
+			/* We could, alternatively, use the method "build_coop" here,
+			 * but that would require that we know how many TFs and the max
+			 * cofactor distance... both are variables not stores in the t_gene
+			 * struct.  Rather, we'll just allocate arrays that are the same
+			 * size as the 'from' gene.
+			 */
+			to->gamma = (double*)malloc(from->gammalen*sizeof(double));
+			to->tfcoop = (double*)malloc(from->tfcooplen*sizeof(double));
+		}
+		for(int ii=0; ii<from->gammalen; ii++){
+			to->gamma[ii] = from->gamma[ii];
+		}
+		for(int ii=0; ii<from->tfcooplen; ii++){
+			to->tfcoop[ii] = from->tfcoop[ii];
+		}
+	}
+	to->gammalen = from->gammalen;
+	to->tfcooplen = from->tfcooplen;
+
+	return to;
+
+}
+
 void build_coop(t_gene* g, int ntfs, int maxd){
+	g->tfcooplen = ntfs;
+	g->tfcoop = (double*)malloc(g->tfcooplen*sizeof(double));
 	g->gammalen = ntfs*maxd;
 	g->gamma = (double*)malloc(g->gammalen*sizeof(double));
 }
 
 void init_coop(t_gene* g){
+	for (int ii = 0; ii < g->tfcooplen; ii++){
+		g->tfcoop[ii] = 0.0;
+	}
 	for (int ii = 0; ii < g->gammalen; ii++){
-		g->gamma[ii] = 1.0;
+		g->gamma[ii] = 0.0;
+	}
+}
+
+/* f is the relative affinity for cofactor f.
+ * d is the distance to the cofactor.
+ */
+double coopfunc(double f, int d){
+	double val = 1 + f * exp( (-1)*(d^2)/V_RATE_OF_COOP_DECAY );
+	//printf("gene 105 coopfunc, d= %d ret= %f\n", d, val);
+	return val;
+}
+
+/* Recalculates the gamma array, given values in the tfcoop array.
+ * ntfs = n possible cofactors
+ * maxd = the maximum distance over which cofactor interacions can occur.
+ *
+ * This method assumes that you've already allocated memory
+ * for g->tfcoop and g->gamma.
+ */
+void calc_gamma(t_gene* g, int ntfs, int maxd){
+	for (int ii = 0; ii < ntfs; ii++){
+		for (int jj = 0; jj < maxd; jj++){
+			g->gamma[ii*maxd + jj] = coopfunc( g->tfcoop[ii], jj );
+			//printf("\n calc_gamma tf %d %d %f\n", ii, jj, g->gamma[ii*maxd + jj]);
+		}
 	}
 }
 
@@ -38,33 +130,7 @@ void free_gene(t_gene* g){
 	free(g->gamma);
 }
 
-/* Copies a gene, assuming that memory has already been allocated. */
-void copy_gene(t_gene* to, t_gene* from) {
-	to->id = from->id;
-	// This strcpy is safe because gene names are always GENE_NAME_MAX characters long.
-	strcpy( to->name, from->name );
-	// Ensure that the URS lengths match
-	if (to->urslen != from->urslen){
-		free(to->urs);
-		to->urs = (int *)malloc(from->urslen*sizeof(int));
-	}
-	for(int ii=0; ii<from->urslen; ii++){
-		to->urs[ii] = from->urs[ii];
-	}
-	to->urslen = from->urslen;
-	to->has_dbd = from->has_dbd;
-	if (to->has_dbd == true){
-		copy_psam( to->dbd, from->dbd );
-	}
-	to->reg_mode = from->reg_mode;
-	if (to->gammalen == 0){
-		to->gamma = (double*)malloc(from->gammalen*sizeof(double));
-	}
-	to->gammalen = from->gammalen;
-	for(int ii=0; ii<from->gammalen; ii++){
-		to->gamma[ii] = from->gamma[ii];
-	}
-}
+
 
 void print_urs(int* urs, int urslen) {
 	char state;
@@ -137,7 +203,7 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	char **urses = (char **)malloc(ngenes*sizeof(char*));
 	rewind(fu); /* Set the fu file pointer back to the start */
 	int this_gene = -1;
-	while (  fgets(line, MAXLEN, fu)  ){
+	while (  fgets(line, MAXLEN, fu) ){
 		if (line[0] == '>'){
 			this_gene += 1;
 		}
@@ -153,12 +219,14 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 				count++;
 				ii++;
 			}
-			//printf("gene 133, this_gene %d count= %d\n", this_gene, count);
-			urslengths[this_gene] = count;
-			urses[this_gene] = (char *)malloc(urslengths[this_gene]*sizeof(char));
-			for(int ii=0; ii< urslengths[this_gene]; ii++){
-				urses[this_gene][ii] = line[ii];
-				//printf("(settings 77) urs %d = %s\n", this_gene, urses[this_gene]);
+			if (this_gene < ngenes){
+				//printf("gene 133, this_gene %d count= %d\n", this_gene, count);
+				urslengths[this_gene] = count;
+				urses[this_gene] = (char *)malloc(urslengths[this_gene]*sizeof(char));
+				for(int ii=0; ii< urslengths[this_gene]; ii++){
+					urses[this_gene][ii] = line[ii];
+					//printf("(settings 77) urs %d = %s\n", this_gene, urses[this_gene]);
+				}
 			}
 		}
 	}
@@ -192,14 +260,16 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 					&& token[3] == 'm') {
 				token = strtok(NULL, " ");
 				this_gene = atoi( token );
-				has_dbd[this_gene] = true;
-				token = strtok(NULL, " ");
-				reg_modes[ this_gene ]= (bool)atoi( token );
-				count = 0;
-				psams[this_gene] = (double *)malloc(MAX_PSAM_LEN*sizeof(double)); //reset this_psam
-				psamlengths[this_gene] = 0;
+				if (this_gene < ngenes){
+					has_dbd[this_gene] = true;
+					token = strtok(NULL, " ");
+					reg_modes[ this_gene ]= (bool)atoi( token );
+					count = 0;
+					psams[this_gene] = (double *)malloc(MAX_PSAM_LEN*sizeof(double)); //reset this_psam
+					psamlengths[this_gene] = 0;
+				}
 			}
-			else{ // a line with 4 floating-point numbers
+			else if (this_gene < ngenes){ // a line with 4 floating-point numbers
 				//printf("(settings 103) line=%s token=%s\n", line, token);
 				float value = atof( token );
 				//printf("(settings 104) this_gene = %d, value=%f count=%d\n",this_gene, value, count);
@@ -217,10 +287,19 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		}
 	}
 
+//	for (int ii = 0; ii < ngenes; ii++){
+//		printf("\n. Gene %d\n", ii);
+//		for (int jj = 0; jj < psamlengths[ii]*4; jj++){
+//			printf("%d %f\n", jj, psams[ii][jj]);
+//		}
+//	}
+//	exit(1);
+
 	/* Build the genes, using the URSes and PSAMs we previously found. */
 	int ntfs = 0;
 	for (int ii=0; ii<ngenes; ii++){ // ii = gene
 		genes[ii] = make_gene(psamlengths[ii], urslengths[ii]);
+		genes[ii]->id = ii;
 		for (int jj=0; jj<urslengths[ii]; jj++){ // jj = site
 			genes[ii]->urs[jj] = nt2int( urses[ii][jj] );
 		}
@@ -236,11 +315,12 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 
 	/* Setup cofactor variables */
 	for (int ii=0; ii<ntfs; ii++){
-		//printf("\n. gene 239 %d", ii);
 		build_coop(genes[ii], ntfs, ss->maxgd);
-		//printf("\n. gene 241 %d", ii);
 		init_coop(genes[ii]);
-		//printf("\n. gene 243 %d", ii);
+	}
+
+	for (int ii=0; ii < ntfs; ii++){
+		calc_gamma( genes[ii], ntfs, ss->maxgd);
 	}
 
 	return genes;
