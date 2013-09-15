@@ -258,6 +258,7 @@ void print_settings(settings *ss){
 	printf(". pe scalar: %f\n", ss->pe_scalar);
 	printf(". max. on rate: %f\n", ss->growth_rate);
 	printf(". max. off rate: %f\n", ss->decay_rate);
+	printf(". max. cofactor distance: %d sites\n", ss->maxgd);
 	printf("==========================================\n");
 
 }

@@ -60,6 +60,8 @@ void runsim(t_ga* ga, settings* ss){
 			// to-do: write the expression cran
 		}
 
+		printf("ga 65\n");
+
 		get_fitness_stats( f, ga->pop->ngenomes,
 				maxf, minf, meanf, medianf, stdf);
 

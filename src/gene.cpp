@@ -243,6 +243,9 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	int count = 0;
 	while ( fgets(line, MAXLEN, fp)  ){
 		//printf("(settings 88) line=%s\n", line);
+		if (line[0] == '#'){
+			continue;
+		}
 
 		//printf("(settings 90) line=%s\n", line);
 		char * token = strtok(line, " ");
@@ -310,6 +313,13 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 				genes[ii]->has_dbd = true;
 			}
 			genes[ii]->reg_mode = reg_modes[ii];
+		}
+		if (ss->verbosity > 10){
+			printf("\n+ Gene %d, URS (%d sites)", ii, genes[ii]->urslen);
+			if (genes[ii]->has_dbd == true){
+				printf(", PSAM (%d sites)", genes[ii]->dbd->nsites);
+			}
+			printf("\n");
 		}
 	}
 

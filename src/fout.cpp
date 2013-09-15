@@ -106,7 +106,7 @@ void log_fitness(double* f, int len, settings* ss){
 	free(p);
 }
 
-void log_occupancy(t_genome *g, int t, t_ptable* ptable, settings* ss){
+void log_occupancy(t_genome *g, int gid, int t, t_ptable* ptable, settings* ss){
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));
 	sprintf(gc, "%d", ss->gen_counter);
@@ -115,12 +115,18 @@ void log_occupancy(t_genome *g, int t, t_ptable* ptable, settings* ss){
 	gs = (char*)malloc(4*sizeof(char));
 	sprintf(gs, "%d", g->id);
 
+	char *ge;
+	ge = (char*)malloc(10*sizeof(char));
+	sprintf(ge, "%d", gid);
+
 	char* ts;
 	ts = (char*)malloc(100*sizeof(char));
 	sprintf(ts, "%d", t);
 
 	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat(
+		strcat(
+		strcat(
 		strcat(
 			strcat(
 			strcat(
@@ -130,6 +136,8 @@ void log_occupancy(t_genome *g, int t, t_ptable* ptable, settings* ss){
 			gc),
 		".id"),
 		gs),
+		".gene"),
+		ge),
 	".txt");
 
 	FILE *fp;
@@ -145,79 +153,70 @@ void log_occupancy(t_genome *g, int t, t_ptable* ptable, settings* ss){
 	  exit(1);
 	}
 
-	for (int jj = 0; jj < g->ngenes; jj++){
-		char* gs;
-		gs = (char*)malloc(100*sizeof(char));
-		sprintf(gs, "%d", jj);
 
-		char *header = (char *)malloc(MAXLEN*sizeof(char));
+	char *header = (char *)malloc(MAXLEN*sizeof(char));
+	strcat(
 		strcat(
-			strcat(
-				strcat(
-				strcat(
-					strcat( header, ". t "),
-					ts),
-				" gene "),
-				gs),
-			"\n");
-		//printf("fout.cpp genome %d 150: %s\n", g->id, header);
-		fprintf(fp, "%s", header);
+				strcat( header, ". t "),
+				ts),
+		"\n");
+	//printf("fout.cpp genome %d 150: %s\n", g->id, header);
+	fprintf(fp, "%s", header);
 
-		// Lines look like this:
-		// site 1 :        0 a 0.632     1 r 0.368
-		// where a is for activator
-		// and r is for repressor
-		for (int site = 0; site <  g->genes[jj]->urslen; site++){
-			char* sss = (char*)malloc(10*sizeof(char));
-			sprintf(sss, "%d", site);
-			fprintf(fp, "site %s :", sss);
+	// Lines look like this:
+	// site 1 :        0 a 0.632     1 r 0.368
+	// where a is for activator
+	// and r is for repressor
+	for (int site = 0; site <  g->genes[gid]->urslen; site++){
+		char* sss = (char*)malloc(10*sizeof(char));
+		sprintf(sss, "%d", site);
+		fprintf(fp, "site %s :", sss);
 
-			double sump = ptable->cpr[site];
-			for (int tf = 0; tf < g->ntfs; tf++){
-				char* tfs = (char*)malloc(10*sizeof(char));
-				sprintf(tfs, "%d", tf);
+		double sump = ptable->cpr[site];
+		for (int tf = 0; tf < g->ntfs; tf++){
+			char* tfs = (char*)malloc(10*sizeof(char));
+			sprintf(tfs, "%d", tf);
 
-				char* rms = (char*)malloc(10*sizeof(char));
-				if (g->genes[jj]->has_dbd && g->genes[jj]->reg_mode == 0){
-					sprintf(rms, "r");
-				}
-				else if (g->genes[jj]->has_dbd && g->genes[jj]->reg_mode == 1){
-					sprintf(rms, "a");
-				}
-
-				double sumt = ptable->cpt[site*ptable->M + tf];
-
-				//if (sumt < 100 || sumt > 100){
-				//	printf("fout:177 %d %d %d %f\n",site, tf, ptable->M, sumt);
-				//}
-
-				double this_val = 0.0;
-				if (sump > 0.0 && sumt > 0.0){
-					this_val = sumt/sump;
-				}
-
-				fprintf(fp, "\t%s", tfs);
-				fprintf(fp, " %s", rms);
-				fprintf(fp, " %f", this_val);
-
-				free(tfs);
-				free(rms);
+			char* rms = (char*)malloc(10*sizeof(char));
+			if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 0){
+				sprintf(rms, "r");
 			}
-			fprintf(fp, "\n");
+			else if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 1){
+				sprintf(rms, "a");
+			}
 
+			double sumt = ptable->cpt[site*ptable->M + tf];
+
+
+			double this_val = 0.0;
+			if (sump > 0.0 && sumt > 0.0){
+				this_val = sumt/sump;
+			}
+			else if (sump < 0.0 || sumt < 0.0){
+				this_val = 0.0;
+			}
+
+			fprintf(fp, "\t%s", tfs);
+			fprintf(fp, " %s", rms);
+			fprintf(fp, " %f", this_val);
+
+			free(tfs);
+			free(rms);
 		}
+		fprintf(fp, "\n");
 
-		/* Reset the header */
-		for (int qq = 0; qq < MAXLEN; qq++){
-			header[qq] = NULL;
-		}
-
-		free(header);
-		free(gs);
 	}
+
+	/* Reset the header */
+	for (int qq = 0; qq < MAXLEN; qq++){
+		header[qq] = NULL;
+	}
+
+	free(header);
+	free(gs);
 	free(ts);
 	free(gc);
-	free(gs);
+	free(ge);
 	free(p);
 
 	fclose(fp);

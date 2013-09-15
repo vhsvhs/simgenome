@@ -164,7 +164,7 @@ double get_expr_modifier(t_genome *g, int gid, int t, settings *ss){
 	pe = pe - 0.5;
 
 	if (ss->verbosity > 10){
-		log_occupancy(g, t, ptable, ss);
+		log_occupancy(g, gid, t, ptable, ss);
 	}
 
 	return pe;
@@ -246,6 +246,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 				}
 			} // end for jj
 			ret->cpt[xx * ret->M + ii] = sum_cpt;
+			//printf("fitness 249 %d %d %f\n", xx, ii, ret->cpt[xx * ret->M + ii]);
 
 		} // end for ii
 		ret->cpr[xx] = sum_cpr;
@@ -305,7 +306,10 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 				/* Advance the site counter */
 				s += g->r[reti];
 				s += retd;
-				s += g->r[retj];
+				if (retj < g->ntfs){
+					s += g->r[retj];
+				}
+				//printf("fitness 309 %d %d %d %d %d %d\n", s, reti, g->r[reti], retd, retj, g->r[retj]);
 			}
 
 		} // end while s < urslen
