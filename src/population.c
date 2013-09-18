@@ -40,7 +40,7 @@ void free_pop(t_pop* pop){
 }
 
 /* f is an array of fitness scores */
-void reproduce(t_pop* pop, settings* ss, double* f) {
+t_pop* reproduce(t_pop* pop, settings* ss, double* f) {
 	if (ss->verbosity > 2){
 		printf("\n. The population is selectively reproducing. . .\n");
 	}
@@ -52,6 +52,7 @@ void reproduce(t_pop* pop, settings* ss, double* f) {
 	newpop->ngenomes = pop->ngenomes;
 
 	for (int ii = 0; ii < pop->ngenomes; ii++){
+
 		/* Elite individuals are cloned. */
 		if (pop->genomes[ii]->is_elite == true){
 			newpop->genomes[ii] = copy_genome( pop->genomes[ii]);
@@ -70,8 +71,25 @@ void reproduce(t_pop* pop, settings* ss, double* f) {
 			newpop->genomes[ii] = mate(pop->genomes[parent1],
 					pop->genomes[parent2]);
 		}
+		newpop->genomes[ii]->id = ii;
 		build_lifespan(newpop->genomes[ii], ss->maxtime);
+	}
 
+	__validate_pops(newpop, pop);
+
+	/* Free the old population */
+	free_pop(pop);
+
+	return newpop;
+}
+
+/* A method for testing/debugging.
+ * It compares populations a and b.
+ * If they differ in size, then something is wrong
+ */
+void __validate_pops(t_pop* a, t_pop* b){
+	if (a->ngenomes != b->ngenomes){
+		exit(1);
 	}
 }
 
@@ -106,6 +124,11 @@ t_genome* mate(t_genome* par1, t_genome* par2){
 			f1->genes[gg] = copy_gene(par2->genes[gg]);
 		}
 	}
+
+	f1->ngenes = par1->ngenes;
+	f1->ntfs = par1->ntfs;
+	f1->is_elite = false;
+
 	return f1;
 }
 

@@ -32,8 +32,8 @@ int main( int argc, char **argv )
 	printf("\n. I'm running the G.A.\n");
 	runsim(ga, ss);
 
-	printf("\n. I'm freeing the population....\n");
-	free_pop( pop );
+	printf("\n. I'm done, cleaning up....\n");
+	free_ga( ga );
 
 	return 1;
 }

@@ -125,9 +125,12 @@ void calc_gamma(t_gene* g, int ntfs, int maxd){
 void free_gene(t_gene* g){
 	free(g->name);
 	free(g->urs);
-	free_psam(g->dbd);
-	free(g->dbd);
-	free(g->gamma);
+	if (g->has_dbd){
+		free_psam(g->dbd);
+		free(g->dbd);
+		free(g->gamma);
+		free(g->tfcoop);
+	}
 }
 
 
@@ -204,6 +207,7 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	rewind(fu); /* Set the fu file pointer back to the start */
 	int this_gene = -1;
 	while (  fgets(line, MAXLEN, fu) ){
+		//printf("\ngene209: %s\n", line);
 		if (line[0] == '>'){
 			this_gene += 1;
 		}
@@ -231,6 +235,10 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		}
 	}
 
+	if (ss->verbosity > 20){
+		printf("\n. I found %d gene definitions.\n", ngenes);
+	}
+
 	/* Get PSAMS */
 	bool *has_dbd = (bool *)malloc(ngenes*sizeof(bool));
 	for(int ii=0; ii<ngenes; ii++){
@@ -242,7 +250,6 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	this_gene = -1;
 	int count = 0;
 	while ( fgets(line, MAXLEN, fp)  ){
-		//printf("(settings 88) line=%s\n", line);
 		if (line[0] == '#'){
 			continue;
 		}

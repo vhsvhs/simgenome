@@ -144,6 +144,8 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 		log_dbds(g, ss);
 	}
 
+	free(g->r);
+
 	return my_fit;
 }
 

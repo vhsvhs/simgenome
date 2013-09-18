@@ -13,6 +13,7 @@ psam* make_psam(int nsites, int nstates) {
 
 void free_psam(psam* p){
 	free(p->data);
+	//free(p);
 }
 
 /* Copies a psam, assuming the memory has already been allocated. */

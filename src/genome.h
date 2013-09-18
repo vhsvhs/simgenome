@@ -6,7 +6,10 @@ typedef struct __Genome {
 	double* gene_expr; /* gene_expr[gene->id * ntimeslices + timeslice] = value ranging from 0.0 to 1.0 */
 	int expr_timeslices;
 	bool is_elite;
-	int* r; /* Used in calc_prob_tables to temporarily store the lengths of PSAMs */
+
+	/* 'r' is used in get_fitness to temporarily store the lengths of PSAMs.
+	 * 'r' is both allocated and garbage collected in get_fitness.  */
+	int* r;
 }t_genome;
 
 t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss);

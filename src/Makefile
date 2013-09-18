@@ -1,8 +1,6 @@
-CC=gcc
+CC=g++
 CFLAGS=-c -Wall
 LDFLAGS=
-SOURCES=common.cpp gene.cpp mutate.cpp psam.cpp scratch.cpp settings.cpp  
-OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=hello
 
 all: simreg
@@ -13,50 +11,50 @@ scratch: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o pop
 simreg: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o main.o
 	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o main.o -o simreg
 
-argp.o: argp.cpp
-	$(CC) -c argp.cpp
+argp.o: argp.c
+	$(CC) -c argp.c
 
-ga.o: ga.cpp
-	$(CC) -c ga.cpp
+ga.o: ga.c
+	$(CC) -c ga.c
 
-gene.o: gene.cpp
-	$(CC) -c gene.cpp
+gene.o: gene.c
+	$(CC) -c gene.c
 
-genome.o: genome.cpp
-	$(CC) -c genome.cpp
+genome.o: genome.c
+	$(CC) -c genome.c
 	
-fout.o: fout.cpp
-	$(CC) -c fout.cpp
+fout.o: fout.c
+	$(CC) -c fout.c
 
-main.o: main.cpp
-	$(CC) -c main.cpp
+main.o: main.c
+	$(CC) -c main.c
 
-scratch.o: scratch.cpp
-	$(CC) -c scratch.cpp
+scratch.o: scratch.c
+	$(CC) -c scratch.c
 
-settings.o: settings.cpp
-	$(CC) -c settings.cpp
+settings.o: settings.c
+	$(CC) -c settings.c
 
-population.o: population.cpp
-	$(CC) -c population.cpp
+population.o: population.c
+	$(CC) -c population.c
 
-psam.o: psam.cpp
-	$(CC) -c psam.cpp
+psam.o: psam.c
+	$(CC) -c psam.c
 
-ptable.o: ptable.cpp
-	$(CC) -c ptable.cpp
+ptable.o: ptable.c
+	$(CC) -c ptable.c
 
-common.o: common.cpp
-	$(CC) -c common.cpp
+common.o: common.c
+	$(CC) -c common.c
 
-mutate.o: mutate.cpp
-	$(CC) -c mutate.cpp
+mutate.o: mutate.c
+	$(CC) -c mutate.c
 	
-landscape.o: landscape.cpp
-	$(CC) -c landscape.cpp
+landscape.o: landscape.c
+	$(CC) -c landscape.c
 
-fitness.o: fitness.cpp
-	$(CC) -c fitness.cpp
+fitness.o: fitness.c
+	$(CC) -c fitness.c
 
 clean:
 	rm -rf *o hello

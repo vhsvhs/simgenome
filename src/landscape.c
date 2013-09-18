@@ -40,6 +40,7 @@ t_ruleset* make_ruleset(int id, int nrules, int ninputs){
  * Upon completion, ret_n will hold the number of t_ruleset object
  * that were built into the return value.
  */
+
 t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	FILE *fr; /* File for psam specs */
 	fr = fopen(ss->rulepath,"r");
@@ -116,7 +117,6 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 
 	//printf("\n. landscape 96 nrules[nrs-1]= %d ninputs[nrs-1]= %d\n", nrules[nrs-1], ninputs[nrs-1]);
 
-
 	/* Final pass: read and save the rules and inputs */
 
 	// An array of pointers to t_ruleset objects:
@@ -145,7 +145,7 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	 */
 	while ( fgets(line, MAXLEN, fr) ){
 		const char* tokens[MAX_TOKENS] = {};
-		tokens[0] = strtok(line, " ");
+		tokens[0] = strtok(line, " "); //tokens 0
 		if (tokens[0][0] == '#'){
 			continue;
 		}
@@ -155,24 +155,23 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 		else if (tokens[0]){
 
 			// ruleset ID:
-			int this_rs = atoi( strtok(NULL, " " ) );
+			int this_rs = atoi( strtok(NULL, " " ) ); // tok 1
 
 			// gene ID:
-			int geneid = atoi( strtok(NULL, " ") );
-
+			int geneid = atoi( strtok(NULL, " ") ); // tok 2
 
 			// RULE
 			if (tokens[0][0] == 'R' &&
 					tokens[0][1] == 'U' &&
 					tokens[0][2] == 'L' &&
 					tokens[0][3] == 'E') {
-				int timepoint = atoi( strtok(NULL, " ") );
+				int timepoint = atoi( strtok(NULL, " ") ); // tokens 3
 				if (timepoint > ntime){
 					ntime = timepoint;
 				}
-				double expr = atof( strtok(NULL, " ") );
-				int ruletype = atoi( strtok(NULL, " ") );
-				double weight = atof( strtok(NULL, " ") );
+				double expr = atof( strtok(NULL, " ") ); // tokens 4
+				int ruletype = atoi( strtok(NULL, " ") ); //tokens 5
+				double weight = atof( strtok(NULL, " ") ); // tokens 6
 				rulesets[this_rs]->rules[ruleset_countrule[this_rs]] = make_rule(timepoint, geneid, expr, ruletype, weight);
 				ruleset_countrule[this_rs]++;
 			}
@@ -182,12 +181,12 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 					tokens[0][2] == 'P' &&
 					tokens[0][3] == 'U' &&
 					tokens[0][4] == 'T') {
-				int timestart = atoi(strtok(NULL, " ") );
-				int timestop = atoi(strtok(NULL, " ") );
+				int timestart = atoi(strtok(NULL, " ") ); // tokens 1
+				int timestop = atoi(strtok(NULL, " ") ); // tokens 2
 				if (timestop > ntime){
 					ntime = timestop;
 				}
-				double expr = atof(strtok(NULL, " ") );
+				double expr = atof(strtok(NULL, " ") ); // tokens 3
 				rulesets[this_rs]->inputs[ ruleset_countinput[this_rs] ] = make_input(timestart, timestop, geneid, expr);
 				ruleset_countinput[this_rs]++;
 			}
@@ -201,6 +200,18 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 
 
 void free_landscape(t_landscape* l){
-
+	for (int ii = 0; ii < l->nrulesets; ii++){
+		for (int jj = 0; jj < l->rulesets[ii]->ninputs; jj++){
+			free( l->rulesets[ii]->inputs[jj] );
+		}
+		for (int jj = 0; jj < l->rulesets[ii]->nrules; jj++){
+			free( l->rulesets[ii]->rules[jj] );
+		}
+		free( l->rulesets[ii]->inputs );
+		free( l->rulesets[ii]->rules );
+		free( l->rulesets[ii] );
+	}
+	free( l->rulesets );
+	free(l);
 
 }

@@ -53,7 +53,6 @@ void free_genome(t_genome* gn){
 	}
 	free(gn->genes);
 	free(gn->gene_expr);
-	free(gn->r);
 }
 
 /* Makes a genome with all random gene sequences and affinities */
@@ -128,7 +127,7 @@ int count_urslen(t_genome* g){
  */
 int count_psamlen(t_genome* g){
 	int c= 0;
-	for (int ii = 0; ii < g->ngenes; ii++){
+	for (int ii = 0; ii < g->ngenes; ii++){ //to-do: we could optimize this by using g->ntfs rather than g->ngenes
 		if (g->genes[ii]->has_dbd){
 			c += g->genes[ii]->dbd->nsites;
 		}

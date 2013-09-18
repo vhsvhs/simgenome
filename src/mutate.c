@@ -23,28 +23,28 @@ void mutate(t_pop* pop, settings* ss){
 		/*
 		 * n mutations to upstream regulatory sequence
 		 */
-		int n = count_urslen( pop->genomes[ii] )
-				* ss->urs_mu_rate;
+		int n = count_urslen( pop->genomes[ii] ) * ss->urs_mu_rate;
+
 		if (n < 0){
 			n = 0;
 		}
 		if (ss->verbosity > 10){
-			printf("\n. I'm making %d URS point mutations to ID %d.\n", n, ii );
+			printf("\n. I'm making %d URS point mutations to ID %d.", n, ii );
 		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ngenes;
 			mutate_urs(pop->genomes[ii]->genes[rand_gene], ss);
 		}
+
 		/*
 		 * n mutations to PSAMs
 		 */
-		n = count_psamlen( pop->genomes[ii] )
-				* ss->psam_mu_rate;
+		n = count_psamlen( pop->genomes[ii] ) * ss->psam_mu_rate;
 		if (n < 0){
 			n = 0;
 		}
 		if (ss->verbosity > 10){
-			printf("\n. I'm making %d PSAM point mutations to ID %d.\n", n, ii );
+			printf("\n. I'm making %d PSAM point mutations to ID %d.", n, ii );
 		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ntfs;
@@ -58,7 +58,7 @@ void mutate(t_pop* pop, settings* ss){
 
 		// Rebuilt the co-factor affinity matrix based
 		// on the new mutant affinity values.
-		for (int jj=0; jj < pop->genomes[ii]->ngenes; jj++){
+		for (int jj=0; jj < pop->genomes[ii]->ntfs; jj++){
 			calc_gamma( pop->genomes[ii]->genes[jj],
 					pop->genomes[ii]->ntfs,
 					ss->maxgd);
