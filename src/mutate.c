@@ -12,7 +12,7 @@ double get_random_ddg() {
  */
 void mutate(t_pop* pop, settings* ss){
 	if (ss->verbosity > 2){
-		printf("\n. The population is mutating. . .\n");
+		printf("\n\n. The population is mutating. . .\n");
 	}
 
 	if (!ss->do_mutation){
@@ -29,7 +29,7 @@ void mutate(t_pop* pop, settings* ss){
 			n = 0;
 		}
 		if (ss->verbosity > 10){
-			printf("\n. I'm making %d URS point mutations to ID %d.", n, ii );
+			printf("\n. I'm making %d URS point mutations to ID %d.\n", n, ii );
 		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ngenes;
@@ -44,7 +44,7 @@ void mutate(t_pop* pop, settings* ss){
 			n = 0;
 		}
 		if (ss->verbosity > 10){
-			printf("\n. I'm making %d PSAM point mutations to ID %d.", n, ii );
+			printf("\n. I'm making %d PSAM point mutations to ID %d.\n", n, ii );
 		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ntfs;

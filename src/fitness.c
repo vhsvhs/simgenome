@@ -57,6 +57,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			/* If t is not the last timeslice,
 			 * then update expression.
 			 */
+
 			if (t < l->ntime-1)
 			{
 				/* For each gene, update is expression level based on
@@ -65,7 +66,9 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				for (int gid=0; gid< g->ngenes; gid++){
 					/* To-do: if gid is in the knock-out, then actually knock it out here.*/
 
+
 					double pe = get_expr_modifier(g, gid, t, ss);
+
 					if (pe > 0.0){
 						pe *= ss->growth_rate * pe;
 					}
@@ -83,6 +86,8 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 					}
 
 					g->gene_expr[gid * g->expr_timeslices + t+1] = new_expr_level;
+
+
 				}
 			}
 
@@ -94,10 +99,12 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				else if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 1) {
 					mark = 'a';
 				}
-				printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
+				if (ss->verbosity > 2){
+					printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
 						rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
-
+				}
 			}
+
 		} // end for t
 
 		/* Now score this genome's gene expression vs. the ruleset rid */
@@ -132,7 +139,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
 	my_fit /= l->nrulesets;
 
-	if (ss->verbosity > 5){
+	if (ss->verbosity > 2){
 		printf("\n. At generation %d, ID %d has fitness %f.\n",
 				ss->gen_counter,
 				g->id,
@@ -156,12 +163,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
  */
 double get_expr_modifier(t_genome *g, int gid, int t, settings *ss){
 	t_ptable *ptable = make_ptable( g->ntfs, ss->maxgd, g->genes[gid]->urslen);
-	//printf("fitness 184\n");
-	//print_ptable( ptable );
 	fill_prob_table(g, gid, ptable, t, ss);
-	//printf("fitness 186\n");
-	//print_ptable( ptable );
-	//exit(1);
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
 
@@ -182,7 +184,6 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 		double sum_cpr = 0.0;
 		for (int ii = 0; ii < g->ntfs; ii++){ // for each transcription factor
 			double aff = get_affinity(g->genes[ii]->dbd, g->genes[gid]->urs, g->genes[gid]->urslen, xx);
-			//printf("\n fitness 204 xx %d ii %d aff %f\n", xx, ii, aff);
 
 			double sum_cpt = 0.0; // the sum of cpt values over this jj.
 			for (int jj = 0; jj < g->ntfs + 1; jj++){ // for co-factors, +1 is the empty slot, i.e. no cofactor.
@@ -311,7 +312,6 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 				if (retj < g->ntfs){
 					s += g->r[retj];
 				}
-				//printf("fitness 309 %d %d %d %d %d %d\n", s, reti, g->r[reti], retd, retj, g->r[retj]);
 			}
 
 		} // end while s < urslen

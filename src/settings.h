@@ -31,12 +31,11 @@ typedef struct __Settings {
 	double growth_rate;
 	double decay_rate;
 
-	/* true = remove all files from the output directory
+	/* run_clean: if true = remove all files from the output directory
 	 * before starting the genetic algorithm.  This prevents
 	 * "stale" files from previous runs form polluting
 	 * the output of this run.
 	 */
-
 	bool run_clean;
 
 }settings;

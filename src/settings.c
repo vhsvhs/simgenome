@@ -157,7 +157,6 @@ void read_cli(int argc, char **argv, settings* ss){
 				break;
 			}
 
-
 			case 1000:
 			{
 				printf("\n. I found --hello\n");
@@ -176,7 +175,7 @@ void read_cli(int argc, char **argv, settings* ss){
 	/* Now we do some post-parsing business */
 	if (ss->run_clean == true){
 		char *qq = (char*)malloc(FILEPATH_LEN_MAX*sizeof(char));
-		strcat( strcat( strcat(qq, "rm -rf"), ss->outdir), "/*");
+		strcat( strcat( strcat(qq, "rm -rf "), ss->outdir), "/*");
 		system( qq );
 		build_output_folders(ss);
 	}
@@ -235,30 +234,32 @@ void print_splash(){
 }
 
 void print_settings(settings *ss){
-	printf("\n");
-	printf("==========================================\n");
-	printf("Current Settings:\n");
-	printf(". verbosity: %d\n", ss->verbosity);
-	printf(". output directory: %s\n", ss->outdir);
-	printf(". PSAMs: %s\n", ss->psampath);
-	printf(". URSs: %s\n", ss->urspath);
-	printf(". fitness rules: %s\n", ss->rulepath);
-	printf("\n");
-	printf(". starting generation: %d\n", ss->gen_counter);
-	printf(". generation limit: %d\n", ss->max_gens);
-	printf(". population size: %d\n", ss->popsize);
-	printf("\n");
-	if (ss->do_mutation) { printf(". mutations: enabled\n"); }
-	else { printf(". mutations: disabled\n"); }
-	printf(". URS mu rate: %f\n", ss->urs_mu_rate);
-	printf(". PSAM mu rate: %f\n", ss->psam_mu_rate);
-	printf(". cofactor mu rate: %f\n", ss->ddgmu);
-	printf("\n");
-	printf(". n I.I.D. samples: %d\n", ss->niid);
-	printf(". pe scalar: %f\n", ss->pe_scalar);
-	printf(". max. on rate: %f\n", ss->growth_rate);
-	printf(". max. off rate: %f\n", ss->decay_rate);
-	printf(". max. cofactor distance: %d sites\n", ss->maxgd);
-	printf("==========================================\n");
+	if (ss->verbosity > 0){
+		printf("\n");
+		printf("==========================================\n");
+		printf("Current Settings:\n");
+		printf(". verbosity: %d\n", ss->verbosity);
+		printf(". output directory: %s\n", ss->outdir);
+		printf(". PSAMs: %s\n", ss->psampath);
+		printf(". URSs: %s\n", ss->urspath);
+		printf(". fitness rules: %s\n", ss->rulepath);
+		printf("\n");
+		printf(". starting generation: %d\n", ss->gen_counter);
+		printf(". generation limit: %d\n", ss->max_gens);
+		printf(". population size: %d\n", ss->popsize);
+		printf("\n");
+		if (ss->do_mutation) { printf(". mutations: enabled\n"); }
+		else { printf(". mutations: disabled\n"); }
+		printf(". URS mu rate: %f\n", ss->urs_mu_rate);
+		printf(". PSAM mu rate: %f\n", ss->psam_mu_rate);
+		printf(". cofactor mu rate: %f\n", ss->ddgmu);
+		printf("\n");
+		printf(". n I.I.D. samples: %d\n", ss->niid);
+		printf(". pe scalar: %f\n", ss->pe_scalar);
+		printf(". max. on rate: %f\n", ss->growth_rate);
+		printf(". max. off rate: %f\n", ss->decay_rate);
+		printf(". max. cofactor distance: %d sites\n", ss->maxgd);
+		printf("==========================================\n");
+	}
 
 }

@@ -45,6 +45,20 @@ t_pop* reproduce(t_pop* pop, settings* ss, double* f) {
 		printf("\n. The population is selectively reproducing. . .\n");
 	}
 
+	/* Open the mating log file */
+	char *gs;
+	gs = (char*)malloc(10*sizeof(char));
+	sprintf(gs, "%d", ss->gen_counter);
+	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat( strcat( strcat( strcat(p, ss->outdir), "/MATING/mating.gen"), gs), ".txt");
+	free(gs);
+	FILE *fp;
+	fp = fopen(p, "w");
+	if (fp == NULL) {
+	  fprintf(stderr, "Error: can't open the mating log file %s!\n", p);
+	}
+	free(p);
+
 	/* Build the population at t+1 */
 	t_pop *newpop;
 	newpop = (t_pop*)malloc(1*sizeof(t_pop));
@@ -59,6 +73,9 @@ t_pop* reproduce(t_pop* pop, settings* ss, double* f) {
 			if (ss->verbosity > 2){
 				printf("\n\t. Elite individual %d will be cloned.", ii);
 			}
+			fprintf(fp, "generation %d cloned id %id into child %d\n",
+						ss->gen_counter,
+						ii, ii);
 		}
 		else{
 			/* Pick random parents */
@@ -68,6 +85,9 @@ t_pop* reproduce(t_pop* pop, settings* ss, double* f) {
 			if (ss->verbosity > 2){
 				printf("\n\t. ID %d mating with ID %d", parent1, parent2);
 			}
+
+			fprintf(fp, "generation %d id %d x id %d = child %d\n",
+						ss->gen_counter, parent1, parent2, ii);
 			newpop->genomes[ii] = mate(pop->genomes[parent1],
 					pop->genomes[parent2]);
 		}
@@ -75,23 +95,12 @@ t_pop* reproduce(t_pop* pop, settings* ss, double* f) {
 		build_lifespan(newpop->genomes[ii], ss->maxtime);
 	}
 
-	__validate_pops(newpop, pop);
-
 	/* Free the old population */
 	free_pop(pop);
-
+	fclose(fp);
 	return newpop;
 }
 
-/* A method for testing/debugging.
- * It compares populations a and b.
- * If they differ in size, then something is wrong
- */
-void __validate_pops(t_pop* a, t_pop* b){
-	if (a->ngenomes != b->ngenomes){
-		exit(1);
-	}
-}
 
 /* Mates two genomes, and returns their child as a new object.*/
 t_genome* mate(t_genome* par1, t_genome* par2){

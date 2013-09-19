@@ -36,6 +36,19 @@ void build_output_folders(settings* ss){
 	if (!Filexists(tmp)){
 		mkdir(tmp, 0700);
 	}
+
+	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat( strcat(tmp, ss->outdir), "/POPS/");
+	if (!Filexists(tmp)){
+		mkdir(tmp, 0700);
+	}
+
+	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat( strcat(tmp, ss->outdir), "/MATING/");
+	if (!Filexists(tmp)){
+		mkdir(tmp, 0700);
+	}
+
 	free(tmp);
 
 }
@@ -86,8 +99,6 @@ void log_fitness(double* f, int len, settings* ss){
 		g),
 	".txt");
 
-	//printf("fout 46\n");
-
 	FILE *fp;
 	fp = fopen(p, "w");
 	if (fp == NULL) {
@@ -96,12 +107,14 @@ void log_fitness(double* f, int len, settings* ss){
 	  exit(1);
 	}
 
-
 	for (int ii=0; ii<len; ii++){
 		//printf("%d %f\n", ii, f[ii]);
 		fprintf(fp, "ID %d, %f\n", ii, f[ii]);
 	}
 	fclose(fp);
+	if (ss->verbosity > 10){
+		printf("\n. Fitness values was written to %s\n", p);
+	}
 	free(g);
 	free(p);
 }
@@ -323,4 +336,3 @@ void log_dbds(t_genome *g, settings* ss){
 	free(gc);
 	free(p);
 }
-

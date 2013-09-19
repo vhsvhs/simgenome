@@ -11,12 +11,12 @@ t_ga* make_ga(){
  */
 void runsim(t_ga* ga, settings* ss){
 
+
 	/* For each generation */
 	int start_gen = ss->gen_counter;
 	for (int ii = start_gen;
 			ii < (start_gen + ss->max_gens);
 			ii++){
-
 		ss->gen_counter = ii;
 
 		/*
@@ -50,6 +50,7 @@ void runsim(t_ga* ga, settings* ss){
 		double medianf = 0;
 		double stdf = 0;
 
+
 		/* Consider each individual */
 		for (int gid=0; gid < ga->pop->ngenomes; gid++){
 			/*
@@ -60,9 +61,9 @@ void runsim(t_ga* ga, settings* ss){
 			// to-do: write the expression cran
 		}
 
+
 		get_fitness_stats( f, ga->pop->ngenomes,
 				maxf, minf, meanf, medianf, stdf);
-
 		printf("==================================\n");
 		printf(". Generation %d Fitness:\n", ii);
 		for (int gid = 0; gid < ga->pop->ngenomes; gid++){
@@ -70,7 +71,9 @@ void runsim(t_ga* ga, settings* ss){
 		}
 		printf("==================================\n");
 
+		/* Save the fitness stats, and serialize the population */
 		log_fitness(f, ga->pop->ngenomes, ss);
+		serialize_population(ga->pop, ss);
 
 		/*
 		 * SELECTIVELY REPRODUCE

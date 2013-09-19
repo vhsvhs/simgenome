@@ -17,7 +17,6 @@
 #include "ptable.h"
 #include "settings.h"
 #include "gene.h"
-
 #include "genome.h"
 #include "population.h"
 #include "landscape.h"
@@ -25,8 +24,9 @@
 #include "fitness.h"
 #include "mutate.h"
 #include "argp.h"
-
+#include "serialize.h"
 #include "fout.h"
+
 void shuffle(double *array, size_t n);
 int filexists(char *filename);
 char int2nt(int x);

@@ -5,11 +5,11 @@ EXECUTABLE=hello
 
 all: simreg
 
-scratch: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o
-	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o scratch.o -o scratch
+scratch: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o serialize.o scratch.o
+	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o serialize.o scratch.o -o scratch
 
-simreg: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o main.o
-	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o main.o -o simreg
+simreg: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o serialize.o settings.o main.o
+	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o serialize.o settings.o main.o -o simreg
 
 argp.o: argp.c
 	$(CC) -c argp.c
@@ -34,6 +34,9 @@ scratch.o: scratch.c
 
 settings.o: settings.c
 	$(CC) -c settings.c
+
+serialize.o: serialize.c
+	$(CC) -c serialize.c
 
 population.o: population.c
 	$(CC) -c population.c
