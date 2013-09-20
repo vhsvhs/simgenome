@@ -109,11 +109,11 @@ void log_fitness(double* f, int len, settings* ss){
 
 	for (int ii=0; ii<len; ii++){
 		//printf("%d %f\n", ii, f[ii]);
-		fprintf(fp, "ID %d, %f\n", ii, f[ii]);
+		fprintf(fp, "%d %f\n", ii, f[ii]);
 	}
 	fclose(fp);
 	if (ss->verbosity > 10){
-		printf("\n. Fitness values was written to %s\n", p);
+		printf("\n. Fitness values were written to %s\n", p);
 	}
 	free(g);
 	free(p);

@@ -11,9 +11,6 @@ scratch: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o pop
 simreg: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o serialize.o settings.o main.o
 	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o serialize.o settings.o main.o -o simreg
 
-argp.o: argp.c
-	$(CC) -c argp.c
-
 ga.o: ga.c
 	$(CC) -c ga.c
 
