@@ -17,7 +17,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
 	double my_fit = 0.0;
 
-	/* Consider each rule set */
+	/* Consider every rule set */
 	for (int rid=0; rid < l->nrulesets; rid++) {
 
 		/* Initialize gene expression levels */
