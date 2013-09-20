@@ -4,3 +4,4 @@ void log_fitness(double* f, int len, settings* ss);
 void log_occupancy(t_genome *g, int gid, int t, t_ptable* ptable, settings* ss);
 void log_cofactor(t_genome *g, settings* ss);
 void log_dbds(t_genome *g, settings* ss);
+void log_urs(t_genome *g, settings* ss);

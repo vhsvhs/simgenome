@@ -49,6 +49,12 @@ void build_output_folders(settings* ss){
 		mkdir(tmp, 0700);
 	}
 
+	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat( strcat(tmp, ss->outdir), "/URS/");
+	if (!Filexists(tmp)){
+		mkdir(tmp, 0700);
+	}
+
 	free(tmp);
 
 }
@@ -283,6 +289,44 @@ void log_cofactor(t_genome *g, settings* ss){
 	fclose(fp);
 }
 
+void log_urs(t_genome *g, settings* ss){
+	char* gc;
+	gc = (char*)malloc(10*sizeof(char));
+	sprintf(gc, "%d", ss->gen_counter);
+	char* gs;
+	gs = (char*)malloc(4*sizeof(char));
+	sprintf(gs, "%d", g->id);
+	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat(
+		strcat(
+			strcat(
+			strcat(
+			strcat(
+			strcat(p, ss->outdir),
+			"/URS/urs.gen"),
+			gc),
+		".id"),
+		gs),
+	".txt");
+
+	FILE *fp;
+	fp = fopen(p, "w");
+	if (fp == NULL) {
+	  fprintf(stderr, "Error: can't open output file %s!\n",
+			  p);
+	  exit(1);
+	}
+
+	for (int ii = 0; ii < g->ngenes; ii++){
+		fprintf(fp, "gene %d ", ii);
+		for (int jj = 0; jj < g->genes[ii]->urslen; jj++){
+			fprintf(fp, "%c", int2nt(g->genes[ii]->urs[jj]) );
+		}
+		fprintf(fp, "\n");
+	}
+
+	fclose(fp);
+}
 
 void log_dbds(t_genome *g, settings* ss){
 	char* gc;

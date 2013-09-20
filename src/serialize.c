@@ -28,7 +28,19 @@ void serialize_population(t_pop* pop, settings* ss){
 		printf("\n. The population was saved to %s\n", p);
 	}
 
-	fprintf(fo, "Hello World.\n");
+	fprintf(fo, "N genomes: %d\n", pop->ngenomes);
+
+	for (int ii = 0; ii < pop->ngenomes; ii++){
+		for (int jj = 0; jj < pop->genomes[ii]->ngenes; jj++){
+			fprintf(fo, "ID %d gene %d %b %d %s %d\n",
+					ii, jj, pop->genomes[ii]->genes[jj],
+					(pop->genomes[ii]->genes[jj]->has_dbd)?"true":"false",
+					pop->genomes[ii]->genes[jj]->reg_mode,
+					pop->genomes[ii]->genes[jj]->urs,
+					pop->genomes[ii]->genes[jj]->urslen);
+		}
+	}
+
 
 	fclose(fo);
 	free(gc);
