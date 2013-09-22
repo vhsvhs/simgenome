@@ -59,35 +59,6 @@ void build_output_folders(settings* ss){
 
 }
 
-/* Write all the PSAMs in genome gn to the file located at outpath. */
-void write_psams(t_genome *gn, settings *ss, char* outpath){
-	FILE *fp;
-	fp = fopen(outpath,"w");
-	if (fp == NULL) {
-	  fprintf(stderr, "Error: can't open output file %s!\n",
-			  outpath);
-	  exit(1);
-	}
-
-	for (int gg=0; gg < gn->ngenes; gg++){
-		if (gn->genes[gg]->has_dbd) {
-			psam *this_dbd = gn->genes[gg]->dbd;
-
-			fprintf(fp, "Gene %d\n", gg);
-			for (int ii=0; ii < this_dbd->nsites; ii++){ // sites
-				for (int jj=0; jj < this_dbd->nstates; jj++){ //states
-					char state = int2nt( jj );
-					double value = this_dbd->data[ii*this_dbd->nstates + jj];
-					fprintf(fp, "%c (%f)\t", state, value );
-				}
-				fprintf(fp, "\n");
-			}
-		}
-	}
-	fclose(fp);
-}
-
-
 void log_fitness(double* f, int len, settings* ss){
 	//printf("fout 33\n");
 	char* g;
@@ -125,7 +96,7 @@ void log_fitness(double* f, int len, settings* ss){
 	free(p);
 }
 
-void log_occupancy(t_genome *g, int gid, int t, t_ptable* ptable, settings* ss){
+void log_occupancy(t_genome *g, int gid, int t, int rid, t_ptable* ptable, settings* ss){
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));
 	sprintf(gc, "%d", ss->gen_counter);
@@ -141,6 +112,10 @@ void log_occupancy(t_genome *g, int gid, int t, t_ptable* ptable, settings* ss){
 	char* ts;
 	ts = (char*)malloc(100*sizeof(char));
 	sprintf(ts, "%d", t);
+
+	char* ris;
+	ris = (char*)malloc(100*sizeof(char));
+	sprintf(ris, "%d", rid);
 
 	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat(
@@ -176,8 +151,12 @@ void log_occupancy(t_genome *g, int gid, int t, t_ptable* ptable, settings* ss){
 	char *header = (char *)malloc(MAXLEN*sizeof(char));
 	strcat(
 		strcat(
-				strcat( header, ". t "),
+			strcat(
+			strcat(
+				strcat( header, ". time "),
 				ts),
+				" rid "),
+				ris),
 		"\n");
 	//printf("fout.cpp genome %d 150: %s\n", g->id, header);
 	fprintf(fp, "%s", header);
@@ -236,12 +215,14 @@ void log_occupancy(t_genome *g, int gid, int t, t_ptable* ptable, settings* ss){
 	free(ts);
 	free(gc);
 	free(ge);
+	free(ris);
 	free(p);
 
 	fclose(fp);
 }
 
-void log_cofactor(t_genome *g, settings* ss){
+
+void log_cofactor(t_genome *g, settings* ss, FILE* fo){
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));
 	sprintf(gc, "%d", ss->gen_counter);
@@ -264,14 +245,21 @@ void log_cofactor(t_genome *g, settings* ss){
 	".txt");
 
 	FILE *fp;
-	fp = fopen(p, "w");
-	if (fp == NULL) {
-	  fprintf(stderr, "Error: can't open output file %s!\n",
-			  p);
-	  exit(1);
+	if (fo == NULL) {
+		fp = fopen(p, "w");
+		if (fp == NULL) {
+		  fprintf(stderr, "Error: can't open output file %s!\n",
+				  p);
+		  exit(1);
+		}
+	}
+	else{
+		fp = fo;
 	}
 
-	//printf("\n fout 256 g->ntfs = %d %s", g->ntfs, p);
+	if (fo != NULL) {
+		fprintf(fp, "\nGenome %d COOPs:\n", g->id);
+	}
 	fprintf(fp, "a->\tb\t@d\tmultiplier\n");
 	for (int ii = 0; ii < g->ntfs; ii++){
 		for (int jj = 0; jj < g->ntfs; jj++){
@@ -282,20 +270,24 @@ void log_cofactor(t_genome *g, settings* ss){
 		}
 	}
 
+	if (fo == NULL) {
+		fclose(fp);
+	}
 	free(gc);
 	free(gs);
-	free(p);
-
-	fclose(fp);
 }
 
-void log_urs(t_genome *g, settings* ss){
+/* Writes the URSs for genome g.
+ * If fo is not NULL, then the data will be written to fo.
+ */
+void log_urs(t_genome *g, settings* ss, FILE* fo){
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));
 	sprintf(gc, "%d", ss->gen_counter);
 	char* gs;
 	gs = (char*)malloc(4*sizeof(char));
 	sprintf(gs, "%d", g->id);
+
 	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat(
 		strcat(
@@ -309,26 +301,41 @@ void log_urs(t_genome *g, settings* ss){
 		gs),
 	".txt");
 
-	FILE *fp;
-	fp = fopen(p, "w");
-	if (fp == NULL) {
-	  fprintf(stderr, "Error: can't open output file %s!\n",
-			  p);
-	  exit(1);
+
+	FILE* fp;
+	if (fo == NULL) {
+		fp = fopen(p, "w");
+		if (fp == NULL) {
+		  fprintf(stderr, "Error: can't open output file %s!\n",
+				  p);
+		  exit(1);
+		}
+	}
+	else{
+		fp = fo;
 	}
 
+	if (fo != NULL) {
+		fprintf(fp, "\nGenome %d URSs:\n", g->id);
+	}
 	for (int ii = 0; ii < g->ngenes; ii++){
-		fprintf(fp, "gene %d ", ii);
+		fprintf(fp, ">%d %s\n", ii, g->genes[ii]->name);
+
 		for (int jj = 0; jj < g->genes[ii]->urslen; jj++){
 			fprintf(fp, "%c", int2nt(g->genes[ii]->urs[jj]) );
 		}
 		fprintf(fp, "\n");
 	}
 
-	fclose(fp);
+	if (fo == NULL){
+		fclose(fp);
+	}
+	free(p);
+	free(gc);
+	free(gs);
 }
 
-void log_dbds(t_genome *g, settings* ss){
+void log_dbds(t_genome *g, settings* ss, FILE* fo){
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));
 	sprintf(gc, "%d", ss->gen_counter);
@@ -351,21 +358,27 @@ void log_dbds(t_genome *g, settings* ss){
 	".txt");
 
 	FILE *fp;
-	fp = fopen(p, "w");
-	if (fp == NULL) {
-	  fprintf(stderr, "Error: can't open output file %s!\n",
-			  p);
-	  exit(1);
+	if (fo == NULL) {
+		fp = fopen(p, "w");
+		if (fp == NULL) {
+		  fprintf(stderr, "Error: can't open output file %s!\n",
+				  p);
+		  exit(1);
+		}
+	}
+	else{
+		fp = fo;
 	}
 
-
+	if (fo != NULL) {
+		fprintf(fp, "\nGenome %d PSAMs\n", g->id);
+	}
 	for (int ii = 0; ii < g->ngenes; ii++){
 		if (g->genes[ii]->has_dbd == true){
 			psam *x = g->genes[ii]->dbd;
-			fprintf(fp, "Gene %d\n", ii);
+			fprintf(fp, "Gene %d %d\n", ii, g->genes[ii]->reg_mode);
 			for (int jj = 0; jj < x->nsites; jj++){
-				fprintf(fp, "site %d A: %f C: %f G: %f T: %f\n",
-						jj,
+				fprintf(fp, "%f %f %f %f\n",
 						x->data[ii*x->nstates],
 						x->data[ii*x->nstates+1],
 						x->data[ii*x->nstates+2],
@@ -375,8 +388,61 @@ void log_dbds(t_genome *g, settings* ss){
 		}
 	}
 
-	fclose(fp);
+	if (fo == NULL){
+		fclose(fp);
+	}
 	free(gs);
+	free(gc);
+}
+
+/* Writes the population and all its genomes and genes to a file. */
+void log_population(t_pop* pop, settings* ss){
+	char* gc;
+	gc = (char*)malloc(10*sizeof(char));
+	sprintf(gc, "%d", ss->gen_counter);
+
+	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat(
+			strcat(
+			strcat(
+			strcat(p, ss->outdir),
+			"/POPS/pop.gen"),
+			gc),
+			".save.txt"
+			);
+
+	FILE *fo; /* File for psam specs */
+	fo = fopen(p,"w");
+	if (fo == NULL) {
+	  fprintf(stderr, "Error: can't open output file %s!\n",
+			  p);
+	  exit(1);
+	}
+
+	if (ss->verbosity > 2){
+		printf("\n. The population was saved to %s\n", p);
+	}
+
+	fprintf(fo, "N genomes: %d\n", pop->ngenomes);
+	for (int ii = 0; ii < pop->ngenomes; ii++){
+		fprintf(fo, "Genome: %d\n", ii);
+		for (int jj = 0; jj < pop->genomes[ii]->ngenes; jj++){
+			fprintf(fo, "ID %d gene %d %s %d %d\n", //%s %d\",
+					ii, jj,
+					(pop->genomes[ii]->genes[jj]->has_dbd)?"regulator":"reporter",
+					(pop->genomes[ii]->genes[jj]->reg_mode),
+					pop->genomes[ii]->genes[jj]->urslen);
+		}
+	}
+
+	for (int ii = 0; ii < pop->ngenomes; ii++){
+		log_urs(pop->genomes[ii], ss, fo);
+		log_dbds(pop->genomes[ii], ss, fo);
+		log_cofactor(pop->genomes[ii], ss, fo);
+	}
+
+	fclose(fo);
 	free(gc);
 	free(p);
 }
+

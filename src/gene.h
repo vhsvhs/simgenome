@@ -5,7 +5,7 @@ typedef struct __Gene {
 	int urslen;
 	bool has_dbd;
 	psam* dbd;
-	bool reg_mode; /* 0 = repressor, 1 = activator */
+	int reg_mode; /* 0 = repressor, 1 = activator */
 
 	// to-do: add code to init these arrays
 	double* tfcoop; /* tfcoop[gene] = my relative affinity for gene */

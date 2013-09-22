@@ -264,10 +264,10 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 			else if (token[0] == '#') {
 				continue;
 			}
-			else if (token[0] == 'p'
-					&& token[1] == 's'
-					&& token[2] == 'a'
-					&& token[3] == 'm') {
+			else if (token[0] == 'G'
+					&& token[1] == 'e'
+					&& token[2] == 'n'
+					&& token[3] == 'e') {
 				token = strtok(NULL, " ");
 				this_gene = atoi( token );
 				if (this_gene < ngenes){
@@ -297,13 +297,6 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		}
 	}
 
-//	for (int ii = 0; ii < ngenes; ii++){
-//		printf("\n. Gene %d\n", ii);
-//		for (int jj = 0; jj < psamlengths[ii]*4; jj++){
-//			printf("%d %f\n", jj, psams[ii][jj]);
-//		}
-//	}
-//	exit(1);
 
 	/* Build the genes, using the URSes and PSAMs we previously found. */
 	int ntfs = 0;

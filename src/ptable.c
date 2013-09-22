@@ -24,6 +24,12 @@ t_ptable* make_ptable(int M, int D, int L) {
 	return p;
 }
 
+void free_ptable( t_ptable* p){
+	free(p->cpa);
+	free(p->cpt);
+	free(p->cpr);
+}
+
 void print_ptable(t_ptable *p){
 	printf("\n");
 	printf("CPT\nsite\tTR\tvalue\n");

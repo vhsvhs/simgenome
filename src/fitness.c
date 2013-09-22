@@ -42,7 +42,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				t_input* x = l->rulesets[rid]->inputs[ii];
 				//printf("\n 46 %d %d %d\n", x->gid, x->start, x->stop);
 				if (t >= x->start && t < x->stop){
-					g->gene_expr[ x->gid*g->expr_timeslices + t] = x->expr_level;
+					g->gene_expr[ x->gid * g->expr_timeslices + t] = x->expr_level;
 					//printf("\n. 49: %d %f\n", ii, x->expr_level);
 				}
 			}
@@ -65,9 +65,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				 */
 				for (int gid=0; gid< g->ngenes; gid++){
 					/* To-do: if gid is in the knock-out, then actually knock it out here.*/
-
-
-					double pe = get_expr_modifier(g, gid, t, ss);
+					double pe = get_expr_modifier(g, gid, t, rid, ss);
 
 					if (pe > 0.0){
 						pe *= ss->growth_rate * pe;
@@ -146,11 +144,11 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				my_fit);
 	}
 
-	if (ss->verbosity > 3){
-		log_cofactor(g, ss);
-		log_dbds(g, ss);
-		log_urs(g, ss);
-	}
+	//if (ss->verbosity > 3){
+		//log_cofactor(g, ss, NULL);
+		//log_dbds(g, ss, NULL);
+		//log_urs(g, ss, NULL);
+	//}
 
 	free(g->r);
 
@@ -162,16 +160,15 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
  * and the relative DNA-binding affinities of all
  * transcription factors in g.
  */
-double get_expr_modifier(t_genome *g, int gid, int t, settings *ss){
+double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 	t_ptable *ptable = make_ptable( g->ntfs, ss->maxgd, g->genes[gid]->urslen);
 	fill_prob_table(g, gid, ptable, t, ss);
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
-
-	if (ss->verbosity > 10){
-		log_occupancy(g, gid, t, ptable, ss);
+	if (ss->verbosity > 3){
+		log_occupancy(g, gid, t, rid, ptable, ss);
 	}
-
+	free_ptable(ptable);
 	return pe;
 }
 

@@ -2,8 +2,10 @@
 
 #define N_STATES 4 /* for nucleotide regulatory sequences */
 
+/* char* constants */
 #define GENE_NAME_MAX 100
 #define FILEPATH_LEN_MAX 300
+#define TMPFILE_MAX 1000
 
 /* MAXLEN is the max line length for user-specified file.
  * This value should always be longer than URSLEN_DEFAULT

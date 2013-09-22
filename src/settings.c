@@ -13,6 +13,7 @@ settings* make_settings(){
 	ss->outdir = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->psampath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->urspath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	ss->cooppath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->rulepath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 
 	ss->popsize = POPSIZE;
@@ -39,6 +40,14 @@ settings* make_settings(){
 	return ss;
 }
 
+void free_settings(settings* ss){
+	free(ss->outdir);
+	free(ss->psampath);
+	free(ss->urspath);
+	free(ss->cooppath);
+	free(ss->rulepath);
+}
+
 void read_cli(int argc, char **argv, settings* ss){
 	/* This struct is for the getopts library */
 	struct option longopts[] =
@@ -47,7 +56,11 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"outdir",		required_argument,	NULL,	1},
 			{"psampath",	required_argument,	NULL,	2},
 			{"urspath",		required_argument,	NULL,	3},
-			{"rulepath",	required_argument,	NULL,	4},
+			{"cooppath",	required_argument,	NULL,	4},
+			{"rulepath",	required_argument,	NULL,	5},
+			{"pop_from_clone", no_argument,NULL,	6}, // read one genome, make the population a copy of this genome.
+			{"load_saved_pop", required_argument, NULL, 7},
+
 
 			{"do_mu", 		no_argument, 		NULL, 	100},
 			{"psamlenmu", 	required_argument, 	NULL, 	101},
@@ -62,7 +75,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"popsize",		required_argument,	NULL,	203},
 			{"maxgd",		required_argument,	NULL,	204}, // maximum co-factor distance
 
-			{"run_clean",	no_argument,		NULL, 	300},
+			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files
 
 			{0,0,0,0}
 	};
@@ -97,6 +110,10 @@ void read_cli(int argc, char **argv, settings* ss){
 				break;
 			}
 			case 4:{
+				read_path_from_cli(ss->rulepath, false);
+				break;
+			}
+			case 5:{
 				read_path_from_cli(ss->rulepath, false);
 				break;
 			}

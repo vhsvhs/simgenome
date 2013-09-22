@@ -31,6 +31,15 @@ t_pop* make_population(t_genome* gn, settings *ss){
 	return pop;
 }
 
+/* Builds a population that is lacking genome objects */
+t_pop* make_population_basic(t_genome* gn, settings *ss){
+	t_pop *pop;
+	pop = (t_pop*)malloc(1*sizeof(t_pop));
+	pop->genomes = (t_genome**)malloc(ss->popsize*sizeof(t_genome));
+	pop->ngenomes = ss->popsize;
+	return pop;
+}
+
 void free_pop(t_pop* pop){
 	for(int ii=0; ii < pop->ngenomes; ii++){
 		free_genome(pop->genomes[ii]);

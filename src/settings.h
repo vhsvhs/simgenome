@@ -14,6 +14,7 @@ typedef struct __Settings {
 
 	char* psampath;
 	char* urspath;
+	char* cooppath;
 	char* rulepath;
 
 	bool inherit_expression;
@@ -38,10 +39,12 @@ typedef struct __Settings {
 	 */
 	bool run_clean;
 
+
 }settings;
 
 settings* make_settings();
+void free_settings(settings* ss);
 void read_cli(int argc, char **argv, settings* ss);
 void read_path_from_cli(char* target, bool build);
 void print_splash();
-void print_settings(settings *ss);
+void print_settings(settings* ss);

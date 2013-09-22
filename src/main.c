@@ -15,6 +15,8 @@ int main( int argc, char **argv )
 
 	t_genome *gn = make_genome(ngenes, mygenes, ss);
 	if (ss->verbosity > 0){	 printf("\n. I'm building a population....\n"); }
+
+
 	t_pop *pop = make_population(gn, ss);
 
 	if (ss->verbosity > 0){	 printf("\n. I'm building a landscape....\n"); }
@@ -35,6 +37,8 @@ int main( int argc, char **argv )
 	if (ss->verbosity > 0){	 printf("\n. The simulation is finished."); }
 	free_ga( ga );
 	if (ss->verbosity > 0){	 printf("\n. Goodbye\n\n"); }
+
+	free_settings(ss);
 
 	return 1;
 }

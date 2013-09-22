@@ -1,15 +1,18 @@
 CC=g++
+MPICC=mpicc
 CFLAGS=-c -Wall
 LDFLAGS=
 EXECUTABLE=hello
 
-all: simreg
+OBJECTS=common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o main.o
 
-scratch: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o serialize.o scratch.o
-	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o serialize.o scratch.o -o scratch
+all: simreg simreg-mpi
 
-simreg: common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o serialize.o settings.o main.o
-	$(CC) common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o serialize.o settings.o main.o -o simreg
+simreg: $(OBJECTS)
+	$(CC) $(OBJECTS) -o simreg
+
+simreg-mpi: $(OBJECTS)
+	$(MPICC) $(OBJECTS) -o simreg-mpi
 
 ga.o: ga.c
 	$(CC) -c ga.c
@@ -31,9 +34,6 @@ scratch.o: scratch.c
 
 settings.o: settings.c
 	$(CC) -c settings.c
-
-serialize.o: serialize.c
-	$(CC) -c serialize.c
 
 population.o: population.c
 	$(CC) -c population.c
