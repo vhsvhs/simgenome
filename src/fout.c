@@ -4,7 +4,6 @@ void build_output_folders(settings* ss){
 	char *tmp;
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat( strcat(tmp, ss->outdir), "/FITNESS/");
-	//printf("\n fout 7%s\n", tmp);
 	if (!Filexists(tmp)){
 		mkdir(tmp, 0700);
 	}
@@ -24,38 +23,40 @@ void build_output_folders(settings* ss){
 	}
 	free(tmp);
 
-	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-	strcat( strcat(tmp, ss->outdir), "/COOP/");
-	if (!Filexists(tmp)){
-		mkdir(tmp, 0700);
-	}
-	free(tmp);
+//	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+//	strcat( strcat(tmp, ss->outdir), "/COOP/");
+//	if (!Filexists(tmp)){
+//		mkdir(tmp, 0700);
+//	}
+//	free(tmp);
 
-	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-	strcat( strcat(tmp, ss->outdir), "/DBD/");
-	if (!Filexists(tmp)){
-		mkdir(tmp, 0700);
-	}
+//	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+//	strcat( strcat(tmp, ss->outdir), "/DBD/");
+//	if (!Filexists(tmp)){
+//		mkdir(tmp, 0700);
+//	}
+//	free(tmp);
 
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat( strcat(tmp, ss->outdir), "/POPS/");
 	if (!Filexists(tmp)){
 		mkdir(tmp, 0700);
 	}
+	free(tmp);
 
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat( strcat(tmp, ss->outdir), "/MATING/");
 	if (!Filexists(tmp)){
 		mkdir(tmp, 0700);
 	}
-
-	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-	strcat( strcat(tmp, ss->outdir), "/URS/");
-	if (!Filexists(tmp)){
-		mkdir(tmp, 0700);
-	}
-
 	free(tmp);
+
+//	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+//	strcat( strcat(tmp, ss->outdir), "/URS/");
+//	if (!Filexists(tmp)){
+//		mkdir(tmp, 0700);
+//	}
+//	free(tmp);
 
 }
 
