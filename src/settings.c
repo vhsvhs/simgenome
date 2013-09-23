@@ -28,7 +28,7 @@ settings* make_settings(){
 	ss->niid = NIID;
 	ss->maxtime = MAX_TIME;
 
-	ss->do_mutation = true;
+	ss->do_mutation = 1;
 	ss->urs_mu_rate = URSMU; // subs per seq site
 	ss->psam_mu_rate = PSAMMU;  // subs per psam site
 
@@ -64,9 +64,9 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"poppath", required_argument,NULL,	6}, // read one genome, make the population a copy of this genome.
 
 
-			{"nomu", 		no_argument, 		NULL, 	100},
+			{"nomu", 		required_argument, 	NULL, 	100}, // disable mutations
 			{"psamlenmu", 	required_argument, 	NULL, 	101},
-			{"psamlenmumax", required_argument, 	NULL, 	102},
+			{"psamlenmumax", required_argument, NULL, 	102},
 			{"ddgmu", 		required_argument, 	NULL, 	103},
 			{"urs_mu",		required_argument,	NULL,	104},
 			{"psam_mu",		required_argument,	NULL,	105},
@@ -122,6 +122,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			case 6:{
 				read_path_from_cli(ss->poppath, false);
 				ss->load_save_pop = true;
+				break;
 			}
 
 

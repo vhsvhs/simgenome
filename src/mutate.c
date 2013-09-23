@@ -11,7 +11,8 @@ double get_random_ddg() {
  * using the mutational settings defined in ss.
  */
 void mutate(t_pop* pop, settings* ss){
-	if (!ss->do_mutation){
+
+	if (ss->do_mutation == false){
 		return;
 	}
 
@@ -28,8 +29,8 @@ void mutate(t_pop* pop, settings* ss){
 		if (n < 0){
 			n = 0;
 		}
-		if (ss->verbosity > 10){
-			printf("\n. I'm making %d URS point mutations to ID %d.\n", n, ii );
+		if (ss->verbosity > 3){
+			printf("\n. I'm making %d URS point mutations to ID %d.", n, ii );
 		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ngenes;
@@ -43,8 +44,8 @@ void mutate(t_pop* pop, settings* ss){
 		if (n < 0){
 			n = 0;
 		}
-		if (ss->verbosity > 10){
-			printf("\n. I'm making %d PSAM point mutations to ID %d.\n", n, ii );
+		if (ss->verbosity > 3){
+			printf("\n. I'm making %d PSAM point mutations to ID %d.", n, ii );
 		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ntfs;

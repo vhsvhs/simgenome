@@ -137,12 +137,12 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
 	my_fit /= l->nrulesets;
 
-	if (ss->verbosity > 2){
-		printf("\n. At generation %d, ID %d has fitness %f.\n",
-				ss->gen_counter,
-				g->id,
-				my_fit);
-	}
+//	if (ss->verbosity > 2){
+//		printf("\n. At generation %d, ID %d has fitness %f.\n",
+//				ss->gen_counter,
+//				g->id,
+//				my_fit);
+//	}
 
 
 	free(g->r);

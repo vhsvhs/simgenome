@@ -19,6 +19,12 @@ void runsim(t_ga* ga, settings* ss){
 			ii++){
 		ss->gen_counter = ii;
 
+		if (ss->verbosity > 2){
+			printf("\n\n=================\n");
+			printf(" Generation %d\n", ii);
+			printf("=================\n");
+		}
+
 		/*
 		 * Pre-fitness Setup
 		 */
