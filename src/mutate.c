@@ -11,12 +11,12 @@ double get_random_ddg() {
  * using the mutational settings defined in ss.
  */
 void mutate(t_pop* pop, settings* ss){
-	if (ss->verbosity > 2){
-		printf("\n\n. The population is mutating. . .\n");
-	}
-
 	if (!ss->do_mutation){
 		return;
+	}
+
+	if (ss->verbosity > 2){
+		printf("\n\n. The population is mutating. . .\n");
 	}
 
 	for (int ii = 0; ii < pop->ngenomes; ii++) {

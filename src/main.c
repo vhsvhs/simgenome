@@ -9,15 +9,30 @@ int main( int argc, char **argv )
 	read_cli(argc, argv, ss);
 	print_settings(ss);
 
-	int ngenes;
-	t_gene** mygenes = read_genes_from_file(ss, ngenes);
-	if (ss->verbosity > 0){	printf("\n. I found %d genes.\n", ngenes); }
+	/* There are three ways to make a population.
+	 * 1. Load a saved population using the deserialization method.
+	 * 2. Build a single genome by reading genes from a file, then
+	 * cloning that individual N times to make the population.
+	 * 3. (not yet implemented) Initialize a random population.
+	 */
+	t_pop *pop;
+	if (ss->load_save_pop == true){
+		pop = deserialize_population(ss);
 
-	t_genome *gn = make_genome(ngenes, mygenes, ss);
-	if (ss->verbosity > 0){	 printf("\n. I'm building a population....\n"); }
+		printf("\n. main 23 - quitting.\n");
+		exit(1);
+	}
+	else{
+		int ngenes;
+		t_gene** mygenes = read_genes_from_file(ss, ngenes);
+		if (ss->verbosity > 0){	printf("\n. I found %d genes.\n", ngenes); }
 
+		t_genome *gn = make_genome(ngenes, mygenes, ss);
+		if (ss->verbosity > 0){	 printf("\n. I'm building a population....\n"); }
 
-	t_pop *pop = make_population(gn, ss);
+		pop = make_population(gn, ss);
+	}
+
 
 	if (ss->verbosity > 0){	 printf("\n. I'm building a landscape....\n"); }
 	t_landscape *l = (t_landscape *)malloc(sizeof(t_landscape));

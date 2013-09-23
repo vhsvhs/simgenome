@@ -144,11 +144,6 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				my_fit);
 	}
 
-	//if (ss->verbosity > 3){
-		//log_cofactor(g, ss, NULL);
-		//log_dbds(g, ss, NULL);
-		//log_urs(g, ss, NULL);
-	//}
 
 	free(g->r);
 

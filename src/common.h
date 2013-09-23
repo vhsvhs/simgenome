@@ -25,6 +25,7 @@
 #include "mutate.h"
 #include "serialize.h"
 #include "fout.h"
+#include "version.h"
 
 void shuffle(double *array, size_t n);
 int filexists(char *filename);
@@ -35,3 +36,5 @@ double drand();
 double random_normal();
 int sample_from_cdf(double* p, int len);
 int Filexists(char *filename);
+
+int match(char*, char*);

@@ -4,7 +4,7 @@ CFLAGS=-c -Wall
 LDFLAGS=
 EXECUTABLE=hello
 
-OBJECTS=common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o settings.o main.o
+OBJECTS=common.o gene.o fout.o genome.o ga.o fitness.o landscape.o mutate.o population.o psam.o ptable.o serialize.o settings.o main.o
 
 all: simreg simreg-mpi
 
@@ -34,6 +34,9 @@ scratch.o: scratch.c
 
 settings.o: settings.c
 	$(CC) -c settings.c
+	
+serialize.o: serialize.c
+	$(CC) -c serialize.c
 
 population.o: population.c
 	$(CC) -c population.c

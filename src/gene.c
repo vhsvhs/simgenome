@@ -22,6 +22,7 @@ t_gene* make_gene(int psamlen, int urslen) {
 	}
 	g->gammalen = 0;
 	g->tfcooplen = 0;
+	g->reg_mode = 0;
 	return g;
 }
 

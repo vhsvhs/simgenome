@@ -15,6 +15,8 @@ settings* make_settings(){
 	ss->urspath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->cooppath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->rulepath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	ss->poppath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	ss->load_save_pop = false;
 
 	ss->popsize = POPSIZE;
 
@@ -46,6 +48,7 @@ void free_settings(settings* ss){
 	free(ss->urspath);
 	free(ss->cooppath);
 	free(ss->rulepath);
+	free(ss->poppath);
 }
 
 void read_cli(int argc, char **argv, settings* ss){
@@ -58,11 +61,10 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"urspath",		required_argument,	NULL,	3},
 			{"cooppath",	required_argument,	NULL,	4},
 			{"rulepath",	required_argument,	NULL,	5},
-			{"pop_from_clone", no_argument,NULL,	6}, // read one genome, make the population a copy of this genome.
-			{"load_saved_pop", required_argument, NULL, 7},
+			{"poppath", required_argument,NULL,	6}, // read one genome, make the population a copy of this genome.
 
 
-			{"do_mu", 		no_argument, 		NULL, 	100},
+			{"nomu", 		no_argument, 		NULL, 	100},
 			{"psamlenmu", 	required_argument, 	NULL, 	101},
 			{"psamlenmumax", required_argument, 	NULL, 	102},
 			{"ddgmu", 		required_argument, 	NULL, 	103},
@@ -86,7 +88,7 @@ void read_cli(int argc, char **argv, settings* ss){
 	 */
 	int c;
 	while((c = getopt_long(argc, argv,
-			 //"qi:d:m:b:n:t:f:zk:v:c:a:u:ho:s:x:g:l:ep",
+			 //"qi:load_save_popd:m:b:n:t:f:zk:v:c:a:u:ho:s:x:g:l:ep",
 			"",
 			longopts, NULL)) != -1)
 		{
@@ -117,10 +119,14 @@ void read_cli(int argc, char **argv, settings* ss){
 				read_path_from_cli(ss->rulepath, false);
 				break;
 			}
+			case 6:{
+				read_path_from_cli(ss->poppath, false);
+				ss->load_save_pop = true;
+			}
 
 
 			case 100:{
-				ss->do_mutation = true;
+				ss->do_mutation = false;
 				break;
 			}
 			case 101:{
@@ -219,7 +225,7 @@ void read_path_from_cli(char* target, bool build) {
 	else if (! Filexists (optarg) && build == false)
 	  {
 			char choix;
-			strcpy (tmp, "\n. Sorry, the directory '");
+			strcpy (tmp, "\n. Sorry, the file or directory '");
 			strcat (tmp, optarg);
 			strcat (tmp, "' doesn't exist.\n");
 			printf("%s",tmp);

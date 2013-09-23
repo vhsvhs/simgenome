@@ -11,14 +11,16 @@ t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss) {
 	gn->ngenes = ngenes;
 	gn->genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
 	gn->ntfs = 0;
-	for (int ii=0; ii<ngenes; ii++){
-		int psamlen = 0;
-		if (ingenes[ii]->has_dbd == true){
-			psamlen = ingenes[ii]->dbd->nsites;
-		}
-		gn->genes[ii] = copy_gene(ingenes[ii]);
-		if (gn->genes[ii]->has_dbd == true){
-			gn->ntfs++;
+	if (ingenes != NULL){
+		for (int ii=0; ii<ngenes; ii++){
+			int psamlen = 0;
+			if (ingenes[ii]->has_dbd == true){
+				psamlen = ingenes[ii]->dbd->nsites;
+			}
+			gn->genes[ii] = copy_gene(ingenes[ii]);
+			if (gn->genes[ii]->has_dbd == true){
+				gn->ntfs++;
+			}
 		}
 	}
 	return gn;

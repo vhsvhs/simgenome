@@ -16,6 +16,8 @@ typedef struct __Settings {
 	char* urspath;
 	char* cooppath;
 	char* rulepath;
+	char* poppath;
+	bool load_save_pop;
 
 	bool inherit_expression;
 

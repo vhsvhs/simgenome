@@ -11,7 +11,7 @@
  * This value should always be longer than URSLEN_DEFAULT
  */
 #define MAXLEN 1200
-#define MAX_TOKENS 6
+#define MAX_TOKENS 20 // maximum expected number of tokens on an input file line
 #define MAX_PSAM_LEN 100
 
 #define MAX_DDG 2.0

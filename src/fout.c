@@ -23,20 +23,6 @@ void build_output_folders(settings* ss){
 	}
 	free(tmp);
 
-//	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-//	strcat( strcat(tmp, ss->outdir), "/COOP/");
-//	if (!Filexists(tmp)){
-//		mkdir(tmp, 0700);
-//	}
-//	free(tmp);
-
-//	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-//	strcat( strcat(tmp, ss->outdir), "/DBD/");
-//	if (!Filexists(tmp)){
-//		mkdir(tmp, 0700);
-//	}
-//	free(tmp);
-
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat( strcat(tmp, ss->outdir), "/POPS/");
 	if (!Filexists(tmp)){
@@ -50,13 +36,6 @@ void build_output_folders(settings* ss){
 		mkdir(tmp, 0700);
 	}
 	free(tmp);
-
-//	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-//	strcat( strcat(tmp, ss->outdir), "/URS/");
-//	if (!Filexists(tmp)){
-//		mkdir(tmp, 0700);
-//	}
-//	free(tmp);
 
 }
 
@@ -259,15 +238,12 @@ void log_cofactor(t_genome *g, settings* ss, FILE* fo){
 	}
 
 	if (fo != NULL) {
-		fprintf(fp, "\nGenome %d COOPs:\n", g->id);
+		fprintf(fp, "\nCOOP Genome %d :\n", g->id);
 	}
-	fprintf(fp, "a->\tb\t@d\tmultiplier\n");
+
 	for (int ii = 0; ii < g->ntfs; ii++){
 		for (int jj = 0; jj < g->ntfs; jj++){
-			for (int dd = 0; dd < ss->maxgd; dd++){
-				//printf("\n. fout 260 ntfs %d ii %d jj %d dd %d", g->ntfs, ii, jj, dd);
-				fprintf(fp, "%d\t%d\t%d\t%f\n", ii, jj, dd, g->genes[ii]->gamma[jj*ss->maxgd + dd] );
-			}
+			fprintf(fp, "%d %d %f\n", ii, jj, g->genes[ii]->tfcoop[jj]);
 		}
 	}
 
@@ -317,7 +293,7 @@ void log_urs(t_genome *g, settings* ss, FILE* fo){
 	}
 
 	if (fo != NULL) {
-		fprintf(fp, "\nGenome %d URSs:\n", g->id);
+		fprintf(fp, "\nURS Genome %d :\n", g->id);
 	}
 	for (int ii = 0; ii < g->ngenes; ii++){
 		fprintf(fp, ">%d %s\n", ii, g->genes[ii]->name);
@@ -372,22 +348,21 @@ void log_dbds(t_genome *g, settings* ss, FILE* fo){
 	}
 
 	if (fo != NULL) {
-		fprintf(fp, "\nGenome %d PSAMs\n", g->id);
+		fprintf(fp, "\nPSAM Genome %d :\n", g->id);
 	}
 	for (int ii = 0; ii < g->ngenes; ii++){
 		if (g->genes[ii]->has_dbd == true){
-			psam *x = g->genes[ii]->dbd;
 			fprintf(fp, "Gene %d %d\n", ii, g->genes[ii]->reg_mode);
-			for (int jj = 0; jj < x->nsites; jj++){
-				fprintf(fp, "%f %f %f %f\n",
-						x->data[ii*x->nstates],
-						x->data[ii*x->nstates+1],
-						x->data[ii*x->nstates+2],
-						x->data[ii*x->nstates+3]
-						);
+
+			for (int jj = 0; jj < g->genes[ii]->dbd->nsites; jj++){
+				for (int kk = 0; kk < g->genes[ii]->dbd->nstates; kk++){
+					fprintf(fp, "%f ", g->genes[ii]->dbd->data[jj*g->genes[ii]->dbd->nstates + kk]);
+				}
+				fprintf(fp, "\n");
 			}
 		}
 	}
+
 
 	if (fo == NULL){
 		fclose(fp);
@@ -396,54 +371,5 @@ void log_dbds(t_genome *g, settings* ss, FILE* fo){
 	free(gc);
 }
 
-/* Writes the population and all its genomes and genes to a file. */
-void log_population(t_pop* pop, settings* ss){
-	char* gc;
-	gc = (char*)malloc(10*sizeof(char));
-	sprintf(gc, "%d", ss->gen_counter);
 
-	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-	strcat(
-			strcat(
-			strcat(
-			strcat(p, ss->outdir),
-			"/POPS/pop.gen"),
-			gc),
-			".save.txt"
-			);
-
-	FILE *fo; /* File for psam specs */
-	fo = fopen(p,"w");
-	if (fo == NULL) {
-	  fprintf(stderr, "Error: can't open output file %s!\n",
-			  p);
-	  exit(1);
-	}
-
-	if (ss->verbosity > 2){
-		printf("\n. The population was saved to %s\n", p);
-	}
-
-	fprintf(fo, "N genomes: %d\n", pop->ngenomes);
-	for (int ii = 0; ii < pop->ngenomes; ii++){
-		fprintf(fo, "Genome: %d\n", ii);
-		for (int jj = 0; jj < pop->genomes[ii]->ngenes; jj++){
-			fprintf(fo, "ID %d gene %d %s %d %d\n", //%s %d\",
-					ii, jj,
-					(pop->genomes[ii]->genes[jj]->has_dbd)?"regulator":"reporter",
-					(pop->genomes[ii]->genes[jj]->reg_mode),
-					pop->genomes[ii]->genes[jj]->urslen);
-		}
-	}
-
-	for (int ii = 0; ii < pop->ngenomes; ii++){
-		log_urs(pop->genomes[ii], ss, fo);
-		log_dbds(pop->genomes[ii], ss, fo);
-		log_cofactor(pop->genomes[ii], ss, fo);
-	}
-
-	fclose(fo);
-	free(gc);
-	free(p);
-}
 

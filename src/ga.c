@@ -79,7 +79,7 @@ void runsim(t_ga* ga, settings* ss){
 		// to-do: change the pop serialization to list file paths to URSs, DBDs, and COOP files
 		// rather than containing that information itself.
 		//
-		log_population(ga->pop, ss);
+		serialize_population(ga->pop, ss);
 
 		/*
 		 * SELECTIVELY REPRODUCE
