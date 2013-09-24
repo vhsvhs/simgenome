@@ -22,7 +22,7 @@ int main( int argc, char **argv )
 		pop = deserialize_population(ss);
 
 		//printf("\n. main 23 - quitting.\n");
-		//exit(1);
+		//exitread_genes_from_file(1);
 	}
 	else{
 		int ngenes;
@@ -30,6 +30,7 @@ int main( int argc, char **argv )
 		if (ss->verbosity > 0){	printf("\n. I found %d genes.\n", ngenes); }
 
 		t_genome *gn = make_genome(ngenes, mygenes, ss);
+		printf("\n. main33 ntfs = %d\n", gn->ntfs);
 		if (ss->verbosity > 0){	 printf("\n. I'm building a population....\n"); }
 
 		pop = make_population(gn, ss);

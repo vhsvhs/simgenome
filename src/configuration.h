@@ -10,7 +10,7 @@
 /* MAXLEN is the max line length for user-specified file.
  * This value should always be longer than URSLEN_DEFAULT
  */
-#define MAXLEN 1200
+#define MAXLEN 2000
 #define MAX_TOKENS 20 // maximum expected number of tokens on an input file line
 #define MAX_PSAM_LEN 100
 

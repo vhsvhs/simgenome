@@ -64,7 +64,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"poppath", required_argument,NULL,	6}, // read one genome, make the population a copy of this genome.
 
 
-			{"nomu", 		required_argument, 	NULL, 	100}, // disable mutations
+			{"nomu", 		no_argument, 	NULL, 	100}, // disable mutations
 			{"psamlenmu", 	required_argument, 	NULL, 	101},
 			{"psamlenmumax", required_argument, NULL, 	102},
 			{"ddgmu", 		required_argument, 	NULL, 	103},

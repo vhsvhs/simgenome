@@ -60,7 +60,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
 			if (t < l->ntime-1)
 			{
-				/* For each gene, update is expression level based on
+				/* For each gene, update its expression level based on
 				 * the delta-G of binding
 				 */
 				for (int gid=0; gid< g->ngenes; gid++){
@@ -85,21 +85,30 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
 					g->gene_expr[gid * g->expr_timeslices + t+1] = new_expr_level;
 
-
 				}
 			}
 
-			for (int gid=0; gid< g->ngenes; gid++){
-				char mark = ' ';
-				if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 0){
-					mark = 'r';
-				}
-				else if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 1) {
-					mark = 'a';
-				}
-				if (ss->verbosity > 2){
-					printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
-						rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
+			if (ss->verbosity > 2){
+				for (int gid=0; gid< g->ngenes; gid++){
+					char mark = ' ';
+					if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 0){
+						mark = 'r';
+					}
+					else if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 1) {
+						mark = 'a';
+					}
+
+					double delta;
+					if (t > 0){
+						delta = g->gene_expr[gid * g->expr_timeslices + t] - g->gene_expr[gid * g->expr_timeslices + t - 1];
+						printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\tdelta: %f\n",
+							rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t], delta);
+					}
+					else{
+						printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
+							rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
+					}
+
 				}
 			}
 
@@ -113,11 +122,13 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			double obs_expr = g->gene_expr[ rul->repid
 			                                * g->expr_timeslices
 			                                + rul->timepoint];
+			/* Rule type 0: expression must be greater than the rule. */
 			if (rul->rule_type == 0){
 				if (obs_expr < rul->expr_level){
 					error += fabs( obs_expr - rul->expr_level);
 				}
 			}
+			/* Rule type 1: expression must be less than the rule. */
 			if (rul->rule_type == 1){
 				if (obs_expr > rul->expr_level){
 					error += fabs( obs_expr - rul->expr_level);
@@ -134,15 +145,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 		my_fit += exp( FITNESS_SCALAR * error);
 
 	} // end for ruleset
-
 	my_fit /= l->nrulesets;
-
-//	if (ss->verbosity > 2){
-//		printf("\n. At generation %d, ID %d has fitness %f.\n",
-//				ss->gen_counter,
-//				g->id,
-//				my_fit);
-//	}
 
 
 	free(g->r);

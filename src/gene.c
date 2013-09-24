@@ -52,12 +52,9 @@ t_gene* copy_gene(t_gene* from) {
 	}
 	to->reg_mode = from->reg_mode;
 
-	/* If the cofactor affinity matrix (i.e. the gamma array)
-	 * has not been allocated, then let's allocate it here.
-	 */
 
 	if (to->has_dbd == true){
-		if (to->gammalen == 0) {
+		if (from->tfcoop > 0) {
 			/* We could, alternatively, use the method "build_coop" here,
 			 * but that would require that we know how many TFs and the max
 			 * cofactor distance... both are variables not stores in the t_gene
@@ -67,15 +64,22 @@ t_gene* copy_gene(t_gene* from) {
 			to->gamma = (double*)malloc(from->gammalen*sizeof(double));
 			to->tfcoop = (double*)malloc(from->tfcooplen*sizeof(double));
 		}
-		for(int ii=0; ii<from->gammalen; ii++){
+		to->gammalen = from->gammalen;
+		to->tfcooplen = from->tfcooplen;
+
+		for(int ii=0; ii < from->gammalen; ii++){
 			to->gamma[ii] = from->gamma[ii];
 		}
-		for(int ii=0; ii<from->tfcooplen; ii++){
+
+		for(int ii=0; ii < from->tfcooplen; ii++){
 			to->tfcoop[ii] = from->tfcoop[ii];
 		}
 	}
-	to->gammalen = from->gammalen;
-	to->tfcooplen = from->tfcooplen;
+	else{
+		to->gammalen = 0;
+		to->tfcooplen = 0;
+	}
+
 
 	return to;
 
@@ -181,7 +185,8 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	  exit(1);
 	}
 
-	/* How many genes? */
+	/* How many genes?
+	 * ...count the FASTA-formatted URS definitions */
 	ngenes = 0;
 	char line[MAXLEN];
 	while (  fgets(line, MAXLEN, fu)  ){
@@ -200,20 +205,16 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		}
 	}
 
-	t_gene** genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
-
 	/* Get URSes */
+	rewind(fu); /* Set the fu file pointer back to the start */
 	int *urslengths = (int *)malloc(ngenes*sizeof(int));
 	char **urses = (char **)malloc(ngenes*sizeof(char*));
-	rewind(fu); /* Set the fu file pointer back to the start */
 	int this_gene = -1;
 	while (  fgets(line, MAXLEN, fu) ){
-		//printf("\ngene209: %s\n", line);
 		if (line[0] == '>'){
 			this_gene += 1;
 		}
 		else {
-			//printf("\ngene 127 urs=%s\n", line);
 			int ii = 0;
 			int count = 0;
 			while (line[ii] == 'A'
@@ -230,24 +231,27 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 				urses[this_gene] = (char *)malloc(urslengths[this_gene]*sizeof(char));
 				for(int ii=0; ii< urslengths[this_gene]; ii++){
 					urses[this_gene][ii] = line[ii];
-					//printf("(settings 77) urs %d = %s\n", this_gene, urses[this_gene]);
 				}
 			}
 		}
 	}
+	fclose(fu);
 
 	if (ss->verbosity > 20){
 		printf("\n. I found %d gene definitions.\n", ngenes);
 	}
 
 	/* Get PSAMS */
+	double **psams = (double **)malloc(ngenes*sizeof(double*)); // key = gene ID, value = 1-d array of doubles
 	bool *has_dbd = (bool *)malloc(ngenes*sizeof(bool));
+	int *psamlengths = (int *)malloc(ngenes*sizeof(int)); // key = gene ID, value = length of psam
+	bool *reg_modes = (bool *)malloc(ngenes*sizeof(bool));
 	for(int ii=0; ii<ngenes; ii++){
 		has_dbd[ii] = false;
+		psamlengths[ii] = 0;
+		reg_modes[ii] = 0;
 	}
-	int *psamlengths = (int *)malloc(ngenes*sizeof(int)); // key = gene ID, value = length of psam
-	double **psams = (double **)malloc(ngenes*sizeof(double*)); // key = gene ID, value = 1-d array of doubles
-	bool *reg_modes = (bool *)malloc(ngenes*sizeof(bool));
+
 	this_gene = -1;
 	int count = 0;
 	while ( fgets(line, MAXLEN, fp)  ){
@@ -272,6 +276,7 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 				token = strtok(NULL, " ");
 				this_gene = atoi( token );
 				if (this_gene < ngenes){
+					//printf("\n. gene 272 - adding dbd to gene %d\n", this_gene);
 					has_dbd[this_gene] = true;
 					token = strtok(NULL, " ");
 					reg_modes[ this_gene ]= (bool)atoi( token );
@@ -281,15 +286,18 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 				}
 			}
 			else if (this_gene < ngenes){ // a line with 4 floating-point numbers
-				//printf("(settings 103) line=%s token=%s\n", line, token);
+				//printf("\n. gene 282 reading PSAM for gene %d\n", this_gene, token);
+
+				// State 0
 				float value = atof( token );
-				//printf("(settings 104) this_gene = %d, value=%f count=%d\n",this_gene, value, count);
+				//printf("(settings 112a) value=%f this_gene=%d count=%d\n", value, this_gene, count);
 				psams[this_gene][count] = value;
-				//printf("(settings 109) value=%f\n", value);
-				count++;
+				count += 1;
+
+				// States 1,2,3
 				for (int ii=1; ii<4; ii++){ // ii = state
 					value = atof( strtok(NULL, " ") ); //subsequent tokens
-					//printf("(settings 112) value=%f\n", value);
+					//printf("(settings 112b) value=%f this_gene=%d count=%d\n", value, this_gene, count);
 					psams[this_gene][count] = value;
 					count++;
 				}
@@ -297,7 +305,11 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 			}
 		}
 	}
+	fclose(fp);
 
+	/* genes is an array of t_gene*
+	 * We'll fill this array with t_gene objects. */
+	t_gene** genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
 
 	/* Build the genes, using the URSes and PSAMs we previously found. */
 	int ntfs = 0;
@@ -307,13 +319,13 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		for (int jj=0; jj<urslengths[ii]; jj++){ // jj = site
 			genes[ii]->urs[jj] = nt2int( urses[ii][jj] );
 		}
-		if (has_dbd[ii]){
+		if (has_dbd[ii] == true){
 			ntfs++;
 			for (int jj=0; jj<N_STATES*psamlengths[ii]; jj++){
 				genes[ii]->dbd->data[jj] = psams[ii][jj];
 				genes[ii]->has_dbd = true;
+				genes[ii]->reg_mode = reg_modes[ii];
 			}
-			genes[ii]->reg_mode = reg_modes[ii];
 		}
 		if (ss->verbosity > 10){
 			printf("\n+ Gene %d, URS (%d sites)", ii, genes[ii]->urslen);
@@ -328,11 +340,22 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	for (int ii=0; ii<ntfs; ii++){
 		build_coop(genes[ii], ntfs, ss->maxgd);
 		init_coop(genes[ii]);
+		calc_gamma(genes[ii], ntfs, ss->maxgd);
 	}
 
-	for (int ii=0; ii < ntfs; ii++){
-		calc_gamma( genes[ii], ntfs, ss->maxgd);
+	/* Cleanup Memory */
+	for (int ii=0; ii < ngenes; ii++){
+		free(urses[ii]);
 	}
+	//for (int ii = 0; ii < ntfs; ii++){
+	//	free(psams[ii]);
+	//}
+	free(urses);
+	//free(psams);
+	free(urslengths);
+	free(psamlengths);
+	free(reg_modes);
+	free(has_dbd);
 
 	return genes;
 }
