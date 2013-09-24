@@ -15,3 +15,4 @@ typedef struct __ProbTable {
 t_ptable* make_ptable(int M, int D, int L);
 void free_ptable( t_ptable* p);
 void print_ptable(t_ptable *p);
+void ptable_sample(t_ptable* pt, int s, int& reti, int& retj, int& retd);

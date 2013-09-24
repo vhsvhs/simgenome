@@ -173,6 +173,17 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 				int ruletype = atoi( strtok(NULL, " ") ); //tokens 5
 				double weight = atof( strtok(NULL, " ") ); // tokens 6
 				rulesets[this_rs]->rules[ruleset_countrule[this_rs]] = make_rule(timepoint, geneid, expr, ruletype, weight);
+				if (ss->verbosity > 3){
+					if (ruletype == 0){
+						printf("   + Fitness Optimum: time %d, gene %d, expr > %f [weight = %f]\n",
+							timepoint, geneid, expr, weight);
+					}
+					else
+					{
+						printf("   + Fitness Optimum: time %d, gene %d, expr < %f [weight = %f]\n",
+							timepoint, geneid, expr, weight);
+					}
+				}
 				ruleset_countrule[this_rs]++;
 			}
 			// INPUT

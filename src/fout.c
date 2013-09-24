@@ -69,7 +69,7 @@ void log_fitness(double* f, int len, settings* ss){
 		fprintf(fp, "%d %f\n", ii, f[ii]);
 	}
 	fclose(fp);
-	if (ss->verbosity > 10){
+	if (ss->verbosity > 2){
 		printf("\n. Fitness values were written to %s\n", p);
 	}
 	free(g);
@@ -146,9 +146,7 @@ void log_occupancy(t_genome *g, int gid, int t, int rid, t_ptable* ptable, setti
 	// where a is for activator
 	// and r is for repressor
 	for (int site = 0; site <  g->genes[gid]->urslen; site++){
-		char* sss = (char*)malloc(10*sizeof(char));
-		sprintf(sss, "%d", site);
-		fprintf(fp, "site %s :", sss);
+		fprintf(fp, "site %d (%c):", site, int2nt(g->genes[gid]->urs[site]) );
 
 		double sump = ptable->cpr[site];
 		for (int tf = 0; tf < g->ntfs; tf++){

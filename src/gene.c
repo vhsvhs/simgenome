@@ -211,7 +211,10 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	char **urses = (char **)malloc(ngenes*sizeof(char*));
 	int this_gene = -1;
 	while (  fgets(line, MAXLEN, fu) ){
-		if (line[0] == '>'){
+		if (line[0] == '#'){
+			continue;
+		}
+		else if (line[0] == '>'){
 			this_gene += 1;
 		}
 		else {
@@ -264,6 +267,9 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		//printf("(settings 92) line=%s\n", line);
 		if (token){ // zero if line is blank
 			if (token[0] == '\n'){
+				continue;
+			}
+			else if (token[0] == '#'){
 				continue;
 			}
 			else if (token[0] == '#') {

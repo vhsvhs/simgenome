@@ -67,14 +67,19 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 					/* To-do: if gid is in the knock-out, then actually knock it out here.*/
 					double pe = get_expr_modifier(g, gid, t, rid, ss);
 
+					//printf("\n. fitness.c 70 for gene %d, pe = %f",gid,  pe);
+
 					if (pe > 0.0){
-						pe *= ss->growth_rate * pe;
+						pe = ss->growth_rate * pe;
 					}
 					else if (pe < 0.0){
-						pe *= ss->decay_rate * pe;
+						pe = ss->decay_rate * pe;
+
 					}
 
-					double new_expr_level = pe + g->gene_expr[gid * g->expr_timeslices + t];
+					//printf("\n. fitness.c 70a gene %d, pe = %f\n",gid,  pe);
+
+					double new_expr_level = g->gene_expr[gid * g->expr_timeslices + t] + pe;
 					if (new_expr_level < MINIMUM_EXPRESSION_LEVEL){
 						new_expr_level = MINIMUM_EXPRESSION_LEVEL;
 					}
@@ -85,6 +90,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
 					g->gene_expr[gid * g->expr_timeslices + t+1] = new_expr_level;
 
+					//printf("\n. fitness.c 70b for gene %d, pe = %f, new_expr_level= %f\n",gid,  pe, new_expr_level);
 				}
 			}
 
@@ -266,28 +272,33 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 				s += 1;
 			}
 			else{
-				/* This following block is essentially a CDF sampler */
-				double totp = pt->cpr[s]; // total binding energy at this site
-				double randp = (float)rand()/(float)RAND_MAX * totp;
-				int x1 = s*pt->dim1;
-				double sump = 0.0;
-				int reti = 0.0;
-				int retj = 0.0;
-				int retd = 0.0;
-				for (int qq = 0; qq < g->ntfs; qq++){
-					int x2 = qq * pt->dim2;
-					for (int rr = 0; rr < g->ntfs + 1; rr++){
-						int x3 = rr * pt->dim3;
-						for(int ss = 0; ss < pt->D; ss++){
-							sump += pt->cpa[x1 + x2 + x3 + ss];
-							if (sump > randp){
-								reti = qq;
-								retj = rr;
-								retd = ss;
-							}
-						}
-					}
-				}
+//				/* This following block is essentially a CDF sampler */
+//				double totp = pt->cpr[s]; // total binding energy at this site
+//				//double randp = (float)rand()/(float)RAND_MAX * totp;
+//				double randp = drand() * totp;
+//				int x1 = s*pt->dim1;
+//				double sump = 0.0;
+//				int reti = 0;
+//				int retj = 0;
+//				int retd = 0;
+//				for (int qq = 0; qq < g->ntfs; qq++){ // qq = TF on the left
+//					int x2 = qq * pt->dim2;
+//					for (int rr = 0; rr < g->ntfs + 1; rr++){ // rr = TF (or empty) on the right
+//						int x3 = rr * pt->dim3;
+//						for(int ss = 0; ss < pt->D; ss++){ // ss = distance between TFs
+//							sump += pt->cpa[x1 + x2 + x3 + ss];
+//							if (sump > randp){
+//								reti = qq;
+//								retj = rr;
+//								retd = ss;
+//								break;
+//							}
+//						}
+//					}
+//				}
+
+				int reti, retj, retd;
+				ptable_sample(pt, s, reti, retj, retd);
 
 				// So, gene reti will bind at site, with retj as a cofactor retd distance away.
 
@@ -296,10 +307,14 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 						g->genes[gid]->urs,
 						g->genes[gid]->urslen,
 						s);
+
+				//printf("\n fitness 306: reti=%d, retj=%d, retd=%d, reg_mode= %d, aff= %f\n",
+				//		reti, retj, retd, g->genes[reti]->reg_mode, aff);
+
 				if (g->genes[reti]->reg_mode == 0){
 					sum_rep += aff;
 				}
-				else{
+				else if (g->genes[reti]->reg_mode == 1){
 					sum_act += aff;
 				}
 				/* Advance the site counter */
@@ -313,6 +328,9 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 		} // end while s < urslen
 
 		double pe = (1 / (1+exp(-1*ss->pe_scalar*(sum_act-sum_rep) ) ) );
+
+		//printf("\n. fitness 315b - sum_act= %f, sum_rep= %f pe= %f\n", sum_act, sum_rep, pe);
+
 		pe_sum += pe;
 	}
 

@@ -51,7 +51,7 @@ whereas small values make the coopfunc dropoff quickly.*/
 Higher values make k_act higher, which makes it easer for genes to be expressed.
 Lower values make k_act lower, which means that more bound sites are required
 for genes to be activated.*/
-#define PE_SCALAR 0.01
+#define PE_SCALAR 0.001
 
 /* Larger values make the fitness function sharper around
  * optimal expression, smaller values spread the function's
