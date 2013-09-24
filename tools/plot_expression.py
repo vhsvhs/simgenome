@@ -101,7 +101,7 @@ def plot_data( data, gen, id):
     
     fout.write("x <-c(" + mint.__str__() + "," + maxt.__str__() + ");\n" )
     fout.write("y <-c(" + miny.__str__() + "," + maxy.__str__() + ");\n" )
-    fout.write("plot(x,y,type='n');\n")
+    fout.write("plot(x,y,type='n',log='y');\n")
     for var in var_str:
         fout.write( var_str[var] )
         fout.write("points(ts," + var + ",type='l',col='" + color_for_run(var) + "');\n")
