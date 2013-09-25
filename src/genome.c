@@ -11,6 +11,7 @@ t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss) {
 	gn->ngenes = ngenes;
 	gn->genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
 	gn->ntfs = 0;
+	gn->is_elite = false;
 	if (ingenes != NULL){
 		for (int ii=0; ii<ngenes; ii++){
 			int psamlen = 0;

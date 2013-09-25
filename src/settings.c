@@ -252,6 +252,7 @@ void print_splash(){
 	printf("SIMREG:\n");
 	printf("    simulated directed evolution\n");
 	printf("    of transcription regulatory circuits.\n");
+	printf("    Version %s\n", __VERSION);
 	printf("\n");
 	printf("Written by Victor Hanson-Smith\n");
 	printf("    University of California, San Francisco\n");
