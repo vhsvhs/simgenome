@@ -169,9 +169,21 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 	fill_prob_table(g, gid, ptable, t, ss);
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
-	if (ss->verbosity > 3){
+
+	/* If verbosity is high, then log occupancy for every gene, genome, and generation.
+	 */
+	if (ss->verbosity > 30){
 		log_occupancy(g, gid, t, rid, ptable, ss);
 	}
+	/* Else, only log occupancies after each Nth generation.
+	 * This option can consume much less disk space.
+	 */
+	else if (ss->verbosity > 3){
+		if (ss->gen_counter%CONFIG_SAMPLE_STRIDE == 0){
+			log_occupancy(g, gid, t, rid, ptable, ss);
+		}
+	}
+
 	free_ptable(ptable);
 	return pe;
 }

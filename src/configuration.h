@@ -37,6 +37,8 @@
 
 #define MAX_GENS 1000
 #define MAX_TIME 1
+#define CONFIG_SAMPLE_STRIDE 10 // every N generations, the configurations will be logged.  Else, they consume way too much disk space.
+
 
 #define GROWTH_RATE 1.0 /* Controls how fast genes are turned on. */
 #define DECAY_RATE 1.0 /* Controls how fast gene expression lowers when RNA Pol. is removed */
