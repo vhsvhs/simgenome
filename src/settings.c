@@ -49,6 +49,7 @@ void free_settings(settings* ss){
 	free(ss->cooppath);
 	free(ss->rulepath);
 	free(ss->poppath);
+	fclose(ss->file_expr_log);
 }
 
 void read_cli(int argc, char **argv, settings* ss){

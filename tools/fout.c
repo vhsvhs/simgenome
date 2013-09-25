@@ -16,6 +16,20 @@ void build_output_folders(settings* ss){
 	}
 	free(tmp);
 
+
+	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat(
+			strcat(p, ss->outdir),
+	"/LOGS/expression.txt");
+
+	ss->file_expr_log = fopen(p, "w");
+	if (ss->file_expr_log == NULL) {
+	  fprintf(stderr, "Error: can't open output file %s!\n", p);
+	  exit(1);
+	}
+	free(p);
+
+
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat( strcat(tmp, ss->outdir), "/OCCUPANCY/");
 	if (!Filexists(tmp)){

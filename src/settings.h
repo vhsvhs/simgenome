@@ -19,6 +19,8 @@ typedef struct __Settings {
 	char* poppath;
 	bool load_save_pop;
 
+	FILE* file_expr_log;
+
 	bool inherit_expression;
 
 	int gen_counter; /* a counter that gets updated during the run */

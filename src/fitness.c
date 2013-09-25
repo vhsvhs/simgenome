@@ -105,13 +105,21 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 					}
 
 					double delta;
+
+					/* Note: yes I realize this is horrible code style to repeat the same string construction (with some variation)
+					 * four times.  Consolidating this code block is on my to-do list.
+					 */
 					if (t > 0){
 						delta = g->gene_expr[gid * g->expr_timeslices + t] - g->gene_expr[gid * g->expr_timeslices + t - 1];
 						printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\tdelta: %f\n",
 							rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t], delta);
+						fprintf(ss->file_expr_log, "r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\tdelta: %f\n",
+							rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t], delta);
 					}
 					else{
 						printf("r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
+							rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
+						fprintf(ss->file_expr_log, "r: %d\tgenr: %d\ttime: %d\tID: %d\tgene: %d\t%c\texpr: %f\n",
 							rid, ss->gen_counter, t, g->id, gid, mark, g->gene_expr[gid*g->expr_timeslices + t]);
 					}
 
