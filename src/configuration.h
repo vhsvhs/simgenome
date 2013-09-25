@@ -1,4 +1,4 @@
-#define DEF_VERBOSITY 2
+#define DEF_VERBOSITY 3
 
 #define N_STATES 4 /* for nucleotide regulatory sequences */
 

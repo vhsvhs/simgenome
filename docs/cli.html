@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+   <HEAD>
+   	  <link rel="stylesheet" type="text/css" href="docs.css">
+      <TITLE>SimGenome: in silico directed evolution of gene regulatory circuits</TITLE>
+   </HEAD>
+<BODY>
+
+
+<h1>SimGenome</h1>
+<p>Simulated directed evolution of gene regulatory circuits</p>
+<p>Written by Victor Hanson-Smith :: EMAIL victor.hanson-smith@ucsf.edu</p>
+
+<hr>
+<p><a href="manual1.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Tutorial</a> | <a href="cli.html">Command-Line Reference</a></p>
+<hr>
+
+<h3>Usage 1:</h3>
+
+<p>$> simgen --outdir [path] --psampath [path] --urspath [path] --rulepath [path] [Optional Parameters]</p>
+<h3>Usage 2:</h3>
+<p>$> simgen --outdir [path] --poppath [path] --rulepath [path] [Optional Parameters]</p>
+
+<hr>
+
+<p><strong>--outdir [path]</strong>, where [path] is a directory into which all output from this
+simulation will be written.  SimGenome will overwrite any previous contents in this folder, and
+therefore it is strongly suggested that this folder not be shared with other
+data or previous analaysis.
+
+<p><strong>--rulepath [path]</strong>, where [path] is the filepath to a text file listing
+the fixed gene expression inputs and their corresponding regulatory problems.</p>
+
+<p><strong>--psampath [path]</strong>, where [path] is the filepath to a text file describing
+the position-specific affinity matrices (i.e., PSAMs) for all transcription factors
+in one genome.  Every individual in the population will be initialized with these PSAMs.</p>
+
+<p><strong>--urspath [path]</strong>, where [path] is the filepath to a text file containing
+the upstream regulatory sequences (i.e. URSs) for all genes in one genome.  Every individual in the
+population will be initizlied with these URSs.</p>
+
+<p><strong>--poppath [path]</strong>, where [path] is the filepath to a saved population written
+by SimGenome.  If this option is present, it will override values for --psampath and --urspath.  The
+option --poppath is often combined with the option --startgen N, where N is not zero, in order
+to continue a previously saved simulation at a later generation.</p>
+
+<h3>Optional Parameters</h3>
+
+<p><strong>--verbosity N</strong>, where N can range from 0 to 100.
+Higher values of N produce more output on the screen, while lower values produce
+less output.  Values of 30 and higher
+will produce very verbose output files that will reduce the performance
+of SimGenome, although this output can be useful for comprehensively analyzing
+your simulated conditions.  The default value is N = 3.</p>
+
+<p><strong>--runclean</strong> will explicitly remove any existing files in the output
+directory before the simulation begins.  This is useful if you are re-running a previous
+analysis and want to prevent stale output from polluting your results.</p>
+
+<p><strong>--cooppath [path]</strong>, where [path] is the filepath to a text file
+containing cofactor interaction definitions.  If this file is not specified, then all
+co-factor interactions will be initialized to 1.0, indicating no specific interaction.  
+See the examples for more information about formatting this file.</p>
+
+<p><strong>--startgen N</strong> will start the simulation at generation N.</p>
+
+<p><strong>--maxgen N</strong> will stop the simulation when it reaches generation N.</p>
+
+<p><strong>--popsize N</strong> will create a population of size N.  Each individual
+will be initialized as a clone of the URSs, PSAMs, and co-factor interactions described
+in --urspath, --psampath, and --cooppath (if specified).  This parameter is
+ignored if you also specify --poppath.</p>
+
+<p><strong>--maxgd N</strong>, where N is the maximum distance, in nucleotide sites, over
+which two co-factors can interact.  Co-factor interactions are strongest when the
+co-factors are nearby, and the interaction degrades over distance.  The default value for
+this parameter is 3 sites.</p>
+
+<p><strong>--niid N</strong> will set the number of independent and identically
+distributed (I.I.D.) samples to draw from the distribution of binding occupancies.  Higher
+values will increase the accuracy of SimGenome, but will also take longer to compute.  The default
+value is 5000.</p>
+
+
+<h4>Mutation Parameters:</h4>
+
+<p><strong>--nomu</strong> will disable the mutation step in the genetic algorithm.</p>
+
+<p><strong>--urs_mu X</strong> will set the mutation rate for URSs to X, where X is
+nucleotide substitutions per sequence site.</p>
+
+<p><strong>--psam_mu X</strong> will set the mutation rate for PSAMs to X, where X is the
+probability of mutating a single site in a PSAM.</p>
+
+<p><strong>--urslenmu X</strong>, where X is the probability of inserting or deleting sites
+into each URS.</p>
+
+<p><strong>--urslenmulen X</strong>, where X is the mean number of nucleotide sites inserted
+or deleted with each URS length mutation.</p>
+
+<p><strong>--psamlenmu X</strong>, where X is the probability of mutating the length of each PSAM.
+The mutation can be an insertion or a deletion of a PSAM site.
+
+<p><strong>--psamlenmulen X</strong>, where X is the mean number of PSAM sites inserted or
+deleted with each PSAM mutation.</p>
+
+<p><strong>--coopmu X</strong>, where X is the probability of increasing/decreasing each co-factor
+interaction.</p>
+
+<p><strong>--coopmusize X</strong>, where X is the mean multiplier by which each co-factor mutation will
+increase or decrease the interaction.</p>
+
+<hr>
+
+</BODY>
+</HTML>
