@@ -34,7 +34,12 @@ int nt2int(char c);
 
 double drand();
 double random_normal();
+double max( double* x, int len);
+double min( double* x, int len);
+double mean( double* x, int len);
+double stdev( double* x, int len);
+double sderr( double* x, int len);
+
 int sample_from_cdf(double* p, int len);
 int Filexists(char *filename);
-
 int match(char*, char*);

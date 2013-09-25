@@ -80,7 +80,6 @@ void runsim(t_ga* ga, settings* ss){
 		/* Save the fitness stats, and serialize the population */
 		log_fitness(f, ga->pop->ngenomes, ss);
 
-
 		//
 		// to-do: change the pop serialization to list file paths to URSs, DBDs, and COOP files
 		// rather than containing that information itself.

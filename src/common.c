@@ -60,6 +60,41 @@ double random_normal() {  /* normal distribution, centered on 0, std dev 1 */
   return sqrt(-2*log(drand())) * cos(2*M_PI*drand());
 }
 
+double max( double* x, int len){
+	double ret = 0.0;
+	for (int ii = 0; ii < len; ii++){
+		if (x[ii] > ret){ ret = x[ii]; }
+	}
+	return ret;
+}
+/* Returns the minimum fitness in an array of fitnesses, x */
+double min( double* x, int len){
+	double ret = 1.0;
+	for (int ii = 0; ii < len; ii++){
+		if (x[ii] < ret){ ret = x[ii]; }
+	}
+	return ret;
+}
+double mean( double* x, int len){
+	double sum = 0.0;
+	for (int ii = 0; ii < len; ii++){
+		sum += x[ii];
+	}
+	return sum / len;
+}
+double stdev( double* x, int len){
+	double m = mean(x, len);
+	double sum = 1.0;
+	for (int ii = 0; ii < len; ii++){
+		int qq = (x[ii] - m);
+		sum += qq*qq;
+	}
+	return sqrt(sum/len);
+}
+double sderr( double* x, int len){
+	return stdev(x,len) / sqrt(len);
+}
+
 /* Given an array of doubles, and a length of that array, this method
  * returns a random index from that array, where the probability of each
  * index is weighted by its relative value.

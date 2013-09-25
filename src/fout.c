@@ -39,8 +39,19 @@ void build_output_folders(settings* ss){
 
 }
 
+
+/* Writes the file FITNESS/fitness.genX.txt for generation X,
+ * and updates the file LOGS/generations.txt for all generations so far.
+ */
 void log_fitness(double* f, int len, settings* ss){
-	//printf("fout 33\n");
+
+	double minf = min(f, len);
+	double maxf = max(f, len);
+	double meanf = mean(f, len);
+	double errf = sderr(f, len);
+
+	/*
+	 * Part 1: write FITNESS/fitness.genX.txt */
 	char* g;
 	g = (char*)malloc(10*sizeof(char));
 	sprintf(g, "%d", ss->gen_counter);
@@ -63,16 +74,40 @@ void log_fitness(double* f, int len, settings* ss){
 			  p);
 	  exit(1);
 	}
-
+	char mark = ' ';
 	for (int ii=0; ii<len; ii++){
-		//printf("%d %f\n", ii, f[ii]);
-		fprintf(fp, "%d %f\n", ii, f[ii]);
+		double this_f = f[ii];
+		if (this_f == maxf){ mark = '*'; }
+		else{ mark = ' '; }
+		fprintf(fp, "%d %f %c\n", ii, f[ii], mark);
 	}
 	fclose(fp);
 	if (ss->verbosity > 2){
 		printf("\n. Fitness values were written to %s\n", p);
 	}
 	free(g);
+	free(p);
+
+	/*
+	 * Part 2: update LOGS/generations.txt */
+	p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat(
+			strcat(p, ss->outdir),
+			"/LOGS/generations.txt");
+
+	FILE *fo;
+	fo = fopen(p, "a");
+	if (fo == NULL) {
+	  fprintf(stderr, "Error: can't open output file %s!\n",
+			  p);
+	  exit(1);
+	}
+
+	// gen, max, min, mean
+	fprintf(fo, "gen: %d\tmax= %f\tmin= %f\tmean= %f\terr= %f\n",
+			ss->gen_counter, maxf, minf, meanf, errf);
+
+	fclose(fo);
 	free(p);
 }
 
