@@ -48,13 +48,18 @@ int main( int argc, char **argv )
 	ga->pop = pop;
 	ga->l = l;
 
+	if ( !is_world_consistent(ga) ){
+		printf("\n. Something is inconsistent with your setup.\n");
+	}
+
 	if (ss->verbosity > 0){	 printf("\n. The simulation is starting now.\n"); }
 	runsim(ga, ss);
 
 	if (ss->verbosity > 0){	 printf("\n. The simulation is finished."); }
-	free_ga( ga );
+
 	if (ss->verbosity > 0){	 printf("\n. Goodbye\n\n"); }
 
+	free_ga( ga );
 	free_settings(ss);
 
 	return 1;

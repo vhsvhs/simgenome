@@ -209,7 +209,6 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	return rulesets;
 }
 
-
 void free_landscape(t_landscape* l){
 	for (int ii = 0; ii < l->nrulesets; ii++){
 		for (int jj = 0; jj < l->rulesets[ii]->ninputs; jj++){

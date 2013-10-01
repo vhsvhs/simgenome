@@ -66,9 +66,6 @@ void mutate(t_pop* pop, settings* ss){
 		}
 
 
-		/*
-		 * to-do: indels
-		 */
 
 	}
 

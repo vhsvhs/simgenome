@@ -49,7 +49,7 @@ between TFs.  Big values facilitate cooperative binding across long distances,
 whereas small values make the coopfunc dropoff quickly.*/
 #define V_RATE_OF_COOP_DECAY 3
 
-/* PE_SCALAR is inversely proportion to URS length.
+/* PE_SCALAR is inversely proportional to URS length.
 Higher values make k_act higher, which makes it easer for genes to be expressed.
 Lower values make k_act lower, which means that more bound sites are required
 for genes to be activated.*/

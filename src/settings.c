@@ -64,19 +64,22 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"rulepath",	required_argument,	NULL,	5},
 			{"poppath", required_argument,NULL,	6}, // read one genome, make the population a copy of this genome.
 
-
 			{"nomu", 		no_argument, 	NULL, 	100}, // disable mutations
 			{"psamlenmu", 	required_argument, 	NULL, 	101},
 			{"psamlenmumax", required_argument, NULL, 	102},
 			{"ddgmu", 		required_argument, 	NULL, 	103},
 			{"urs_mu",		required_argument,	NULL,	104},
 			{"psam_mu",		required_argument,	NULL,	105},
+			{"growth_scalar",required_argument,	NULL,	106},
+			{"decay_scalar", required_argument,	NULL,	107},
 
 			{"niid",		required_argument, 	NULL,	200},
 			{"maxgen",		required_argument, 	NULL,	201},
 			{"startgen",	required_argument,	NULL,	202},
 			{"popsize",		required_argument,	NULL,	203},
 			{"maxgd",		required_argument,	NULL,	204}, // maximum co-factor distance
+
+			{"pe_scalar", 	required_argument,	NULL,	250},
 
 			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files
 
@@ -151,6 +154,14 @@ void read_cli(int argc, char **argv, settings* ss){
 				ss->psam_mu_rate = atof(optarg);
 				break;
 			}
+			case 106:{
+				ss->growth_rate = atof(optarg);
+				break;
+			}
+			case 107:{
+				ss->decay_rate = atof(optarg);
+				break;
+			}
 
 			case 200:{
 				ss->niid = atoi(optarg);
@@ -174,6 +185,10 @@ void read_cli(int argc, char **argv, settings* ss){
 					ss->maxgd = 1;
 				}
 				break;
+			}
+
+			case 250:{
+				ss->pe_scalar = atof(optarg);
 			}
 
 
@@ -200,6 +215,9 @@ void read_cli(int argc, char **argv, settings* ss){
 	/* Now we do some post-parsing business */
 	if (ss->run_clean == true){
 		char *qq = (char*)malloc(FILEPATH_LEN_MAX*sizeof(char));
+		if (ss->verbosity > 3){
+			printf("\n. I'm wiping the output folder clean.\n");
+		}
 		strcat( strcat( strcat(qq, "rm -rf "), ss->outdir), "/*");
 		system( qq );
 		build_output_folders(ss);

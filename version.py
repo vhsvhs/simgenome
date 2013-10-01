@@ -1,1 +1,0 @@
-VERSIONSTRING = "version 0.15, August 30, 2013"

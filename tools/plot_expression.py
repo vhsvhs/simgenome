@@ -12,6 +12,7 @@ tarr = []
 color = {}
 
 data = {}
+gene_mode = {}
 
 def color_for_run(x):
     if x not in color:
@@ -20,6 +21,7 @@ def color_for_run(x):
     return color[x]
 
 def get_data():
+    """Parses a text file containing the STDOUT from SimGenome."""
     for l in fin.xreadlines():
         if l.startswith("r:"):
             tokens = l.split()
@@ -28,8 +30,14 @@ def get_data():
             t = int( tokens[5] )
             id = int( tokens[7] )
             gid = int( tokens[9] )
+            mode = tokens[10]
+            if mode.startswith("expr:"):
+                mode = ""
+            if gid not in gene_mode:
+                gene_mode[gid] = mode
+
             expr = None
-          
+
             if t not in tarr:
                 tarr.append(t)
             
@@ -74,12 +82,12 @@ def plot_data( data, gen, id):
     ts += ");\n"
     
     miny = None
-    maxy = 1.0
+    maxy = 5.0
     
     var_str = {}
     for r in data[gen][id]:
         for g in data[gen][id][r]:
-            var = "Gene" + g.__str__() + "R" + r.__str__()
+            var = "Gene" + g.__str__() + gene_mode[g]
             str = var + " <-c("
     
             for t in tarr:
@@ -94,9 +102,8 @@ def plot_data( data, gen, id):
             str = re.sub(",$", "", str)
             str += ");\n"
             var_str[var] = str
-            
     
-    fout.write("pdf('" + foutpath + ".pdf', width=7, height=4);\n")
+    fout.write("pdf('" + foutpath + ".pdf', width=7, height=3.5);\n")
     fout.write(ts)
     
     fout.write("x <-c(" + mint.__str__() + "," + maxt.__str__() + ");\n" )
@@ -107,17 +114,19 @@ def plot_data( data, gen, id):
         fout.write("points(ts," + var + ",type='l',col='" + color_for_run(var) + "');\n")
     
     lstr = "legend(\"topleft\", c("
-    for var in var_str:
+    varkeys = var_str.keys()
+    varkeys.sort()
+    for var in varkeys:
         lstr += "'" + var + "',"
     lstr = re.sub(",$", "", lstr)
     lstr += "), "
     lstr += "col=c("
-    for var in var_str:
+    for var in varkeys:
         lstr += color_for_run(var) + ","
     lstr = re.sub(",$", "", lstr)
     lstr += "), "
     lstr += "pch=c("
-    for var in var_str:
+    for var in varkeys:
         lstr += "21,"
     lstr = re.sub(",$", "", lstr)
     lstr += ")"

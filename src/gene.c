@@ -214,6 +214,9 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		if (line[0] == '#'){
 			continue;
 		}
+		else if (line[0] == '\n'){
+			continue;
+		}
 		else if (line[0] == '>'){
 			this_gene += 1;
 		}

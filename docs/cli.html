@@ -13,7 +13,7 @@
 <p>Written by Victor Hanson-Smith :: EMAIL victor.hanson-smith@ucsf.edu</p>
 
 <hr>
-<p><a href="manual1.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Tutorial</a> | <a href="cli.html">Command-Line Reference</a></p>
+<p><a href="manual.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Tutorial</a> | <a href="cli.html">Command-Line Reference</a></p>
 <hr>
 
 <h3>Usage 1:</h3>
@@ -45,7 +45,7 @@ by SimGenome.  If this option is present, it will override values for --psampath
 option --poppath is often combined with the option --startgen N, where N is not zero, in order
 to continue a previously saved simulation at a later generation.</p>
 
-<h3>Optional Parameters</h3>
+<h3>Optional Parameters:</h3>
 
 <p><strong>--verbosity N</strong>, where N can range from 0 to 100.
 Higher values of N produce more output on the screen, while lower values produce
@@ -82,6 +82,10 @@ distributed (I.I.D.) samples to draw from the distribution of binding occupancie
 values will increase the accuracy of SimGenome, but will also take longer to compute.  The default
 value is 5000.</p>
 
+<p><strong>--pe_scalar X</strong>, where X is the expression scalar.
+Higher values make it easer for genes to be expressed with fewer sites bound in their URS,
+while lower values mean that expression requires more sites bound in the URS.</p>
+
 
 <h4>Mutation Parameters:</h4>
 
@@ -108,8 +112,8 @@ deleted with each PSAM mutation.</p>
 <p><strong>--coopmu X</strong>, where X is the probability of increasing/decreasing each co-factor
 interaction.</p>
 
-<p><strong>--coopmusize X</strong>, where X is the mean multiplier by which each co-factor mutation will
-increase or decrease the interaction.</p>
+<p><strong>--coopmusize X</strong>, where X is the mean multiplier by which each mutated 
+co-factor mutation will increase or decrease.</p>
 
 <hr>
 

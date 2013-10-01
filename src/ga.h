@@ -7,3 +7,4 @@ t_ga* make_ga();
 void runsim(t_ga* ga, settings* ss);
 void get_fitness_stats(double *f, int len, double &max, double &min, double &mean, double &median, double &stddev);
 void free_ga(t_ga* ga);
+bool is_world_consistent(t_ga* ga);
