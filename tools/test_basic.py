@@ -6,22 +6,24 @@
 #
 import sys, os
 
+OUTDIR = os.path.abspath( sys.argv[1] )
+
 def get_command():
-    command = "/common/bin/simreg "
-    command += " --outdir out.test_basic "
-    command += "--psampath test_basic.psam "
-    command += "--urspath test_basic.urs "
-    command += "--rulepath test_basic.rules "
+    command = "simreg "
+    command += " --outdir " + OUTDIR + "/out.test_basic "
+    command += "--psampath " + OUTDIR + "/test_basic.psam "
+    command += "--urspath " + OUTDIR + "/test_basic.urs "
+    command += "--rulepath " + OUTDIR + "/test_basic.rules "
     command += "--maxgen 1 "
     command += "--niid 10000 "
     command += "--popsize 1 "
     command += "--verbosity 10 "
-    command += "--run_clean "
     command += "--maxgd 1 "
+    command += " "
     return command
 
 def print_psams():
-    fout = open("test_basic.psam", "w")
+    fout = open(OUTDIR + "/test_basic.psam", "w")
     # Gene 0 likes CCC
     fout.write("Gene 0 1\n")
     fout.write("0.0    30.0    0.0    0.0\n")
@@ -35,7 +37,7 @@ def print_psams():
     fout.close()
     
 def print_urss():
-    fout = open("test_basic.urs", "w")
+    fout = open(OUTDIR + "/test_basic.urs", "w")
     fout.write(">0\n")
     fout.write("AAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
     fout.write(">1\n")
@@ -45,7 +47,7 @@ def print_urss():
     fout.close()
 
 def print_rules():
-    fout = open( "test_basic.rules", "w" )
+    fout = open( OUTDIR + "/test_basic.rules", "w" )
     fout.write("RULE 0 2 4 0.5 0 1\n")
     fout.write("RULE 0 2 8 0.01 1 1\n")
 
@@ -60,7 +62,11 @@ def print_rules():
 # main
 #
 
-os.system("mkdir out.test_basic")
+if os.path.exists(OUTDIR + "/out.test_basic"):
+    os.system("rm " + OUTDIR + "/out.test_basic")
+if False == os.path.exists(OUTDIR):
+    os.system( "mkdir " + OUTDIR )
+os.system("mkdir " + OUTDIR + "/out.test_basic")
 print_rules()
 print_psams()
 print_urss()
@@ -68,8 +74,7 @@ commands = []
 c = get_command()
 commands.append( c )
 
-
-fout = open("test_basic.commands.txt", "w")
+fout = open(OUTDIR + "/test_basic.commands.txt", "w")
 for c in commands:
     fout.write(c + "\n")
 fout.close()

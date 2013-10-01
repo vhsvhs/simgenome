@@ -16,6 +16,13 @@ void build_output_folders(settings* ss){
 	}
 	free(tmp);
 
+	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat( strcat(tmp, ss->outdir), "/MUTATIONS/");
+	if (!Filexists(tmp)){
+		mkdir(tmp, 0700);
+	}
+	free(tmp);
+
 
 	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat(

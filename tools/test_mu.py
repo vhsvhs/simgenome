@@ -8,7 +8,7 @@ import sys, os
 
 OUTDIR = sys.argv[1]
 #OUTDIR = os.path.abspath(OUTDIR)
-PSAM = [0.0]
+PSAM = [0.0, 0.1, 0.2]
 URS = [0.001,0.005,0.01,0.05,0.1]
 #URS = [0.05]
 nreps = 4
@@ -134,7 +134,7 @@ for ii in PSAM:
             commands.append( c )
 
 
-fout = open("test_mu.commands.txt", "w")
+fout = open(OUTDIR + "/test_mu.commands.txt", "w")
 for c in commands:
     fout.write(c + "\n")
 fout.close()

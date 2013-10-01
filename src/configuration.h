@@ -21,7 +21,7 @@
 
 #define URSMU 0.01
 #define PSAMMU 0.1
-#define PWMLENMU 0.3
+#define PWMLENMU 0.1
 #define PWMLENMUMAX 2
 #define DDGMU 0.5
 

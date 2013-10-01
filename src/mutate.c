@@ -16,8 +16,23 @@ void mutate(t_pop* pop, settings* ss){
 		return;
 	}
 
+	FILE *fp;
 	if (ss->verbosity > 2){
 		printf("\n\n. The population is mutating. . .\n");
+
+		/* Open the mating log file */
+		char *gs;
+		gs = (char*)malloc(10*sizeof(char));
+		sprintf(gs, "%d", ss->gen_counter);
+		char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+		strcat( strcat( strcat( strcat(p, ss->outdir), "/MUTATIONS/mu.gen"), gs), ".txt");
+		free(gs);
+
+		fp = fopen(p, "w");
+		if (fp == NULL) {
+		  fprintf(stderr, "Error: can't open the mating log file %s!\n", p);
+		}
+		free(p);
 	}
 
 	for (int ii = 0; ii < pop->ngenomes; ii++) {
@@ -29,12 +44,16 @@ void mutate(t_pop* pop, settings* ss){
 		if (n < 0){
 			n = 0;
 		}
-		if (ss->verbosity > 3){
-			printf("\n. I'm making %d URS point mutations to ID %d.", n, ii );
-		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ngenes;
-			mutate_urs(pop->genomes[ii]->genes[rand_gene], ss);
+			int rs = mutate_urs(pop->genomes[ii]->genes[rand_gene], ss);
+
+			if (ss->verbosity > 2){
+				fprintf(fp, "ID %d, +SNP to URS %d site %d\n", ii, rand_gene, rs);
+			}
+		}
+		if (ss->verbosity > 3){
+			printf("\n. +%d SNPs to ID %d.", n, ii );
 		}
 
 		/*
@@ -44,12 +63,16 @@ void mutate(t_pop* pop, settings* ss){
 		if (n < 0){
 			n = 0;
 		}
-		if (ss->verbosity > 3){
-			printf("\n. I'm making %d PSAM point mutations to ID %d.", n, ii );
-		}
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ntfs;
-			mutate_psam(pop->genomes[ii]->genes[rand_gene]->dbd, ss);
+			int rs = mutate_psam(pop->genomes[ii]->genes[rand_gene]->dbd, ss);
+
+			if (ss->verbosity > 2){
+				fprintf(fp, "ID %d, +PSAM mutation to PSAM %d index %d\n", ii, rand_gene, rs);
+			}
+		}
+		if (ss->verbosity > 3){
+			printf("\n. I'm making %d PSAM point mutations to ID %d.", n, ii );
 		}
 
 
@@ -57,32 +80,73 @@ void mutate(t_pop* pop, settings* ss){
 		 * to-do: mutate co-factor interactions
 		 */
 
-		// Rebuilt the co-factor affinity matrix based
-		// on the new mutant affinity values.
+
+		/*
+		 * Mutate PSAM lengths
+		 * */
+		n = count_psamlen( pop->genomes[ii] ) * ss->psamlenmu;
+		for (int jj = 0; jj < n; jj++){
+			int rand_gene = rand()%pop->genomes[ii]->ntfs;
+			int before_len = pop->genomes[ii]->genes[rand_gene]->dbd->nsites;
+			mutate_psamlength(pop->genomes[ii]->genes[rand_gene]->dbd, ss);
+			if (ss->verbosity > 3){
+				fprintf(fp, "ID %d, indel to PSAM %d, old_len = %d, new_len = %d\n",
+						ii, rand_gene, before_len, pop->genomes[ii]->genes[rand_gene]->dbd->nsites);
+			}
+		}
+
+
+		/* Finally, rebuild the co-factor affinity matrix based
+		 * on the new mutant affinity values.
+		 */
 		for (int jj=0; jj < pop->genomes[ii]->ntfs; jj++){
 			calc_gamma( pop->genomes[ii]->genes[jj],
 					pop->genomes[ii]->ntfs,
 					ss->maxgd);
 		}
+	}
 
-
-
+	if (ss->verbosity > 2){
+		fclose(fp);
 	}
 
 }
 
-/* Mutates a single random site in the psam */
-void mutate_psam(psam *p, settings *ss) {
+/* Mutates a single random site in the psam.
+ * Returns the index in psam->data that was mutated. */
+int mutate_psam(psam *p, settings *ss) {
 	int rand_ii = (double)rand() / (double)RAND_MAX * (p->nsites*p->nstates);
 	double old = p->data[rand_ii];
 	p->data[rand_ii] = get_random_ddg();
 	if (ss->verbosity > 20) {
 		printf("\n. Mutating PSAM rand_ii %d old %f new %f\n", rand_ii, old, p->data[rand_ii]);
 	}
+	return rand_ii;
 }
 
-/* Inserts a point mutation into the URS of gene g */
-void mutate_urs(t_gene *g, settings *ss) {
+void mutate_psamlength(psam *p, settings *ss){
+	/* Insertion or deletion? */
+	bool insert = false;
+	int rand_ii = drand();
+	if (rand_ii > 0.5){
+		insert = true;
+	}
+
+	psam* pnew = make_psam(p->nsites+1, p->nstates);
+	for (int ii = 0; ii < p->nsites * p->nstates; ii++){
+		pnew->data[ii] = p->data[ii];
+	}
+	for (int ii = p->nsites * p->nstates; ii < p->nsites * p->nstates + p->nstates; ii++){
+		pnew->data[ii] = get_random_ddg();
+	}
+	free_psam(p);
+	p = pnew;
+}
+
+/* Inserts a point mutation into the URS of gene g.
+ * Returns the site number of the URS that was mutated.
+ * */
+int mutate_urs(t_gene *g, settings *ss) {
 	int rand_site = (double)rand() / (double)RAND_MAX * (g->urslen);
 	int rand_state = (int)( (double)rand() / (double)RAND_MAX * N_STATES );
 	if (rand_state == g->urs[rand_site]) {
@@ -95,6 +159,7 @@ void mutate_urs(t_gene *g, settings *ss) {
 		printf("\n. Mutating URS rand_site %d rand_state %d old %d new %d\n",
 				rand_site, rand_state, old, g->urs[ rand_site ]);
 	}
+	return rand_site;
 }
 
 void mutate_gamma(t_gene *g, settings *ss) {
