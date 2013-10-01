@@ -3,7 +3,13 @@
 
 /* Returns a random delta-delta-G value */
 double get_random_ddg() {
-	return (double)rand() / (double)RAND_MAX * (MAX_DDG - MIN_DDG) / 2.0;
+	double rand_ii = drand();
+	if (rand_ii > 0.5){
+		return (double)rand() / (double)RAND_MAX * (MAX_DDG) / 2.0;
+	}
+	else{
+		return (double)rand() / (double)RAND_MAX * (MIN_DDG) / 2.0;
+	}
 }
 
 /*
@@ -94,7 +100,9 @@ void mutate(t_pop* pop, settings* ss){
 						ii, rand_gene, before_len, pop->genomes[ii]->genes[rand_gene]->dbd->nsites);
 			}
 		}
-
+		if (ss->verbosity > 3){
+			printf("\n. I'm making %d PSAM indels to ID %d.", n, ii );
+		}
 
 		/* Finally, rebuild the co-factor affinity matrix based
 		 * on the new mutant affinity values.
@@ -126,21 +134,45 @@ int mutate_psam(psam *p, settings *ss) {
 
 void mutate_psamlength(psam *p, settings *ss){
 	/* Insertion or deletion? */
-	bool insert = false;
-	int rand_ii = drand();
-	if (rand_ii > 0.5){
-		insert = true;
+	bool insert = true;
+	if (p->nsites > 1){
+		double rand_ii = drand();
+		if (rand_ii > 0.5){
+			insert = false;
+		}
 	}
 
-	psam* pnew = make_psam(p->nsites+1, p->nstates);
-	for (int ii = 0; ii < p->nsites * p->nstates; ii++){
-		pnew->data[ii] = p->data[ii];
+	int erg = p->nstates * p->nsites;
+	int size = 0.0;
+	if (insert){
+		size =  p->nstates*(p->nsites+1);
 	}
-	for (int ii = p->nsites * p->nstates; ii < p->nsites * p->nstates + p->nstates; ii++){
-		pnew->data[ii] = get_random_ddg();
+	else{ //delete
+		size = p->nstates*(p->nsites-1);
 	}
-	free_psam(p);
-	p = pnew;
+	double* newdata = (double *)malloc( size * sizeof(double));
+
+	if (insert){
+		for (int ii = 0; ii < erg; ii++){
+			newdata[ii] = p->data[ii];
+		}
+		for (int ii = erg; ii < erg + p->nstates; ii++){
+			newdata[ii] = get_random_ddg();
+		}
+	}
+	else{ // delete
+		for (int ii = 0; ii < size; ii++){
+			newdata[ii] = p->data[ii];
+		}
+	}
+	free(p->data);
+	p->data =(double *)malloc( size * sizeof(double));
+	for (int ii = 0; ii < size; ii++){
+		p->data[ii] = newdata[ii];
+	}
+
+	if (insert){ p->nsites++; }
+	else{ p->nsites--; }
 }
 
 /* Inserts a point mutation into the URS of gene g.

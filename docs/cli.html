@@ -16,18 +16,27 @@
 <p><a href="manual.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Tutorial</a> | <a href="cli.html">Command-Line Reference</a></p>
 <hr>
 
-<h3>Usage 1:</h3>
+<h3>Usage 1: Create a new population</h3>
+<div class="divBlue">
+<p>Run simgen with the following commands:</p>
+<code>$> simgen --outdir [path] --psampath [path] --urspath [path] --rulepath [path] [Optional Parameters]
+</code>
+</div>
 
-<p>$> simgen --outdir [path] --psampath [path] --urspath [path] --rulepath [path] [Optional Parameters]</p>
-<h3>Usage 2:</h3>
-<p>$> simgen --outdir [path] --poppath [path] --rulepath [path] [Optional Parameters]</p>
+<h3>Usage 2: Load a saved population.</h3>
+<div class="divBlue">
+<p>Run simgen with this commands:</p>
+<code>$> simgen --outdir [path] --poppath [path] --rulepath [path] [Optional Parameters]
+</code>
+</div>
 
-<hr>
+<br>
 
 <p><strong>--outdir [path]</strong>, where [path] is a directory into which all output from this
-simulation will be written.  SimGenome will overwrite any previous contents in this folder, and
+simulation will be written.  By default, SimGenome will overwrite any previous contents in this folder, and
 therefore it is strongly suggested that this folder not be shared with other
-data or previous analaysis.
+data or previous analaysis.  If you would like SimGenome to wipe-clean this directory before
+starting, see also the command <strong>--run_clean</strong>.</p>
 
 <p><strong>--rulepath [path]</strong>, where [path] is the filepath to a text file listing
 the fixed gene expression inputs and their corresponding regulatory problems.</p>

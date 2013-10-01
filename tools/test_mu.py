@@ -1,4 +1,11 @@
 #
+# USAGE:
+# %> python tools/test_mu.py P
+# . . . where P is the path to a desired output directory
+#
+# 
+#
+#
 # Screens values of mutation rates versus N generations to solution,
 # for the simple problem of assembling a feed-forward loop.
 #
@@ -27,7 +34,7 @@ def make_directory(psammu, ursmu, rep):
 
 def get_command(psammu, ursmu, rep):
     runid = make_runid(psammu, ursmu, rep)
-    command = "/common/bin/simreg "
+    command = "simreg "
     command += " --outdir " + OUTDIR + "/out." + runid + " " 
     command += "--psampath " + OUTDIR + "/test_mu.psam "
     command += "--urspath " + OUTDIR + "/test_mu.urs "
@@ -80,7 +87,11 @@ def print_urss():
     fout.write(">3\n")
     fout.write("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
     fout.write(">4\n")
-    fout.write("AAAAGGGGAAAAAAAAAAATTTTTTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
+    
+    fout.write("AAAAGGGGAAAAAAAAAAATTTTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
+    # better fitness with this:
+    #fout.write("AAAAGGGGAAAAAAAAAAATTTTTTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
+   
     fout.close()
 
 def print_rules():

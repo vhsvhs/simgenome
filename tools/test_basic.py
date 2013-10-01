@@ -1,4 +1,8 @@
 #
+# USAGE:
+# %> python tools/test_basic.py P
+# . . . where P is the path to a desired output directory
+#
 # Screens values of mutation rates versus N generations to solution,
 # for the simple problem of assembling a feed-forward loop.
 #
