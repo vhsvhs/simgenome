@@ -21,8 +21,9 @@ def make_runid(psammu, ursmu, rep):
 def make_directory(psammu, ursmu, rep):
     runid = make_runid(psammu, ursmu, rep)
     print OUTDIR + "/out." + runid
-    if False == os.path.exists(OUTDIR + "/out." + runid):
-        os.system("mkdir " + OUTDIR + "/out." + runid)
+    if os.path.exists(OUTDIR + "/out." + runid):
+        os.system("rm -rf " + OUTDIR + "/out." + runid)
+    os.system("mkdir " + OUTDIR + "/out." + runid)        
 
 def get_command(psammu, ursmu, rep):
     runid = make_runid(psammu, ursmu, rep)
@@ -35,7 +36,6 @@ def get_command(psammu, ursmu, rep):
     command += "--niid 10000 "
     command += "--popsize 10 "
     command += "--verbosity 10 "
-    command += "--run_clean "
     command += "--maxgd 1 "
     command += " --urs_mu " + ursmu.__str__()
     command += " --psam_mu " + psammu.__str__()
@@ -93,6 +93,27 @@ def print_rules():
     fout.close()
 
 
+def write_get_data_tool():
+    fout = open(OUTDIR + "/get_data.py", "w")
+    fout.write("import os, sys\n")
+    fout.write("for f in os.listdir(\"./\"):\n")
+    fout.write("    if os.path.isdir(f):\n")
+    fout.write("        genlog = f + \"/LOGS/generations.txt\"\n")
+    fout.write("        if False == os.path.exists(genlog):\n")
+    fout.write("            print \"I can't find the file\", genlog\n")
+    fout.write("            continue\n")
+    fout.write("        fin = open(genlog, \"r\")\n")
+    fout.write("        lines = fin.readlines()\n")
+    fout.write("        lastline = lines[ lines.__len__()-1 ]\n")
+    fout.write("        tokens = lastline.split()\n")
+    fout.write("        gen = tokens[1]\n")
+    fout.write("        max = tokens[3]\n")
+    fout.write("        min = tokens[5]\n")
+    fout.write("        mean = tokens[7]\n")
+    fout.write("        print f, gen, max, min, mean\n")
+    fout.write("        fin.close()\n")
+    fout.close()
+
 #################################
 #
 # main
@@ -120,4 +141,8 @@ fout.close()
 
 print "I wrote a BATCH script to 'test_mu.commands.txt'"
 
-print "mpirun -np " + nprocs.__str__() + " /common/bin/mpi_dispatch test_mu.commands.txt"
+print "Now run the following command, or some variant that will work on your machine:"
+print "mpirun -np " + nprocs.__str__() + " --machinefile hosts.txt /common/bin/mpi_dispatch test_mu.commands.txt"
+
+write_get_data_tool()
+print "When that completes, run the script " + OUTDIR + "/get_data.py"

@@ -1,0 +1,18 @@
+==================================================================
+Protocol for running test_mu.py
+October 1, 2013
+
+1. Navigate the top directory of the SimGenome project.
+
+2. $> rm -rf examples/out.test_mu
+
+3. Execute the following command:
+	$> python tools/test_mu.py ~/Applications/simgenome-c/examples/out.test_mu
+	. . . changning ~/Applications/simgenome... as appropriate.
+
+4. Wait for the simulation to complete.
+
+5. In the meantime, follow these steps to get status updates:
+5a. Navigate to examples/out.test_mu
+5b. $> python examples/out.test_mu/get_data.py
+=====================================================================
