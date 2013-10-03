@@ -28,12 +28,13 @@ def get_command():
     command += "--rulepath " + OUTDIR + "/test_basic.rules "
     command += "--maxgen 1 "
     command += "--niid 5000 "
-    command += "--popsize 10 "
+    command += "--popsize 2 "
     command += "--verbosity 5 "
     command += "--maxgd 1 "
     command += "--f_scalar -20 "
     command += " --pe_scalar 0.001"
-    command += " --elite_prop 0.3 "
+    command += " --elite_prop 1.0 "
+    command += " --randompop"
     return command
 
 def print_psams():
@@ -92,12 +93,12 @@ def print_urss():
 
 def print_rules():
     fout = open( OUTDIR + "/test_basic.rules", "w" )
-    fout.write("RULE 0 5 3 0.1 0 8.0\n")
-    fout.write("RULE 0 5 8 0.0001 1 1.0\n")
-    fout.write("INPUT 0 0 0 1 0.6\n")
-    fout.write("INPUT 0 0 2 10 0.00001\n")
-    fout.write("INPUT 0 3 0 10 0.5\n")
-    fout.write("INPUT 0 4 0 10 0.4\n")
+    fout.write("RULE 0 9 3 0.1 0 4.0\n")
+    fout.write("RULE 0 9 8 0.0001 1 1.0\n")
+    fout.write("INPUT 0 0 0 5 0.6\n")
+    #fout.write("INPUT 0 0 2 10 0.00001\n")
+    #fout.write("INPUT 0 3 0 10 0.5\n")
+    #fout.write("INPUT 0 4 0 10 0.4\n")
     fout.close()
 
 

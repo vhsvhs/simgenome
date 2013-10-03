@@ -164,6 +164,11 @@ int* get_random_seq(int len){
 	return seq;
 }
 
+int get_random_state(){
+	double rand_f = (float)rand()/(float)RAND_MAX;
+	return (int)( rand_f * N_STATES );
+}
+
 /* Returns an array of pointers to genes.
  * Upon completion, ngenes is also set to the correct value. */
 t_gene** read_genes_from_file(settings *ss, int &ngenes) {

@@ -59,42 +59,50 @@ void free_genome(t_genome* gn){
 }
 
 /* Makes a genome with all random gene sequences and affinities */
-t_genome* make_genome_random(int ngenes){
-	t_genome *gn;
-	gn = (t_genome *)malloc(1*sizeof(t_genome));
-	gn->is_elite = false;
-	gn->ngenes = ngenes;
-	gn->genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
-	for (int ii=0; ii<ngenes; ii++){
-		t_gene *this_gene;
-		this_gene = make_gene(PSAMLEN_DEFAULT, URSLEN_DEFAULT);
-		gn->genes[ii] = this_gene;
-		gn->genes[ii]->id = ii;
-		gn->genes[ii]->urs = get_random_seq(URSLEN_DEFAULT);
-		gn->genes[ii]->urslen = URSLEN_DEFAULT;
+t_genome* make_genome_random(settings* ss){
+	t_gene** genes = (t_gene**)malloc(ss->ngenes*sizeof(t_gene));
 
-		double rand_f = (float)rand()/(float)RAND_MAX;
-		if (rand_f > 0.5){
-			gn->genes[ii]->has_dbd = true;
-			rand_init_psam( gn->genes[ii]->dbd );
-		}
-		else {
-			gn->genes[ii]->has_dbd = false;
+	/* Build the genes, using the URSes and PSAMs we previously found. */
+	for (int ii=0; ii<ss->ngenes; ii++){ // ii = gene
+		int psamlen = 0;
+		if (ii < ss->nreg){
+			psamlen = PSAMLEN_DEFAULT;
 		}
 
-		rand_f = (float)rand()/(float)RAND_MAX;
-		if (rand_f > 0.5){
-			gn->genes[ii]->reg_mode = 1;
+		genes[ii] = make_gene(psamlen, ss->urslen);
+		genes[ii]->id = ii;
+		for (int jj=0; jj<ss->urslen; jj++){ // jj = site
+			genes[ii]->urs[jj] = get_random_state();
 		}
-		else {
-			gn->genes[ii]->reg_mode = 0;
+		if (ii < ss->nreg){
+			for (int jj=0; jj<N_STATES*psamlen; jj++){
+				rand_init_psam( genes[ii]->dbd );
+				genes[ii]->has_dbd = true;
+				genes[ii]->reg_mode = ii%2;
+			}
+		}
+		if (ss->verbosity > 10){
+			printf("\n+ Gene %d, URS (%d sites)", ii, genes[ii]->urslen);
+			if (genes[ii]->has_dbd == true){
+				printf(", PSAM (%d sites)", genes[ii]->dbd->nsites);
+			}
+			printf("\n");
 		}
 	}
+
+	/* Setup cofactor variables */
+	for (int ii=0; ii<ss->nreg; ii++){
+		build_coop(genes[ii], ss->nreg, ss->maxgd);
+		init_coop(genes[ii]);
+		calc_gamma(genes[ii], ss->nreg, ss->maxgd);
+	}
+
+	t_genome *gn = make_genome(ss->ngenes, genes, ss);
 	return gn;
 }
 
 /*
- * Builds gene expression array as a new object.
+ * Builds gene expres	sion array as a new object.
  *
  * Build timeslice-related genomic data.
  * Do this only after you've built the landscape

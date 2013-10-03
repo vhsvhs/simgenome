@@ -13,16 +13,18 @@ int main( int argc, char **argv )
 
 	/* There are three ways to make a population:
 	 * 1. Load a saved population using the deserialization method.
-	 * 2. Build a single genome by reading genes from a file, then
-	 * cloning that individual N times to make the population.
-	 * 3. (not yet implemented) Initialize a random population.
+	 * 2. Initialize a random population.
+	 * 3. Default: Build a single genome by reading genes from a file,
+	 * then clone that individual N times to make the population.
 	 */
 	t_pop *pop;
 	if (ss->load_save_pop == true){
 		pop = deserialize_population(ss);
-
-		//printf("\n. main 23 - quitting.\n");
-		//exitread_genes_from_file(1);
+	}
+	else if(ss->build_random_population == true){
+		if (ss->verbosity > 0){	 printf("\n. I'm building a random population....\n"); }
+		t_genome *gn = make_genome_random(ss);
+		pop = make_population(gn, ss);
 	}
 	else{
 		int ngenes;

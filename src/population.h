@@ -3,7 +3,6 @@ typedef struct __Population {
 	int ngenomes;
 }t_pop;
 
-t_pop* make_population_random(int popsize, int ngenes, settings *ss);
 t_pop* make_population(t_genome* gn, settings *ss);
 t_pop* make_population_basic(int popsize);
 void free_pop(t_pop* pop);

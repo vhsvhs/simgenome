@@ -14,7 +14,7 @@ typedef struct __Genome {
 
 t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss);
 t_genome* copy_genome(t_genome *org);
-t_genome* make_genome_random(int ngenes);
+t_genome* make_genome_random(settings* ss);
 void build_lifespan(t_genome* g, int t);
 void reset_lifespan(t_genome* g);
 void free_genome(t_genome* gn);

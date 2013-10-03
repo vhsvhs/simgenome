@@ -29,9 +29,16 @@ typedef struct __Settings {
 	int maxgd; /* The maximum distance, in sites, over which two co-factors can interact. */
 	int niid;
 	int popsize;
+
 	int maxtime;
 	double elite_proportion;
 
+
+	/* Random-Init Stuff: */
+	bool build_random_population;
+	int ngenes;
+	int urslen;
+	int nreg;
 
 	double pe_scalar;
 	double fitness_scalar;

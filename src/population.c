@@ -1,20 +1,5 @@
 #include "common.h"
 
-t_pop* make_population_random(int popsize, int ngenes, settings *ss){
-	t_pop *pop;
-	if (ngenes == -1) {
-		ngenes = NGENES_DEFAULT;
-	}
-	pop = (t_pop*)malloc(1*sizeof(t_pop));
-	pop->genomes = (t_genome**)malloc(popsize*sizeof(t_genome));
-	for(int ii=0; ii<popsize; ii++){
-		t_genome* gn;
-		gn = make_genome_random(ngenes);
-		pop->genomes[ii] = gn;
-	}
-	return pop;
-}
-
 /* Builds a population that is 'popsize' copies of the genome 'gn'. */
 t_pop* make_population(t_genome* gn, settings *ss){
 	t_pop *pop;
@@ -80,7 +65,7 @@ t_pop* reproduce(t_pop* pop, settings* ss, double* f) {
 		if (pop->genomes[ii]->is_elite == true){
 			newpop->genomes[ii] = copy_genome( pop->genomes[ii]);
 			if (ss->verbosity > 2){
-				printf("\n\t. Elite individual %d will be cloned.", ii);
+				printf("\n\t. Elite ID %d is cloning itself.", ii);
 			}
 			fprintf(fp, "generation %d cloned id %id into child %d\n",
 						ss->gen_counter,

@@ -27,5 +27,6 @@ double coopfunc(double f, int d);
 void calc_gamma(t_gene* g, int ntfs, int maxd);
 void free_gene(t_gene* g);
 int* get_random_seq(int len);
+int get_random_state();
 void print_urs(int* urs, int urslen);
 t_gene** read_genes_from_file(settings *ss, int &ngenes);

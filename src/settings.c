@@ -29,6 +29,12 @@ settings* make_settings(){
 	ss->maxtime = MAX_TIME;
 	ss->elite_proportion = ELITE_PROPORTION;
 
+	/* Variables for random-init: */
+	ss->build_random_population = false;
+	ss->ngenes = NGENES_DEFAULT;
+	ss->nreg = NGENES_DEFAULT/2;
+	ss->urslen = 1000;
+
 	ss->do_mutation = 1;
 	ss->urs_mu_rate = URSMU; // subs per seq site
 	ss->psam_mu_rate = PSAMMU;  // subs per psam site
@@ -86,6 +92,12 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"f_scalar", 	required_argument,	NULL,	251},
 
 			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files
+
+			/* For Random-Init of Population: */
+			{"randompop",	no_argument,		NULL,	400},
+			{"ngenes",		required_argument,	NULL,	401}, // for random initialization only
+			{"urslen", 		required_argument,	NULL,	402},
+			{"nreg",		required_argument,	NULL,	403},
 
 			{0,0,0,0}
 	};
@@ -205,6 +217,21 @@ void read_cli(int argc, char **argv, settings* ss){
 			case 300:{
 				ss->run_clean = true;
 				break;
+			}
+
+
+			case 400:{
+				ss->build_random_population = true;
+				break;
+			}
+			case 401:{
+				ss->ngenes = atoi(optarg);
+			}
+			case 402:{
+				ss->urslen = atoi(optarg);
+			}
+			case 403:{
+				ss->nreg = atoi(optarg);
 			}
 
 			case 1000:

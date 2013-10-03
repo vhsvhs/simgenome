@@ -191,10 +191,12 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
  * transcription factors in g.
  */
 double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
+
 	t_ptable *ptable = make_ptable( g->ntfs, ss->maxgd, g->genes[gid]->urslen);
 	fill_prob_table(g, gid, ptable, t, ss);
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
+
 
 	/* If verbosity is high, then log occupancy for every gene, genome, and generation.
 	 */
@@ -223,11 +225,13 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 
 		double sum_cpr = 0.0;
 		for (int ii = 0; ii < g->ntfs; ii++){ // for each transcription factor
+
 			double aff = get_affinity(g->genes[ii]->dbd, g->genes[gid]->urs, g->genes[gid]->urslen, xx);
 
 			double sum_cpt = 0.0; // the sum of cpt values over this jj.
 			for (int jj = 0; jj < g->ntfs + 1; jj++){ // for co-factors, +1 is the empty slot, i.e. no cofactor.
 				for (int dd = 0; dd < ret->D; dd++){ // for possible distance between TF and co-factor
+
 					if (ret->L-xx < g->r[ii]){
 						/* Case 1: TF i cannot fit here. */
 						double value = 0.0;
@@ -288,6 +292,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 					}
 				}
 			} // end for jj
+
 			ret->cpt[xx * ret->M + ii] = sum_cpt;
 			//printf("fitness 249 %d %d %f\n", xx, ii, ret->cpt[xx * ret->M + ii]);
 
