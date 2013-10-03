@@ -35,6 +35,8 @@
 #define POPSIZE 24
 #define NIID 4000 // N I.I.D. samples
 
+#define ELITE_PROPORTION 0.3
+
 #define MAX_GENS 1000
 #define MAX_TIME 1
 #define CONFIG_SAMPLE_STRIDE 10 // every N generations, the configurations will be logged.  Else, they consume way too much disk space.
@@ -58,7 +60,7 @@ for genes to be activated.*/
 /* Larger values make the fitness function sharper around
  * optimal expression, smaller values spread the function's
  * hills further out over poor expression. */
-#define FITNESS_SCALAR -3.0
+#define FITNESS_SCALAR -2.0
 
 /* Output directory path defaults */
 #define POPDIR "LOG_POPS"

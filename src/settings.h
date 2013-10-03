@@ -30,8 +30,11 @@ typedef struct __Settings {
 	int niid;
 	int popsize;
 	int maxtime;
+	double elite_proportion;
+
 
 	double pe_scalar;
+	double fitness_scalar;
 
 	double growth_rate;
 	double decay_rate;

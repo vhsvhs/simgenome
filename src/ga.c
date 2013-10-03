@@ -63,9 +63,10 @@ void runsim(t_ga* ga, settings* ss){
 			 * GET FITNESS of an individual
 			 */
 			f[gid] = get_fitness(ga->pop->genomes[gid], ga->l, ss);
-
-			// to-do: write the expression cran
 		}
+
+		/* Using the new fitness values, mark elite individuals */
+		mark_elite(ga->pop, f, ss);
 
 
 		get_fitness_stats( f, ga->pop->ngenomes,
@@ -73,17 +74,20 @@ void runsim(t_ga* ga, settings* ss){
 		printf("==================================\n");
 		printf(". Generation %d Fitness:\n", ii);
 		for (int gid = 0; gid < ga->pop->ngenomes; gid++){
-			printf("\t ID %d, f= %f\n", gid, f[gid]);
+			printf("\t ID %d, f= %f", gid, f[gid]);
+			if (ga->pop->genomes[gid]->is_elite){
+				printf(" (elite)");
+			}
+			printf("\n");
 		}
 		printf("==================================\n");
 
 		/* Save the fitness stats, and serialize the population */
 		log_fitness(f, ga->pop->ngenomes, ss);
 
-		//
-		// to-do: change the pop serialization to list file paths to URSs, DBDs, and COOP files
-		// rather than containing that information itself.
-		//
+
+
+		/* Save the population to disk. */
 		serialize_population(ga->pop, ss);
 
 		/*

@@ -163,3 +163,57 @@ int match(char *a, char *b)
    else
       return -1;
 }
+
+/* The comparison function for qsort */
+double cmpfunc (double a, double b) {
+   return ( a - b );
+}
+
+/* This qsort algorithm comes from http://www.ontko.com/pub/rayo/cs40/mergesort.c
+ */
+void quicksort(double *data, int begin, int end) {
+  /***********************************************************************/
+  /* Purpose: sorts a list of numbers in increasing order                */
+  /* Input:                                                              */
+  /*   data: an unsorted array of numbers                                */
+  /*   begin: the beginning index of "data"                              */
+  /*   end: the final index of "data"                                    */
+  /* Output:                                                             */
+  /*   upon termination of the subroutine, "data" contains the sorted    */
+  /*     list of numbers                                                 */
+  /***********************************************************************/
+
+  int leftarrow, rightarrow;
+  double temp, pivot;
+
+  leftarrow = begin;
+  rightarrow = end;
+  pivot = data[(begin+end)/2];
+  while (1)
+  {
+    while (data[rightarrow] > pivot)
+      rightarrow = rightarrow - 1;
+
+    while (data[leftarrow] < pivot)
+      leftarrow = leftarrow + 1;
+
+    if (leftarrow <= rightarrow)
+    {
+      temp = data[leftarrow];
+      data[leftarrow] = data[rightarrow];
+      data[rightarrow] = temp;
+      leftarrow = leftarrow + 1;
+      rightarrow = rightarrow - 1;
+    }
+
+    if (rightarrow < leftarrow)
+      break;
+  }
+
+  if (begin < rightarrow)
+    quicksort(data,begin,rightarrow);
+  if (leftarrow < end)
+    quicksort(data,leftarrow,end);
+
+  return;
+}

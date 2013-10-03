@@ -150,6 +150,44 @@ t_genome* mate(t_genome* par1, t_genome* par2){
 	return f1;
 }
 
+/* This method first sets all individuals in pop to NOT elite,
+ * then sorts the fitness scores and labels a subset of the pop
+ * as elite based on the value of ss->elite_proportion.
+ */
+void mark_elite(t_pop* pop, double* f, settings* ss){
+	int n_elite = pop->ngenomes * ss->elite_proportion;
+	if (n_elite == 0){
+		return;
+	}
+
+	/* Two setup tasks:
+	 * 1. Copy the f array, so that we don't modify the original f array,
+	 * which is used in functions after mark_elite.
+	 * 2. Clear any previous elite markings from the population.
+	 */
+	double* fcopy = (double *)malloc( pop->ngenomes * sizeof(double));
+	for (int ii = 0; ii < pop->ngenomes; ii++){
+		fcopy[ii] = f[ii];
+		pop->genomes[ii]->is_elite = false;
+	}
+
+	/* Sort the fitness scores */
+	quicksort(fcopy, 0, pop->ngenomes-1);
+	//qsort(fcopy, pop->ngenomes, sizeof(double), cmpfunc);
+
+	for (int ii = 0; ii < n_elite; ii++){
+		/* Find an individual with this fitness score */
+		for (int jj = 0; jj < pop->ngenomes; jj++){
+			if (fcopy[ii] == f[jj] && !pop->genomes[jj]->is_elite ){
+				/* Mark ID jj as elite. */
+				pop->genomes[jj]->is_elite = true;
+			}
+		}
+	}
+
+	free(fcopy);
+}
+
 void print_population(t_pop* pop, settings* ss){
 	for(int ii=0; ii< pop->ngenomes; ii++){
 		printf("\n Individual %d:\n", ii);

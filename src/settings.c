@@ -27,12 +27,14 @@ settings* make_settings(){
 	ss->maxgd = MAX_GD;
 	ss->niid = NIID;
 	ss->maxtime = MAX_TIME;
+	ss->elite_proportion = ELITE_PROPORTION;
 
 	ss->do_mutation = 1;
 	ss->urs_mu_rate = URSMU; // subs per seq site
 	ss->psam_mu_rate = PSAMMU;  // subs per psam site
 
 	ss->pe_scalar = PE_SCALAR;
+	ss->fitness_scalar = FITNESS_SCALAR;
 
 	ss->growth_rate = GROWTH_RATE;
 	ss->decay_rate = DECAY_RATE;
@@ -62,7 +64,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"urspath",		required_argument,	NULL,	3},
 			{"cooppath",	required_argument,	NULL,	4},
 			{"rulepath",	required_argument,	NULL,	5},
-			{"poppath", required_argument,NULL,	6}, // read one genome, make the population a copy of this genome.
+			{"poppath", 	required_argument,NULL,	6}, // read one genome, make the population a copy of this genome.
 
 			{"nomu", 		no_argument, 	NULL, 	100}, // disable mutations
 			{"psamlenmu", 	required_argument, 	NULL, 	101},
@@ -78,8 +80,10 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"startgen",	required_argument,	NULL,	202},
 			{"popsize",		required_argument,	NULL,	203},
 			{"maxgd",		required_argument,	NULL,	204}, // maximum co-factor distance
+			{"elite_prop",	required_argument,	NULL,	205},
 
 			{"pe_scalar", 	required_argument,	NULL,	250},
+			{"f_scalar", 	required_argument,	NULL,	251},
 
 			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files
 
@@ -186,11 +190,17 @@ void read_cli(int argc, char **argv, settings* ss){
 				}
 				break;
 			}
+			case 205:{
+				ss->elite_proportion = atof(optarg);
+				break;
+			}
 
 			case 250:{
 				ss->pe_scalar = atof(optarg);
 			}
-
+			case 251:{
+				ss->fitness_scalar = atof(optarg);
+			}
 
 			case 300:{
 				ss->run_clean = true;
@@ -297,6 +307,7 @@ void print_settings(settings *ss){
 		printf(". URS mu rate: %f\n", ss->urs_mu_rate);
 		printf(". PSAM mu rate: %f\n", ss->psam_mu_rate);
 		printf(". cofactor mu rate: %f\n", ss->ddgmu);
+		printf(". 'elite' proportion: %f\n", ss->elite_proportion);
 		printf("\n");
 		printf(". n I.I.D. samples: %d\n", ss->niid);
 		printf(". pe scalar: %f\n", ss->pe_scalar);

@@ -129,34 +129,52 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 		} // end for t
 
 		/* Now score this genome's gene expression vs. the ruleset rid */
-		double error = 0.0; // sum expression error
+		//double error = 0.0; // sum expression error
 		double max_error = 0.0; // sum of possible error
+		double sum_of_wt = 0.0;
+		for (int rr = 0; rr < l->rulesets[rid]->nrules; rr++){
+			sum_of_wt += l->rulesets[rid]->rules[rr]->weight;
+		}
+
 		for (int rr = 0; rr < l->rulesets[rid]->nrules; rr++){
 			t_rule* rul = l->rulesets[rid]->rules[rr];
 			double obs_expr = g->gene_expr[ rul->repid
 			                                * g->expr_timeslices
 			                                + rul->timepoint];
+			double error = 0.0;
+
 			/* Rule type 0: expression must be greater than the rule. */
 			if (rul->rule_type == 0){
 				if (obs_expr < rul->expr_level){
-					error += fabs( obs_expr - rul->expr_level);
+					error += fabs( obs_expr - rul->expr_level) / MAXIMUM_EXPRESSION_LEVEL;
 				}
 			}
+
 			/* Rule type 1: expression must be less than the rule. */
 			if (rul->rule_type == 1){
 				if (obs_expr > rul->expr_level){
-					error += fabs( obs_expr - rul->expr_level);
+					error += fabs( obs_expr - rul->expr_level) / MAXIMUM_EXPRESSION_LEVEL;
 				}
 			}
-			max_error += MAXIMUM_EXPRESSION_LEVEL * rul->weight;
+
+			double this_fit = exp( ss->fitness_scalar * error);
+			my_fit += this_fit * rul->weight / sum_of_wt;
+			//max_error += MAXIMUM_EXPRESSION_LEVEL;
+			//sum_of_wt += rul->weight;
+			//if (ss->verbosity > 20){
+			//	printf("\n. RS %d rule %d error= %f weight= %f this_f= %f, cumm_f= %f\n",
+			//			rid, rr, error, (rul->weight / sum_of_wt), this_fit, my_fit);
+			//}
 		}
-		if (max_error == 0.0){
-			error = 0.0;
-		}
-		else{
-			error = error / max_error;
-		}
-		my_fit += exp( FITNESS_SCALAR * error);
+
+
+		//if (max_error == 0.0){
+		//	error = 0.0;
+		//}
+		//else{
+		//	error = error / max_error;
+		//}
+		//my_fit += exp( FITNESS_SCALAR * error);
 
 	} // end for ruleset
 	my_fit /= l->nrulesets;

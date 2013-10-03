@@ -241,7 +241,7 @@ void log_occupancy(t_genome *g, int gid, int t, int rid, t_ptable* ptable, setti
 
 	/* Reset the header */
 	for (int qq = 0; qq < MAXLEN; qq++){
-		header[qq] = NULL;
+		header[qq] = 0;
 	}
 
 	free(header);
