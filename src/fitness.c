@@ -4,6 +4,7 @@
  * landscape described by l.
  */
 double get_fitness(t_genome* g, t_landscape* l, settings* ss){
+
 	/* Build the r vector */
 	g->r = (int *)malloc(g->ngenes*sizeof(int));
 	for (int ii=0; ii<g->ngenes; ii++){
@@ -158,27 +159,12 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			}
 
 			double this_fit = exp( ss->fitness_scalar * error);
+
 			my_fit += this_fit * rul->weight / sum_of_wt;
-			//max_error += MAXIMUM_EXPRESSION_LEVEL;
-			//sum_of_wt += rul->weight;
-			//if (ss->verbosity > 20){
-			//	printf("\n. RS %d rule %d error= %f weight= %f this_f= %f, cumm_f= %f\n",
-			//			rid, rr, error, (rul->weight / sum_of_wt), this_fit, my_fit);
-			//}
 		}
-
-
-		//if (max_error == 0.0){
-		//	error = 0.0;
-		//}
-		//else{
-		//	error = error / max_error;
-		//}
-		//my_fit += exp( FITNESS_SCALAR * error);
 
 	} // end for ruleset
 	my_fit /= l->nrulesets;
-
 
 	free(g->r);
 

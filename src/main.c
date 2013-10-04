@@ -50,8 +50,9 @@ int main( int argc, char **argv )
 	ga->pop = pop;
 	ga->l = l;
 
-	if ( !is_world_consistent(ga) ){
-		printf("\n. Something is inconsistent with your setup.\n");
+	if ( false == is_world_consistent(ga) ){
+		printf("\n. Sorry, something is inconsistent with your setup, I'm stopping.\n");
+		exit(1);
 	}
 
 	if (ss->verbosity > 0){	 printf("\n. The simulation is starting now.\n"); }

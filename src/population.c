@@ -156,16 +156,21 @@ void mark_elite(t_pop* pop, double* f, settings* ss){
 		pop->genomes[ii]->is_elite = false;
 	}
 
-	/* Sort the fitness scores */
+	/* Sort the fitness scores, in ASCENDING order */
 	quicksort(fcopy, 0, pop->ngenomes-1);
 	//qsort(fcopy, pop->ngenomes, sizeof(double), cmpfunc);
 
 	for (int ii = 0; ii < n_elite; ii++){
+		bool foundit = false;
 		/* Find an individual with this fitness score */
 		for (int jj = 0; jj < pop->ngenomes; jj++){
-			if (fcopy[ii] == f[jj] && !pop->genomes[jj]->is_elite ){
+			if (fcopy[pop->ngenomes-1-ii] == f[jj] && !pop->genomes[jj]->is_elite ){
 				/* Mark ID jj as elite. */
 				pop->genomes[jj]->is_elite = true;
+				foundit = true;
+			}
+			if (foundit == true){
+				jj = pop->ngenomes;
 			}
 		}
 	}

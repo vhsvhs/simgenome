@@ -123,6 +123,8 @@ void free_ga(t_ga* ga){
 
 bool is_world_consistent(t_ga* ga){
 	for (int ii = 0; ii < ga->l->nrulesets; ii++){
+
+		/* For each input */
 		for (int jj = 0; jj < ga->l->rulesets[ii]->ninputs; jj++){
 			int this_gid = ga->l->rulesets[ii]->inputs[jj]->gid;
 			/* Does gene jj exist? */
@@ -132,6 +134,7 @@ bool is_world_consistent(t_ga* ga){
 				return false;
 			}
 		}
+		/* for each rule */
 		for (int jj = 0; jj < ga->l->rulesets[ii]->nrules; jj++){
 			int this_gid = ga->l->rulesets[ii]->rules[jj]->repid;
 			if (this_gid >= ga->pop->genomes[0]->ngenes){

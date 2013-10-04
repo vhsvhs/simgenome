@@ -44,16 +44,28 @@ void serialize_population(t_pop* pop, settings* ss){
 				pop->genomes[ii]->ntfs);
 
 		for (int jj = 0; jj < pop->genomes[ii]->ngenes; jj++){
-			int psamlen = 0;
-			if (pop->genomes[ii]->genes[jj]->has_dbd){
-				psamlen = pop->genomes[ii]->genes[jj]->dbd->nsites;
+			if (pop->genomes[ii]->genes[jj]->has_dbd){ /* REGULATOR GENE */
+				int psamlen = 0;
+				if (pop->genomes[ii]->genes[jj]->has_dbd){
+					psamlen = pop->genomes[ii]->genes[jj]->dbd->nsites;
+				}
+				fprintf(fo, "\tGene: %d role: %s urslen: %d reg_mode: %d psamlen: %d\n",
+						jj,
+						(pop->genomes[ii]->genes[jj]->has_dbd)?"regulator":"reporter",
+						pop->genomes[ii]->genes[jj]->urslen,
+						pop->genomes[ii]->genes[jj]->reg_mode,
+						psamlen);
 			}
-			fprintf(fo, "\tGene: %d role: %s reg_mode: %d urslen: %d psamlen: %d\n",
-					jj,
-					(pop->genomes[ii]->genes[jj]->has_dbd)?"regulator":"reporter",
-					(pop->genomes[ii]->genes[jj]->reg_mode),
-					pop->genomes[ii]->genes[jj]->urslen,
-					psamlen);
+			else { /* REPORTER GENE */
+				int psamlen = 0;
+				if (pop->genomes[ii]->genes[jj]->has_dbd){
+					psamlen = pop->genomes[ii]->genes[jj]->dbd->nsites;
+				}
+				fprintf(fo, "\tGene: %d role: %s urslen: %d \n",
+						jj,
+						(pop->genomes[ii]->genes[jj]->has_dbd)?"regulator":"reporter",
+						pop->genomes[ii]->genes[jj]->urslen);
+			}
 		}
 	}
 
@@ -174,13 +186,17 @@ t_pop* deserialize_population(settings* ss){
 			tokens[3] = strtok(0, " ");
 			tokens[4] = strtok(0, " ");
 			tokens[5] = strtok(0, " ");
-			int this_reg_mode = atoi(tokens[5]);
-			tokens[6] = strtok(0, " ");
-			tokens[7] = strtok(0, " ");
-			int this_urslen = atoi(tokens[7]);
-			tokens[8] = strtok(0, " ");
-			tokens[9] = strtok(0, " ");
-			int this_psamlen = atoi(tokens[9]);
+			int this_urslen = atoi(tokens[5]);
+			int this_reg_mode;
+			int this_psamlen = 0;
+			if (gid < pop->genomes[this_genome]->ntfs){
+				tokens[6] = strtok(0, " ");
+				tokens[7] = strtok(0, " ");
+				this_reg_mode = atoi(tokens[7]);
+				tokens[8] = strtok(0, " ");
+				tokens[9] = strtok(0, " ");
+				this_psamlen = atoi(tokens[9]);
+			}
 			//printf("\n. Building gene %d genome %d", gid, this_genome);
 			pop->genomes[this_genome]->genes[gid] = make_gene(this_psamlen, this_urslen);
 			pop->genomes[this_genome]->genes[gid]->id = gid;

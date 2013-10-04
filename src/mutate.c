@@ -19,6 +19,18 @@ double get_random_ddg() {
 void mutate(t_pop* pop, settings* ss){
 
 	if (ss->do_mutation == false){
+		if (ss->verbosity > 5){
+			printf("\n\n. Mutation is disabled, skipping it.");
+		}
+		return;
+	}
+	if (ss->elite_proportion == 1.0){
+		if (ss->verbosity > 3){
+			printf("\n\n. All individuals in the population are 'elite',\n");
+			printf("  and therefore no mutations will be made.\n");
+			printf("  You can enable mutations by setting the value of\n");
+			printf("  the parameter --elite_prop to be less than 1.\n");
+		}
 		return;
 	}
 
@@ -42,6 +54,13 @@ void mutate(t_pop* pop, settings* ss){
 	}
 
 	for (int ii = 0; ii < pop->ngenomes; ii++) {
+
+		/* No mutations to elite individuals. */
+		if (pop->genomes[ii]->is_elite){
+			continue;
+		}
+
+
 		/*
 		 * n mutations to upstream regulatory sequence
 		 */

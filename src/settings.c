@@ -209,9 +209,11 @@ void read_cli(int argc, char **argv, settings* ss){
 
 			case 250:{
 				ss->pe_scalar = atof(optarg);
+				break;
 			}
 			case 251:{
 				ss->fitness_scalar = atof(optarg);
+				break;
 			}
 
 			case 300:{
@@ -226,12 +228,15 @@ void read_cli(int argc, char **argv, settings* ss){
 			}
 			case 401:{
 				ss->ngenes = atoi(optarg);
+				break;
 			}
 			case 402:{
 				ss->urslen = atoi(optarg);
+				break;
 			}
 			case 403:{
 				ss->nreg = atoi(optarg);
+				break;
 			}
 
 			case 1000:
@@ -252,7 +257,7 @@ void read_cli(int argc, char **argv, settings* ss){
 	/* Now we do some post-parsing business */
 	if (ss->run_clean == true){
 		char *qq = (char*)malloc(FILEPATH_LEN_MAX*sizeof(char));
-		if (ss->verbosity > 3){
+		if (ss->verbosity > 60){
 			printf("\n. I'm wiping the output folder clean.\n");
 		}
 		strcat( strcat( strcat(qq, "rm -rf "), ss->outdir), "/*");
@@ -321,12 +326,20 @@ void print_settings(settings *ss){
 		printf("Current Settings:\n");
 		printf(". verbosity: %d\n", ss->verbosity);
 		printf(". output directory: %s\n", ss->outdir);
-		printf(". PSAMs: %s\n", ss->psampath);
-		printf(". URSs: %s\n", ss->urspath);
 		printf(". fitness rules: %s\n", ss->rulepath);
+		if (ss->load_save_pop == true){
+			printf(". saved population: %s\n", ss->poppath);
+		}
+		else if(ss->build_random_population == true){
+			printf(". population: random\n");
+		}
+		else{
+			printf(". PSAMs: %s\n", ss->psampath);
+			printf(". URSs: %s\n", ss->urspath);
+		}
 		printf("\n");
-		printf(". starting generation: %d\n", ss->gen_counter);
-		printf(". generation limit: %d\n", ss->max_gens);
+		printf(". start at generation: %d\n", ss->gen_counter);
+		printf(". stop at generation: %d\n", ss->max_gens);
 		printf(". population size: %d\n", ss->popsize);
 		printf("\n");
 		if (ss->do_mutation) { printf(". mutations: enabled\n"); }

@@ -63,7 +63,7 @@ t_genome* make_genome_random(settings* ss){
 	t_gene** genes = (t_gene**)malloc(ss->ngenes*sizeof(t_gene));
 
 	/* Build the genes, using the URSes and PSAMs we previously found. */
-	for (int ii=0; ii<ss->ngenes; ii++){ // ii = gene
+	for (int ii=0; ii < ss->ngenes; ii++){ // ii = gene
 		int psamlen = 0;
 		if (ii < ss->nreg){
 			psamlen = PSAMLEN_DEFAULT;
@@ -71,7 +71,7 @@ t_genome* make_genome_random(settings* ss){
 
 		genes[ii] = make_gene(psamlen, ss->urslen);
 		genes[ii]->id = ii;
-		for (int jj=0; jj<ss->urslen; jj++){ // jj = site
+		for (int jj=0; jj < ss->urslen; jj++){ // jj = site
 			genes[ii]->urs[jj] = get_random_state();
 		}
 		if (ii < ss->nreg){
