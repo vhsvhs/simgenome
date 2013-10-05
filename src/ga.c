@@ -84,21 +84,17 @@ void runsim(t_ga* ga, settings* ss){
 
 		/* Save the fitness stats, and serialize the population */
 		log_fitness(f, ga->pop->ngenomes, ss);
-
+		print_settings(ss);
 
 
 		/* Save the population to disk. */
 		serialize_population(ga->pop, ss);
 
-		/*
-		 * SELECTIVELY REPRODUCE
-		 */
-		ga->pop = reproduce( ga->pop, ss, f);
-
-		/*
-		 * MUTATION
-		 */
-		mutate(ga->pop, ss);
+		/* Reproduce and mutate, but not on the final generation. */
+		if (ii < start_gen + ss->max_gens - 1) {
+			ga->pop = reproduce( ga->pop, ss, f);
+			mutate(ga->pop, ss);
+		}
 	}
 }
 

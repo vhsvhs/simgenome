@@ -83,7 +83,7 @@ void read_cli(int argc, char **argv, settings* ss){
 
 			{"niid",		required_argument, 	NULL,	200},
 			{"maxgen",		required_argument, 	NULL,	201},
-			{"startgen",	required_argument,	NULL,	202},
+			//{"startgen",	required_argument,	NULL,	202},
 			{"popsize",		required_argument,	NULL,	203},
 			{"maxgd",		required_argument,	NULL,	204}, // maximum co-factor distance
 			{"elite_prop",	required_argument,	NULL,	205},
@@ -320,6 +320,7 @@ void print_splash(){
 }
 
 void print_settings(settings *ss){
+	/* Write settings to STDOUT */
 	if (ss->verbosity > 0){
 		printf("\n");
 		printf("==========================================\n");
@@ -342,12 +343,16 @@ void print_settings(settings *ss){
 		printf(". stop at generation: %d\n", ss->max_gens);
 		printf(". population size: %d\n", ss->popsize);
 		printf("\n");
-		if (ss->do_mutation) { printf(". mutations: enabled\n"); }
-		else { printf(". mutations: disabled\n"); }
-		printf(". URS mu rate: %f\n", ss->urs_mu_rate);
-		printf(". PSAM mu rate: %f\n", ss->psam_mu_rate);
-		printf(". cofactor mu rate: %f\n", ss->ddgmu);
-		printf(". 'elite' proportion: %f\n", ss->elite_proportion);
+		if (ss->do_mutation) {
+			printf(". mutations: enabled\n");
+			printf(". URS mu rate: %f\n", ss->urs_mu_rate);
+			printf(". PSAM mu rate: %f\n", ss->psam_mu_rate);
+			printf(". cofactor mu rate: %f\n", ss->ddgmu);
+			printf(". 'elite' proportion: %f\n", ss->elite_proportion);
+		}
+		else {
+			printf(". mutations: disabled\n");
+		}
 		printf("\n");
 		printf(". n I.I.D. samples: %d\n", ss->niid);
 		printf(". pe scalar: %f\n", ss->pe_scalar);
@@ -355,6 +360,63 @@ void print_settings(settings *ss){
 		printf(". max. off rate: %f\n", ss->decay_rate);
 		printf(". max. cofactor distance: %d sites\n", ss->maxgd);
 		printf("==========================================\n");
+	}
+
+	/* Write settings to log file */
+	if (ss->verbosity > 0){
+		char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+		strcat(
+				strcat(p, ss->outdir),
+		"/LOGS/settings.txt");
+
+		FILE *fp;
+		fp = fopen(p, "w");
+		if (fp == NULL) {
+		  fprintf(stderr, "Error: can't open output file %s!\n",
+				  p);
+		  exit(1);
+		}
+		fprintf(fp,"\n");
+		fprintf(fp,"==========================================\n");
+		fprintf(fp,"Current Settings:\n");
+		fprintf(fp,". verbosity: %d\n", ss->verbosity);
+		fprintf(fp,". output directory: %s\n", ss->outdir);
+		fprintf(fp,". fitness rules: %s\n", ss->rulepath);
+		if (ss->load_save_pop == true){
+			fprintf(fp,". saved population: %s\n", ss->poppath);
+		}
+		else if(ss->build_random_population == true){
+			fprintf(fp,". population: random\n");
+		}
+		else{
+			fprintf(fp,". PSAMs: %s\n", ss->psampath);
+			fprintf(fp,". URSs: %s\n", ss->urspath);
+		}
+		fprintf(fp,"\n");
+		fprintf(fp,". start at generation: %d\n", ss->gen_counter);
+		fprintf(fp,". stop at generation: %d\n", ss->max_gens);
+		fprintf(fp,". population size: %d\n", ss->popsize);
+		fprintf(fp,"\n");
+		if (ss->do_mutation) {
+			fprintf(fp,". mutations: enabled\n");
+			fprintf(fp,". URS mu rate: %f\n", ss->urs_mu_rate);
+			fprintf(fp,". PSAM mu rate: %f\n", ss->psam_mu_rate);
+			fprintf(fp,". cofactor mu rate: %f\n", ss->ddgmu);
+			fprintf(fp,". 'elite' proportion: %f\n", ss->elite_proportion);
+		}
+		else {
+			fprintf(fp,". mutations: disabled\n");
+		}
+		fprintf(fp,"\n");
+		fprintf(fp,". n I.I.D. samples: %d\n", ss->niid);
+		fprintf(fp,". pe scalar: %f\n", ss->pe_scalar);
+		fprintf(fp,". max. on rate: %f\n", ss->growth_rate);
+		fprintf(fp,". max. off rate: %f\n", ss->decay_rate);
+		fprintf(fp,". max. cofactor distance: %d sites\n", ss->maxgd);
+		fprintf(fp,"==========================================\n");
+
+		fclose(fp);
+		free(p);
 	}
 
 }

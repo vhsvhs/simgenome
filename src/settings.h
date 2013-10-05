@@ -52,8 +52,6 @@ typedef struct __Settings {
 	 * the output of this run.
 	 */
 	bool run_clean;
-
-
 }settings;
 
 settings* make_settings();

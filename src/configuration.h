@@ -23,7 +23,7 @@
 #define PSAMMU 0.1
 #define PWMLENMU 0.1
 #define PWMLENMUMAX 2
-#define DDGMU 0.5
+#define DDGMU 0.0
 
 /* For random-init of the population: */
 #define URSLEN_DEFAULT 1000

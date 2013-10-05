@@ -23,15 +23,17 @@ OUTDIR = os.path.abspath( sys.argv[1] )
 def get_command(random = False, popsave = False):
     command = "simreg "
     command += " --outdir " + OUTDIR + "/out.test_basic "
-    command += "--maxgen 2 "
-    command += "--niid 5000 "
+    command += "--maxgen 100 "
+    command += "--niid 10000 "
     command += "--rulepath " + OUTDIR + "/test_basic.rules "
-    command += "--popsize 10 "
+    command += "--popsize 20 "
     command += "--verbosity 5 "
     command += "--maxgd 1 "
-    command += "--f_scalar -2.0 "
+    command += " --psam_mu 0.05 "
+    command += " --urs_mu 0.005"
+    command += " --f_scalar -2.0 "
     command += " --pe_scalar 0.001"
-    command += " --elite_prop 0.49 "
+    command += " --elite_prop 0.29 "
     if popsave == False and random == False:
         command += "--psampath " + OUTDIR + "/test_basic.psam "
         command += "--urspath " + OUTDIR + "/test_basic.urs "
@@ -98,9 +100,9 @@ def print_urss():
 def print_rules():
     fout = open( OUTDIR + "/test_basic.rules", "w" )
     fout.write("RULE 0     5     4     1.0     0    1.0\n")
-    fout.write("RULE 0     5     8     0.0001  1    1.0\n")
-    fout.write("INPUT 0     0     0     5     0.6\n")
-    #fout.write("INPUT 0 0 2 10 0.00001\n")
+    fout.write("RULE 0     5     7     0.0001  1    1.0\n")
+    fout.write("INPUT 0     0     0     7     0.5\n")
+    fout.write("INPUT 0     1     0     7     0.5\n")
     #fout.write("INPUT 0 3 0 10 0.5\n")
     #fout.write("INPUT 0 4 0 10 0.4\n")
     fout.close()
@@ -120,9 +122,11 @@ print_rules()
 print_psams()
 print_urss()
 commands = []
-commands.append( get_command() )
-commands.append( "cp " + OUTDIR + "/out.test_basic/POPS/pop.gen0.save.txt" + " pop.gen0.save.backup")
-commands.append( get_command(popsave = True) )
+#commands.append( get_command() )
+#commands.append( "cp " + OUTDIR + "/out.test_basic/POPS/pop.gen0.save.txt" + " pop.gen0.save.backup")
+#commands.append( get_command(popsave = True) )
+#commands.append( get_command(popsave = True) )
+#commands.append( get_command(popsave = True) )
 commands.append( get_command(random = True) )
 
 fout = open(OUTDIR + "/test_basic.commands.txt", "w")
