@@ -119,28 +119,27 @@ void read_cli(int argc, char **argv, settings* ss){
 				break;
 			}
 			case 1:{ // output directory
-				read_path_from_cli(ss->outdir, true);
-				build_output_folders(ss);
+				read_path_from_cli(ss->outdir);
 				break;
 			} // end case 1
 			case 2:{
-				read_path_from_cli(ss->psampath, false);
+				read_path_from_cli(ss->psampath);
 				break;
 			}
 			case 3:{
-				read_path_from_cli(ss->urspath, false);
+				read_path_from_cli(ss->urspath);
 				break;
 			}
 			case 4:{
-				read_path_from_cli(ss->rulepath, false);
+				read_path_from_cli(ss->cooppath);
 				break;
 			}
 			case 5:{
-				read_path_from_cli(ss->rulepath, false);
+				read_path_from_cli(ss->rulepath);
 				break;
 			}
 			case 6:{
-				read_path_from_cli(ss->poppath, false);
+				read_path_from_cli(ss->poppath);
 				ss->load_save_pop = true;
 				break;
 			}
@@ -262,19 +261,19 @@ void read_cli(int argc, char **argv, settings* ss){
 		}
 		strcat( strcat( strcat(qq, "rm -rf "), ss->outdir), "/*");
 		system( qq );
-		build_output_folders(ss);
 	}
+
+	build_output_folders(ss);
 }
 
 /* Reads a file path or directory path from the OPTARG variable
  * from the getopts library, and then writes that path to
  * target.
  */
-void read_path_from_cli(char* target, bool build) {
+void read_path_from_cli(char* target) {
 	char *tmp;
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-	if(strlen(optarg) > FILEPATH_LEN_MAX)
-	  {
+	if(strlen(optarg) > FILEPATH_LEN_MAX) {
 			char choix;
 			strcpy (tmp, "\n. The file name'");
 			strcat (tmp, optarg);
@@ -284,26 +283,21 @@ void read_path_from_cli(char* target, bool build) {
 			if(!scanf("%c",&choix)) exit(0);
 			exit(0);
 	  }
-	else if (! Filexists (optarg) && build == false)
-	  {
-			char choix;
-			strcpy (tmp, "\n. Sorry, the file or directory '");
-			strcat (tmp, optarg);
-			strcat (tmp, "' doesn't exist.\n");
-			printf("%s",tmp);
-			printf("\n. Type any key to exit.\n");
-			if(!scanf("%c",&choix)) exit(0);
-			exit(0);
-	  }
-	else if( ! Filexists (optarg) && build == true){
-		/* Make the file, if it doesn't exist */
-		printf("\n. I'm making %s\n", optarg);
-		mkdir(optarg, 0700);
-	}
-	else
-	  {
-			strcpy(target, optarg);
-	  }
+
+// error checking for existence of path object
+// should occur outside this function.
+//	else if (! Filexists (optarg) ) {
+//			char choix;
+//			strcpy (tmp, "\n. Sorry, the file or directory '");
+//			strcat (tmp, optarg);
+//			strcat (tmp, "' doesn't exist.\n");
+//			printf("%s",tmp);
+//			printf("\n. Type any key to exit.\n");
+//			if(!scanf("%c",&choix)) exit(0);
+//			exit(0);
+//	  }
+
+	strcpy(target, optarg);
 	free(tmp);
 }
 

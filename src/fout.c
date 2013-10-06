@@ -1,6 +1,10 @@
 #include "common.h"
 
 void build_output_folders(settings* ss){
+	if (!Filexists(ss->outdir)){
+		mkdir(ss->outdir, 0700);
+	}
+
 	char *tmp;
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat( strcat(tmp, ss->outdir), "/FITNESS/");
@@ -24,17 +28,15 @@ void build_output_folders(settings* ss){
 	free(tmp);
 
 
-	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-	strcat(
-			strcat(p, ss->outdir),
-	"/LOGS/expression.txt");
-
-	ss->file_expr_log = fopen(p, "w");
+	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat(strcat(tmp, ss->outdir), "/LOGS/expression.txt");
+	ss->file_expr_log = fopen(tmp, "w");
 	if (ss->file_expr_log == NULL) {
-	  fprintf(stderr, "Error: can't open output file %s!\n", p);
+	  fprintf(stderr, "Error: can't open output file %s!\n", tmp);
+	  fprintf(stderr, "fout 121: %s\n", ss->outdir);
 	  exit(1);
 	}
-	free(p);
+	free(tmp);
 
 
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
@@ -112,15 +114,12 @@ void log_fitness(double* f, int len, settings* ss){
 	/*
 	 * Part 2: update LOGS/generations.txt */
 	p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
-	strcat(
-			strcat(p, ss->outdir),
-			"/LOGS/generations.txt");
-
+	strcat( strcat(p, ss->outdir), "/LOGS/generations.txt");
 	FILE *fo;
 	fo = fopen(p, "a");
 	if (fo == NULL) {
-	  fprintf(stderr, "Error: can't open output file %s!\n",
-			  p);
+	  fprintf(stderr, "Error: can't open output file %s!\n", p);
+	  free(p);
 	  exit(1);
 	}
 
