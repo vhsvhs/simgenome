@@ -1,6 +1,10 @@
 #include "common.h"
 
 void build_output_folders(settings* ss){
+	if (ss->verbosity > 3){
+		printf("\n. I'm building output folders in %s\n", ss->outdir);
+	}
+
 	if (!Filexists(ss->outdir)){
 		mkdir(ss->outdir, 0700);
 	}

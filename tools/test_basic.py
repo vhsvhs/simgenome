@@ -20,20 +20,21 @@ if sys.argv.__len__() < 2:
 
 OUTDIR = os.path.abspath( sys.argv[1] )
 
-def get_command(random = False, popsave = False):
+def get_command(id = "", random = False, popsave = False, popsize = 4, randseed = 12345):
     command = "simreg "
-    command += " --outdir " + OUTDIR + "/out.test_basic "
-    command += "--maxgen 100 "
-    command += "--niid 10000 "
-    command += "--rulepath " + OUTDIR + "/test_basic.rules "
-    command += "--popsize 20 "
-    command += "--verbosity 5 "
-    command += "--maxgd 1 "
+    command += " --outdir " + OUTDIR + "/" + id + " "
+    command += " --maxgen 500 "
+    command += " --niid 10000 "
+    command += " --rulepath " + OUTDIR + "/test_basic.rules "
+    command += " --popsize " + popsize.__str__()
+    command += " --verbosity 5 "
+    command += " --maxgd 1 "
     command += " --psam_mu 0.05 "
     command += " --urs_mu 0.005"
     command += " --f_scalar -2.0 "
     command += " --pe_scalar 0.001"
     command += " --elite_prop 0.29 "
+    command += " --randseed " + randseed.__str__() + " "
     if popsave == False and random == False:
         command += "--psampath " + OUTDIR + "/test_basic.psam "
         command += "--urspath " + OUTDIR + "/test_basic.urs "
@@ -103,8 +104,6 @@ def print_rules():
     fout.write("RULE 0     5     7     0.0001  1    1.0\n")
     fout.write("INPUT 0     0     0     7     0.5\n")
     fout.write("INPUT 0     1     0     7     0.5\n")
-    #fout.write("INPUT 0 3 0 10 0.5\n")
-    #fout.write("INPUT 0 4 0 10 0.4\n")
     fout.close()
 
 
@@ -115,19 +114,26 @@ def print_rules():
 
 if False == os.path.exists(OUTDIR):
     os.system( "mkdir " + OUTDIR )
-if os.path.exists(OUTDIR + "/out.test_basic"):
-    os.system("rm " + OUTDIR + "/out.test_basic")
-os.system("mkdir " + OUTDIR + "/out.test_basic")
+#if os.path.exists(OUTDIR):
+#    os.system("rm " + OUTDIR)
+#os.system("mkdir " + OUTDIR + "/" + id)
 print_rules()
 print_psams()
 print_urss()
 commands = []
-#commands.append( get_command() )
 #commands.append( "cp " + OUTDIR + "/out.test_basic/POPS/pop.gen0.save.txt" + " pop.gen0.save.backup")
-#commands.append( get_command(popsave = True) )
-#commands.append( get_command(popsave = True) )
-#commands.append( get_command(popsave = True) )
-commands.append( get_command(random = True) )
+
+# This version uses the pre-built PSAMs and URSs
+# commands.append( get_command(id = "bt1", randseed=123456789) )
+# commands.append( get_command(id = "bt2", randseed=234567891) )
+# commands.append( get_command(id = "bt3", randseed=34567891) )
+# commands.append( get_command(id = "bt4", randseed=567890123) )
+
+# This vesion builds random populations
+commands.append( get_command(id = "rand1", random = True, popsize=48, randseed=123456789) )
+commands.append( get_command(id = "rand2", random = True, popsize=48, randseed=791357) )
+commands.append( get_command(id = "rand3", random = True, popsize=48, randseed=2468024) )
+commands.append( get_command(id = "rand4", random = True, popsize=48, randseed=98765432) )
 
 fout = open(OUTDIR + "/test_basic.commands.txt", "w")
 for c in commands:

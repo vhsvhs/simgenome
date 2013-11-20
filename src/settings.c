@@ -9,6 +9,7 @@ settings* make_settings(){
 	ss->psamlenmu = PWMLENMU;
 	ss->psamlenmumax = PWMLENMUMAX;
 	ss->ddgmu = DDGMU;
+	ss->urslenmu = 0.0;
 
 	ss->outdir = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->psampath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
@@ -26,6 +27,7 @@ settings* make_settings(){
 
 	ss->maxgd = MAX_GD;
 	ss->niid = NIID;
+	ss->randseed = time(0);
 	ss->maxtime = MAX_TIME;
 	ss->elite_proportion = ELITE_PROPORTION;
 
@@ -92,6 +94,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"f_scalar", 	required_argument,	NULL,	251},
 
 			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files
+			{"randseed",	required_argument,	NULL,	301},
 
 			/* For Random-Init of Population: */
 			{"randompop",	no_argument,		NULL,	400},
@@ -219,6 +222,10 @@ void read_cli(int argc, char **argv, settings* ss){
 				ss->run_clean = true;
 				break;
 			}
+			case 301:{
+				ss->randseed = atof(optarg);
+				break;
+			}
 
 
 			case 400:{
@@ -341,6 +348,8 @@ void print_settings(settings *ss){
 			printf(". mutations: enabled\n");
 			printf(". URS mu rate: %f\n", ss->urs_mu_rate);
 			printf(". PSAM mu rate: %f\n", ss->psam_mu_rate);
+			printf(". URS indel rate: %f\n", ss->urslenmu);
+			printf(". PSAM indel rate: %f\n", ss->psamlenmu);
 			printf(". cofactor mu rate: %f\n", ss->ddgmu);
 			printf(". 'elite' proportion: %f\n", ss->elite_proportion);
 		}
@@ -349,6 +358,7 @@ void print_settings(settings *ss){
 		}
 		printf("\n");
 		printf(". n I.I.D. samples: %d\n", ss->niid);
+		printf(". random seed: %d\n", ss->randseed);
 		printf(". pe scalar: %f\n", ss->pe_scalar);
 		printf(". max. on rate: %f\n", ss->growth_rate);
 		printf(". max. off rate: %f\n", ss->decay_rate);
@@ -392,17 +402,20 @@ void print_settings(settings *ss){
 		fprintf(fp,". population size: %d\n", ss->popsize);
 		fprintf(fp,"\n");
 		if (ss->do_mutation) {
-			fprintf(fp,". mutations: enabled\n");
-			fprintf(fp,". URS mu rate: %f\n", ss->urs_mu_rate);
-			fprintf(fp,". PSAM mu rate: %f\n", ss->psam_mu_rate);
-			fprintf(fp,". cofactor mu rate: %f\n", ss->ddgmu);
-			fprintf(fp,". 'elite' proportion: %f\n", ss->elite_proportion);
+			fprintf(fp, ". mutations: enabled\n");
+			fprintf(fp, ". URS mu rate: %f\n", ss->urs_mu_rate);
+			fprintf(fp, ". PSAM mu rate: %f\n", ss->psam_mu_rate);
+			fprintf(fp, ". URS indel rate: %f\n", ss->urslenmu);
+			fprintf(fp, ". PSAM indel rate: %f\n", ss->psamlenmu);
+			fprintf(fp, ". cofactor mu rate: %f\n", ss->ddgmu);
+			fprintf(fp, ". 'elite' proportion: %f\n", ss->elite_proportion);
 		}
 		else {
 			fprintf(fp,". mutations: disabled\n");
 		}
 		fprintf(fp,"\n");
 		fprintf(fp,". n I.I.D. samples: %d\n", ss->niid);
+		fprintf(fp, ". random seed: %d\n", ss->randseed);
 		fprintf(fp,". pe scalar: %f\n", ss->pe_scalar);
 		fprintf(fp,". max. on rate: %f\n", ss->growth_rate);
 		fprintf(fp,". max. off rate: %f\n", ss->decay_rate);

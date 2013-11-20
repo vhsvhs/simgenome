@@ -6,6 +6,7 @@ typedef struct __Settings {
 	bool do_mutation;
 	double urs_mu_rate;
 	double psam_mu_rate;
+	double urslenmu;
 	double psamlenmu;
 	int psamlenmumax;
 	double ddgmu;
@@ -29,6 +30,7 @@ typedef struct __Settings {
 	int maxgd; /* The maximum distance, in sites, over which two co-factors can interact. */
 	int niid;
 	int popsize;
+	int randseed; /* The seed for srand() */
 
 	int maxtime;
 	double elite_proportion;

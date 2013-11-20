@@ -20,8 +20,8 @@
 #define MIN_TF_SEPARATION 0
 
 #define URSMU 0.01
-#define PSAMMU 0.1
-#define PWMLENMU 0.1
+#define PSAMMU 0.05
+#define PWMLENMU 0.05
 #define PWMLENMUMAX 2
 #define DDGMU 0.0
 

@@ -2,14 +2,14 @@
 
 int main( int argc, char **argv )
 {
-	srand(time(0));
-
 	print_splash();
 
 	/* Read the command-line and load user-specified files */
 	settings *ss = make_settings();
 	read_cli(argc, argv, ss);
 	print_settings(ss);
+
+	srand( ss->randseed );
 
 	/* There are three ways to make a population:
 	 * 1. Load a saved population using the deserialization method.
@@ -43,7 +43,6 @@ int main( int argc, char **argv )
 
 	t_ruleset** rs = read_rulesets_from_file(ss, l->nrulesets, l->ntime);
 	l->rulesets = rs;
-	if (ss->verbosity > 0){	 printf("\n. I found %d rulesets.\n", l->nrulesets); }
 
 	if (ss->verbosity > 0){	 printf("\n. I'm building the simulation. . .\n");  }
 	t_ga* ga = make_ga();
