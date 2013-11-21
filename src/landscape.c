@@ -77,7 +77,8 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	}
 
 	if (ss->verbosity > 3){
-		printf("\t. I found %d regulatory problems.\n", nrs);
+		if (nrs > 1){ printf("   . I found %d regulatory problems.\n", nrs); }
+		else { printf("   . I found %d regulatory problem.\n", nrs); }
 	}
 
 	//printf("\n. landscape 54 maxrs= %d nrs= %d\n", maxrs, nrs);

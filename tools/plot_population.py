@@ -1,16 +1,23 @@
-#
-# plot_population.py
-#
-#
+"""
+plot_population.py
+
+Plots the entire population, generations versus fitness.
+The coalescent process is drawn.
+"""
 
 
 import os, re, sys
 from argparser import *
 ap = ArgParser(sys.argv)
-logdir = ap.getArg("--logdir")
-output_filename_seed = logdir + "/popgraph"
+outputdir = ap.getArg("--outputdir") #outputdir is the folder into which a SimGenome run placed output.
 
-#title = "Fitness (" + output_filename_seed + ")"
+if False == os.path.exists(outputdir + "/PLOTS"):
+    os.system("mkdir " + outputdir + "/PLOTS")
+
+# All output files written by this script will be prefaced with
+# the contents of the variable output_filename_seed
+output_filename_seed = outputdir + "/PLOTS/popgraph"
+
 title = "Population Fitness"
 xlab = "generations"
 ylab = "fitness"
@@ -19,6 +26,8 @@ ylab = "fitness"
 # Read LOG/generations.txt
 #
 def build_plot_basics():
+    """Reads LOGS/generations.txt in order to gather basic information about the population history,
+    including min, max, and mean fitness at each generation."""
     maxx = None
     maxy = None
     genstring = ""
@@ -27,7 +36,7 @@ def build_plot_basics():
     minfstring = "minf <-c("
     meanfstring = "meanf <-c("
 
-    fin = open(logdir + "/generations.txt", "r")
+    fin = open(outputdir + "/generations.txt", "r")
     lines = fin.readlines()
     fin.close()
     
@@ -79,29 +88,34 @@ def build_poptrace(ngen):
     return plot_coalescent_paths(paths,marks)
 
 def build_coalescent_paths(ngen):
+    """Reads MATING/mating.gen... files in order to build a coalescent history
+    of the population.
+    And also reads FITNESS/fitness.gen... files in order to learn the fitness of
+    every individual. """
     paths = [] # array of [ (x1,y1), (x2,y2) ] lists
     marks = [] # array of [ (x,y), char ]
     
     parent_fitness = {}
     for gen in range(0, ngen):
         my_parents = {}
-        children = []
 
         # put values in my_parents
         had_babies = []
         mpath = None
         if gen > 0:
-            mpath = logdir + "/mating.gen" + (gen - 1).__str__() + ".txt"
+            mpath = outputdir + "MATING/mating.gen" + (gen - 1).__str__() + ".txt"
             for line in open(mpath, "r").readlines():
-                if line.__contains__("+"):
-                    tokens = line.split()
-                    child = tokens[3]
-                    #children.append(child)
-                    p1 = tokens[5]
-                    if tokens.__len__() > 7:
-                        p2 = tokens[7]
-                    else:
-                        p2 = p1
+                tokens = line.split()
+                if line.__contains__("clone"):
+                    p1 = tokens[4]
+                    child = tokens[7]
+                    my_parents[child] = (p1,p1)
+                    if p1 not in had_babies:
+                        had_babies.append(p1)
+                elif line.__contains__("child"):
+                    p1 = tokens[3]
+                    p2 = tokens[6]
+                    child = tokens[9]
                     my_parents[child] = (p1,p2)
                     if p1 not in had_babies:
                         had_babies.append(p1)
@@ -109,8 +123,9 @@ def build_coalescent_paths(ngen):
                         had_babies.append(p2)
                         
 
+        children = []
         child_fitness = {}
-        fpath = logdir + "/gen" + gen.__str__() + ".txt"
+        fpath = outputdir + "FITNESS/fitness.gen" + gen.__str__() + ".txt"
         for line in open(fpath, "r").readlines()[1:]:
             tokens = line.split()
             id = tokens[0]

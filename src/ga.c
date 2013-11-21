@@ -11,7 +11,6 @@ t_ga* make_ga(){
  */
 void runsim(t_ga* ga, settings* ss){
 
-
 	/* For each generation */
 	int start_gen = ss->gen_counter;
 	for (int ii = start_gen;
@@ -84,7 +83,9 @@ void runsim(t_ga* ga, settings* ss){
 
 		/* Save the fitness stats, and serialize the population */
 		log_fitness(f, ga->pop->ngenomes, ss);
-		print_settings(ss);
+
+		/* Print and log the settings, but only if it's the starting generation. */
+		if (ii == start_gen){ print_settings(ss); }
 
 
 		/* Save the population to disk. */

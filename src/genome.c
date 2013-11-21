@@ -28,7 +28,6 @@ t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss) {
 }
 
 
-
 /* Copies a genome. Creates a new genome object from scratch.
  * The new genome will be identical to the original genome,
  * except that it's expression vector will be empty.
