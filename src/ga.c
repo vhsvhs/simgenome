@@ -12,7 +12,7 @@ t_ga* make_ga(){
 void runsim(t_ga* ga, settings* ss){
 
 	/* For each generation */
-	int start_gen = ss->gen_counter;
+	int start_gen = ss->start_gen;
 	for (int ii = start_gen;
 			ii < (start_gen + ss->max_gens);
 			ii++){

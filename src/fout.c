@@ -120,7 +120,15 @@ void log_fitness(double* f, int len, settings* ss){
 	p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat( strcat(p, ss->outdir), "/LOGS/generations.txt");
 	FILE *fo;
-	fo = fopen(p, "a");
+
+	/* Open a new generation log file for the first generation. */
+	if (ss->gen_counter == ss->start_gen){
+		fo = fopen(p, "w");
+	}
+	/* Otherwise, append to the existing generation log. */
+	else{
+		fo = fopen(p, "a");
+	}
 	if (fo == NULL) {
 	  fprintf(stderr, "Error: can't open output file %s!\n", p);
 	  free(p);

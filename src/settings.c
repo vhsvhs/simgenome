@@ -22,6 +22,7 @@ settings* make_settings(){
 	ss->popsize = POPSIZE;
 
 	ss->inherit_expression = false;
+	ss->start_gen = 0;
 	ss->gen_counter = 0;
 	ss->max_gens = MAX_GENS;
 
@@ -85,7 +86,7 @@ void read_cli(int argc, char **argv, settings* ss){
 
 			{"niid",		required_argument, 	NULL,	200},
 			{"maxgen",		required_argument, 	NULL,	201},
-			//{"startgen",	required_argument,	NULL,	202},
+			{"startgen",	required_argument,	NULL,	202},
 			{"popsize",		required_argument,	NULL,	203},
 			{"maxgd",		required_argument,	NULL,	204}, // maximum co-factor distance
 			{"elite_prop",	required_argument,	NULL,	205},
@@ -190,7 +191,7 @@ void read_cli(int argc, char **argv, settings* ss){
 				break;
 			}
 			case 202:{
-				ss->gen_counter = atoi(optarg);
+				ss->start_gen = atoi(optarg);
 				break;
 			}
 			case 203:{

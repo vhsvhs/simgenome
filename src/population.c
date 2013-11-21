@@ -67,7 +67,7 @@ t_pop* reproduce(t_pop* pop, settings* ss, double* f) {
 			if (ss->verbosity > 2){
 				printf("\n\t. Elite ID %d is cloning itself.", ii);
 			}
-			fprintf(fp, "generation %d cloned id %id into child %d\n",
+			fprintf(fp, "generation %d cloned id %d into child %d\n",
 						ss->gen_counter,
 						ii, ii);
 		}

@@ -24,6 +24,7 @@ typedef struct __Settings {
 
 	bool inherit_expression;
 
+	int start_gen; /* The starting generation */
 	int gen_counter; /* a counter that gets updated during the run */
 	int max_gens; /* the maximum number of generations */
 

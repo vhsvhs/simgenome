@@ -7,9 +7,7 @@ The coalescent process is drawn.
 
 
 import os, re, sys
-from argparser import *
-ap = ArgParser(sys.argv)
-outputdir = ap.getArg("--outputdir") #outputdir is the folder into which a SimGenome run placed output.
+outputdir = sys.argv[1] #outputdir is the folder into which a SimGenome run placed output.
 
 if False == os.path.exists(outputdir + "/PLOTS"):
     os.system("mkdir " + outputdir + "/PLOTS")
@@ -36,7 +34,7 @@ def build_plot_basics():
     minfstring = "minf <-c("
     meanfstring = "meanf <-c("
 
-    fin = open(outputdir + "/generations.txt", "r")
+    fin = open(outputdir + "/LOGS/generations.txt", "r")
     lines = fin.readlines()
     fin.close()
     
@@ -103,7 +101,7 @@ def build_coalescent_paths(ngen):
         had_babies = []
         mpath = None
         if gen > 0:
-            mpath = outputdir + "MATING/mating.gen" + (gen - 1).__str__() + ".txt"
+            mpath = outputdir + "/MATING/mating.gen" + (gen - 1).__str__() + ".txt"
             for line in open(mpath, "r").readlines():
                 tokens = line.split()
                 if line.__contains__("clone"):
@@ -125,8 +123,8 @@ def build_coalescent_paths(ngen):
 
         children = []
         child_fitness = {}
-        fpath = outputdir + "FITNESS/fitness.gen" + gen.__str__() + ".txt"
-        for line in open(fpath, "r").readlines()[1:]:
+        fpath = outputdir + "/FITNESS/fitness.gen" + gen.__str__() + ".txt"
+        for line in open(fpath, "r").readlines():
             tokens = line.split()
             id = tokens[0]
             f = float(tokens[1])
@@ -138,10 +136,10 @@ def build_coalescent_paths(ngen):
             for child in children:
                 my_parents[child] = (child,child)   
                 
-        #print "109:", gen    
-        #print "110:", children
-        #print "111:", child_fitness
-        #print "112:", my_parents
+        print "109:", gen    
+        print "110:", children
+        print "111:", child_fitness
+        print "112:", my_parents
                     
         if gen > 0:  
             for child in children:

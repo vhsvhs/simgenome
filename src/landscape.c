@@ -77,8 +77,8 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	}
 
 	if (ss->verbosity > 3){
-		if (nrs > 1){ printf("   . I found %d regulatory problems.\n", nrs); }
-		else { printf("   . I found %d regulatory problem.\n", nrs); }
+		if (nrs > 1){ printf("   . I found %d regulatory problems:\n", nrs); }
+		else { printf("   . I found %d regulatory problem:\n", nrs); }
 	}
 
 	//printf("\n. landscape 54 maxrs= %d nrs= %d\n", maxrs, nrs);
@@ -180,12 +180,12 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 				rulesets[this_rs]->rules[ruleset_countrule[this_rs]] = make_rule(timepoint, geneid, expr, ruletype, weight);
 				if (ss->verbosity > 3){
 					if (ruletype == 0){
-						printf("   + fitness optimum: reg.prob. %d time %d, gene %d, expr > %f [weight = %f]\n",
+						printf("   (%d) time %d, gene %d, expr > %f [weight = %f]\n",
 							this_rs, timepoint, geneid, expr, weight);
 					}
 					else
 					{
-						printf("   + fitness optimum: reg.prob. %d time %d, gene %d, expr < %f [weight = %f]\n",
+						printf("   (%d) time %d, gene %d, expr < %f [weight = %f]\n",
 							this_rs, timepoint, geneid, expr, weight);
 					}
 				}
