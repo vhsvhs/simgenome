@@ -4,11 +4,21 @@ typedef struct __Settings {
 	int verbosity;
 	/* Mutation rates */
 	bool do_mutation;
-	double urs_mu_rate;
-	double psam_mu_rate;
-	double urslenmu;
-	double psamlenmu;
+	double urs_mu_rate; // mean mutation rate for URSs
+	double psam_mu_rate; // mean mutation rate for PSAMs
+	double mu_stdev; // mutation rate standard deviation
+
+	double urslenmu; // how often are URS indels?
+	double urslensd;
+	double urslensizemu; // mean size of URS indel
+	double urslensizesd;
+
+	double psamlenmu; // how often are PSAM indels?
+	double psamlensd;
+	double psamlensizemu; // mean size of PSAM indel
+	double psamlensizesd;
 	int psamlenmumax;
+
 	double ddgmu;
 
 	char* outdir; /* The directory into which output is written */

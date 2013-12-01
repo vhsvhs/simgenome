@@ -6,10 +6,25 @@ settings* make_settings(){
 
 	ss->verbosity = DEF_VERBOSITY; //(int)DEF_VERBOSITY;
 
-	ss->psamlenmu = PWMLENMU;
-	ss->psamlenmumax = PWMLENMUMAX;
+
+	ss->do_mutation = 1;
+	ss->urs_mu_rate = URSMU; // mean subs per seq site
+	ss->psam_mu_rate = PSAMMU;  // mean subs per psam site
+	ss->mu_stdev = MU_STDEV;
+
+	ss->psamlenmu = PSAMLENMU;
+	ss->psamlensd = PSAMLENSD;
+	ss->psamlensizemu = PSAMLENSIZEMU;
+	ss->psamlensizesd = PSAMLENSIZESD;
+	ss->psamlenmumax = PSAMLENMUMAX;
+
+
 	ss->ddgmu = DDGMU;
-	ss->urslenmu = 0.0;
+
+	ss->urslenmu = URSLENMU;
+	ss->urslensd = URSLENSD;
+	ss->urslensizemu = URSLENSIZEMU;
+	ss->urslensizesd = URSLENSIZESD;
 
 	ss->outdir = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->psampath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
@@ -38,9 +53,7 @@ settings* make_settings(){
 	ss->nreg = NGENES_DEFAULT/2;
 	ss->urslen = 1000;
 
-	ss->do_mutation = 1;
-	ss->urs_mu_rate = URSMU; // subs per seq site
-	ss->psam_mu_rate = PSAMMU;  // subs per psam site
+
 
 	ss->pe_scalar = PE_SCALAR;
 	ss->fitness_scalar = FITNESS_SCALAR;
@@ -83,6 +96,10 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"psam_mu",		required_argument,	NULL,	105},
 			{"growth_scalar",required_argument,	NULL,	106},
 			{"decay_scalar", required_argument,	NULL,	107},
+			{"mu_stdev",	 required_argument, NULL,	108},
+			{"urslensd",	required_argument,  NULL, 	109},
+			{"psamlensd",	required_argument,	NULL,	110},
+
 
 			{"niid",		required_argument, 	NULL,	200},
 			{"maxgen",		required_argument, 	NULL,	201},
@@ -91,7 +108,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"maxgd",		required_argument,	NULL,	204}, // maximum co-factor distance
 			{"elite_prop",	required_argument,	NULL,	205},
 
-			{"pe_scalar", 	required_argument,	NULL,	250},
+			{"pe_scalar", 	required_argument,	NULL,	250}, // in fitness.c, pe = (1 / (1+exp(-1*ss->pe_scalar*(sum_act-sum_rep) ) ) );
 			{"f_scalar", 	required_argument,	NULL,	251},
 
 			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files
@@ -179,6 +196,18 @@ void read_cli(int argc, char **argv, settings* ss){
 			}
 			case 107:{
 				ss->decay_rate = atof(optarg);
+				break;
+			}
+			case 108:{
+				ss->mu_stdev = atof(optarg);
+				break;
+			}
+			case 109:{
+				ss->urslensd = atof(optarg);
+				break;
+			}
+			case 110:{
+				ss->psamlensd = atof(optarg);
 				break;
 			}
 

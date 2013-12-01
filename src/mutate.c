@@ -64,7 +64,7 @@ void mutate(t_pop* pop, settings* ss){
 		/*
 		 * n mutations to upstream regulatory sequence
 		 */
-		int n = count_urslen( pop->genomes[ii] ) * ss->urs_mu_rate;
+		int n = count_urslen( pop->genomes[ii] ) * randn( ss->urs_mu_rate, ss->mu_stdev ); //randn draws from a normal distribution
 
 		if (n < 0){
 			n = 0;
@@ -81,10 +81,14 @@ void mutate(t_pop* pop, settings* ss){
 			printf("\n. +%d SNPs to ID %d.", n, ii );
 		}
 
+		//
+		// to-do: mutate URS lengths
+		//
+
 		/*
 		 * n mutations to PSAMs
 		 */
-		n = count_psamlen( pop->genomes[ii] ) * ss->psam_mu_rate;
+		n = count_psamlen( pop->genomes[ii] ) * randn(ss->psam_mu_rate, ss->mu_stdev); // randn draws from a normal distribution
 		if (n < 0){
 			n = 0;
 		}
@@ -109,7 +113,7 @@ void mutate(t_pop* pop, settings* ss){
 		/*
 		 * Mutate PSAM lengths
 		 * */
-		n = count_psamlen( pop->genomes[ii] ) * ss->psamlenmu;
+		n = count_psamlen( pop->genomes[ii] ) * randn(ss->psamlenmu, ss->psamlensd);
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ntfs;
 			int before_len = pop->genomes[ii]->genes[rand_gene]->dbd->nsites;

@@ -4,7 +4,15 @@
 #
 import os, re, sys
 
+from argparser import *
+ap = ArgParser(sys.argv)
+
 fin = open(sys.argv[1], "r")
+
+generation = ap.getOptionalArg("--gen")
+if generation != False:
+    generation = int(generation)
+
 
 # data is  key = gene id, value = hash: key = time, value = expression level
 
@@ -27,6 +35,8 @@ def get_data():
             tokens = l.split()
             rid = int( tokens[1] )
             genr = int( tokens[3] )
+            if generation != False and generation != genr:
+                continue
             t = int( tokens[5] )
             id = int( tokens[7] )
             gid = int( tokens[9] )
@@ -44,17 +54,17 @@ def get_data():
             for ii in range(10, tokens.__len__()):
                 if tokens[ii].startswith("expr:"):
                     expr = float( tokens[ii+1] )
-            if genr not in data:
-                data[genr] = {}
-            if id not in data[genr]:
-                data[genr][id] = {}
-            
-            if rid not in data[genr][id]:
-                data[genr][id][rid] = {}
-            if gid not in data[genr][id][rid]:
-                data[genr][id][rid][gid] = {}
-            
-            data[genr][id][rid][gid][t] = expr
+            if generation == False or generation == genr:         
+                if genr not in data:
+                    data[genr] = {}
+                if id not in data[genr]:
+                    data[genr][id] = {}
+                
+                if rid not in data[genr][id]:
+                    data[genr][id][rid] = {}
+                if gid not in data[genr][id][rid]:
+                    data[genr][id][rid][gid] = {}
+                data[genr][id][rid][gid][t] = expr
     fin.close()
     print data
     return data

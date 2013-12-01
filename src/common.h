@@ -44,3 +44,4 @@ int sample_from_cdf(double* p, int len);
 int Filexists(char *filename);
 int match(char*, char*);
 void quicksort(double *data, int begin, int end);
+double randn (double mu, double sigma);

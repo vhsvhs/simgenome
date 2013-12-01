@@ -19,10 +19,21 @@
 #define MAX_GD 1
 #define MIN_TF_SEPARATION 0
 
-#define URSMU 0.01
-#define PSAMMU 0.05
-#define PWMLENMU 0.05
-#define PWMLENMUMAX 2
+#define URSMU 0.01 // how often are URS substitutions?
+#define PSAMMU 0.05 // how often are PSAM substitutions?
+#define MU_STDEV 0.01
+
+#define PSAMLENMU 0.05 // how often are PSAM indels?
+#define PSAMLENSD 0.01
+#define PSAMLENSIZEMU 2 // mean size of PSAM indel
+#define PSAMLENSIZESD 1
+#define PSAMLENMUMAX 2
+
+#define URSLENMU 0.05 // how often are URS indels?
+#define URSLENSD 0.01
+#define URSLENSIZEMU 3 // mean size of URS indel
+#define URSLENSIZESD 1
+
 #define DDGMU 0.0
 
 /* For random-init of the population: */
