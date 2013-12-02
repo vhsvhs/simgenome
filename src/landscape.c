@@ -81,8 +81,7 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 		else { printf("   . I found %d regulatory problem:\n", nrs); }
 	}
 
-	//printf("\n. landscape 54 maxrs= %d nrs= %d\n", maxrs, nrs);
-	//exit(1);
+
 	/* Pass 2: count the number of rules and inputs for each ruleset */
 	int *nrules = (int *)malloc(nrs*sizeof(int));
 	int *ninputs = (int *)malloc(nrs*sizeof(int));
@@ -90,7 +89,7 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 		nrules[ii] = 0;
 		ninputs[ii] = 0;
 	}
-	//printf("\n. landscape 68 nrules[nrs-1]= %d ninputs[nrs-1]= %d\n", nrules[nrs-1], ninputs[nrs-1]);
+
 	rewind(fr); // return fr to the start of the file.
 	while ( fgets(line, MAXLEN, fr) ){
 		const char* tokens[MAX_TOKENS] = {};

@@ -42,7 +42,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			for (int ii=0; ii< l->rulesets[rid]->ninputs; ii++){
 				t_input* x = l->rulesets[rid]->inputs[ii];
 				//printf("\n 46 %d %d %d\n", x->gid, x->start, x->stop);
-				if (t >= x->start && t < x->stop){
+				if (t >= x->start && t <= x->stop){
 					g->gene_expr[ x->gid * g->expr_timeslices + t] = x->expr_level;
 					//printf("\n. 49: %d %f\n", ii, x->expr_level);
 				}

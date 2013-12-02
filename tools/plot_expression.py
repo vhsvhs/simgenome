@@ -1,7 +1,15 @@
-#
-# Input: the expression.txt log file
-# Output: an R plot of time versus expression level.
-#
+"""
+This script plots the expression (time vs. concentration) for all genes.
+By default, it will generate one of these plots for all individuals in all
+generations, but this can be restricted by using --gen and --id
+
+USAGE:
+python plot_expression.py DIR
+...where DIR is a simreg output directory with folder LOGS, FITNESS, etc.
+
+Output: an R plot of time versus expression level, written into the PLOTS folder of DIR.
+
+"""
 import os, re, sys
 
 from argparser import *
