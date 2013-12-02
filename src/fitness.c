@@ -147,14 +147,14 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			/* Rule type 0: expression must be greater than the rule. */
 			if (rul->rule_type == 0){
 				if (obs_expr < rul->expr_level){
-					error += fabs( obs_expr - rul->expr_level) / MAXIMUM_EXPRESSION_LEVEL;
+					error += fabs( obs_expr - rul->expr_level) / (MAXIMUM_EXPRESSION_LEVEL-MINIMUM_EXPRESSION_LEVEL);
 				}
 			}
 
 			/* Rule type 1: expression must be less than the rule. */
 			if (rul->rule_type == 1){
 				if (obs_expr > rul->expr_level){
-					error += fabs( obs_expr - rul->expr_level) / MAXIMUM_EXPRESSION_LEVEL;
+					error += fabs( obs_expr - rul->expr_level) / (MAXIMUM_EXPRESSION_LEVEL-MINIMUM_EXPRESSION_LEVEL);
 				}
 			}
 

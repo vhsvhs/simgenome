@@ -109,7 +109,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"elite_prop",	required_argument,	NULL,	205},
 
 			{"pe_scalar", 	required_argument,	NULL,	250}, // in fitness.c, pe = (1 / (1+exp(-1*ss->pe_scalar*(sum_act-sum_rep) ) ) );
-			{"f_scalar", 	required_argument,	NULL,	251},
+			{"f_scalar", 	required_argument,	NULL,	251}, // this_fit = exp( ss->fitness_scalar * error);
 
 			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files
 			{"randseed",	required_argument,	NULL,	301},

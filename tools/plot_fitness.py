@@ -1,4 +1,7 @@
-"""USAGE: 
+"""
+    (This script is depricated, replaced by plot_population.py)
+
+    USAGE: 
 
     >$ python plot_fitness.py PATH
 

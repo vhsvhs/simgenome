@@ -1,5 +1,5 @@
 #
-# Input: the captured STDOUT stream from a sim-reg run.
+# Input: the expression.txt log file
 # Output: an R plot of time versus expression level.
 #
 import os, re, sys
@@ -7,7 +7,10 @@ import os, re, sys
 from argparser import *
 ap = ArgParser(sys.argv)
 
-fin = open(sys.argv[1], "r")
+outputdir = sys.argv[1] #outputdir is the folder into which a SimGenome run placed output.
+if False == os.path.exists(outputdir + "/PLOTS"):
+    os.system("mkdir " + outputdir + "/PLOTS")
+fin = open(outputdir + "/LOGS/expression.txt", "r")
 
 generation = ap.getOptionalArg("--gen")
 if generation != False:
@@ -33,6 +36,8 @@ def get_data():
     for l in fin.xreadlines():
         if l.startswith("r:"):
             tokens = l.split()
+            if tokens.__len__() < 11:
+                continue
             rid = int( tokens[1] )
             genr = int( tokens[3] )
             if generation != False and generation != genr:
@@ -70,7 +75,7 @@ def get_data():
     return data
 
 def plot_data( data, gen, id):
-    foutpath = sys.argv[1] + "gen" + gen.__str__() + ".id" + id.__str__()
+    foutpath = outputdir + "/PLOTS/" + "gen" + gen.__str__() + ".id" + id.__str__()
     fout = open(foutpath + ".rscript", "w")
     tarr.sort()
     mint = None
@@ -91,8 +96,8 @@ def plot_data( data, gen, id):
     ts = re.sub(",$", "", ts)
     ts += ");\n"
     
-    miny = None
-    maxy = 5.0
+    miny = 0.01
+    maxy = 10.0
     
     var_str = {}
     for r in data[gen][id]:
@@ -102,9 +107,7 @@ def plot_data( data, gen, id):
     
             for t in tarr:
                 val = data[gen][id][r][g][t]
-                if miny == None:
-                    miny = val
-                elif miny > val:
+                if miny > val:
                     miny = val
                 if maxy < val:
                     maxy = val
