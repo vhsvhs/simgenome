@@ -94,8 +94,8 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"ddgmu", 		required_argument, 	NULL, 	103},
 			{"urs_mu",		required_argument,	NULL,	104},
 			{"psam_mu",		required_argument,	NULL,	105},
-			{"growth_scalar",required_argument,	NULL,	106},
-			{"decay_scalar", required_argument,	NULL,	107},
+			{"growth_scalar",required_argument,	NULL,	106}, // at each timeslice, expression delta = growth_rate * pe_scalar
+			{"decay_scalar", required_argument,	NULL,	107}, // at each timeslice, expression delta = decay_rate * pe_scalar;
 			{"mu_stdev",	 required_argument, NULL,	108},
 			{"urslensd",	required_argument,  NULL, 	109},
 			{"psamlensd",	required_argument,	NULL,	110},

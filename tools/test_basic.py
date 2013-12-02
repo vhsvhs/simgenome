@@ -97,13 +97,13 @@ def print_urss( outdir=""):
     fout.write(">1\n")
     fout.write( get_repeat("A", 20) + "\n")
     fout.write(">2\n")
-    fout.write( get_repeat("A", 20) + "GGGG" + "\n")
+    fout.write( "AAAAAAGGGAAAAAAAAAA\n")
     fout.write(">3\n")
     fout.write( get_repeat("A", 20) + "\n")
     fout.write(">4\n")
     fout.write( get_repeat("A", 20) + "\n")
     fout.write(">5\n")
-    fout.write( "AAAAAAGGGGAAAAAATTTTTTAAAA\n")
+    fout.write( "AAAAAAGGGAAAAAATTTTAAAA\n")
    
     fout.close()
 
@@ -111,7 +111,7 @@ def print_rules( outdir = ""):
     fout = open( outdir + "/" + RUNID + ".rules", "w" )
     fout.write("RULE 0     5     4     1.0     0    1.0\n")
     fout.write("RULE 0     5     7     0.0001  1    1.0\n")
-    fout.write("INPUT 0     0     0     7     0.1\n")
+    fout.write("INPUT 0     0     0     7     0.01\n")
     fout.write("INPUT 0     1     0     7     0.0001\n")
     #fout.write("INPUT 0     2     0     7     0.0001\n")
     fout.write("INPUT 0     3     0     7     0.0001\n")
@@ -126,7 +126,7 @@ def print_rules( outdir = ""):
 #
 commands = []
 
-pe_scalars = [0.005]
+pe_scalars = [0.00005]
 count = 0
 for pe in pe_scalars:
     count += 1
