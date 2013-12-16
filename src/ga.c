@@ -24,6 +24,10 @@ void runsim(t_ga* ga, settings* ss){
 
 		if (ss->enable_timelog){
 			ss->t_startgen = clock();
+			ss->t_summakept = 0;
+			ss->t_sumfillpt = 0;
+			ss->t_sumsamplept = 0;
+
 		}
 
 		if (ss->verbosity > 2){
@@ -64,15 +68,22 @@ void runsim(t_ga* ga, settings* ss){
 		double stdf = 0;
 
 
+		if (ss->enable_timelog){
+			ss->t_startf = clock();
+		}
+
 		/* Consider each individual */
-		// to-do: time get_f start
 		for (int gid=0; gid < ga->pop->ngenomes; gid++){
 			/*
 			 * GET FITNESS of an individual
 			 */
 			f[gid] = get_fitness(ga->pop->genomes[gid], ga->l, ss);
 		}
-		// to-do: time get_f stop
+
+		if (ss->enable_timelog){
+			ss->t_sumf += clock() - ss->t_startf;
+		}
+
 
 		/* Using the new fitness values, mark elite individuals */
 		mark_elite(ga->pop, f, ss);

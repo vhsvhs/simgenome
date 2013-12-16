@@ -177,10 +177,29 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
  */
 double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 
+	if (ss->enable_timelog){
+		ss->t_startmakept = clock();
+	}
 	t_ptable *ptable = make_ptable( g->ntfs, ss->maxgd, g->genes[gid]->urslen);
+
+	if (ss->enable_timelog){
+		ss->t_summakept += clock() - ss->t_startmakept;
+		ss->t_startfillpt = clock();
+	}
+
 	fill_prob_table(g, gid, ptable, t, ss);
+
+	if (ss->enable_timelog){
+		ss->t_sumfillpt += clock() - ss->t_startfillpt;
+		ss->t_startsamplept = clock();
+	}
+
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
+
+	if (ss->enable_timelog){
+		ss->t_sumsamplept += clock() - ss->t_startsamplept;
+	}
 
 
 	/* If verbosity is high, then log occupancy for every gene, genome, and generation.

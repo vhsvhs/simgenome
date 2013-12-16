@@ -79,6 +79,14 @@ typedef struct __Settings {
 	clock_t t_stopga;
 	clock_t t_startgen;
 	clock_t t_stopgen;
+	clock_t t_startf; // time to calculate fitness for this generation
+	int t_sumf;
+	clock_t t_startmakept; // time to make P tables
+	int t_summakept;
+	clock_t t_startfillpt; // time to fille P tables
+	int t_sumfillpt;
+	clock_t t_startsamplept; // time to sample form the P tables
+	int t_sumsamplept;
 
 
 }settings;

@@ -449,10 +449,18 @@ void log_dbds(t_genome *g, settings* ss, FILE* fo){
 
 void log_timegen(settings* ss, int gen){
 	if (ss->file_time_log != NULL) {
+		if (gen == 0){
+			fprintf(ss->file_time_log,
+					"gen.\tt_tot\tt_f\tt_makept\tt_fillpt\tt_samplept\n");
+		}
 		int delta = ss->t_stopgen - ss->t_startgen;
 		float secs = ((float)delta)/CLOCKS_PER_SEC;
+		float sumf = ((float)ss->t_sumf)/CLOCKS_PER_SEC;
+		float makept = ((float)ss->t_summakept)/CLOCKS_PER_SEC;
+		float fillpt = ((float)ss->t_sumfillpt)/CLOCKS_PER_SEC;
+		float samplept = ((float)ss->t_sumsamplept)/CLOCKS_PER_SEC;
 		fprintf(ss->file_time_log,
-				"%d\t%f\n", gen, secs);
+				"%d\t%f\t%f\t%f\t%f\t%f\n", gen, secs, sumf, makept, fillpt, samplept);
 	}
 }
 
