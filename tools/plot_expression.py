@@ -13,35 +13,33 @@ Output: an R plot of time versus expression level, written into the PLOTS folder
 import os, re, sys
 
 from argparser import *
+from test_common import *
+from plot_includeme import *
 ap = ArgParser(sys.argv)
 
 outputdir = sys.argv[1] #outputdir is the folder into which a SimGenome run placed output.
 if False == os.path.exists(outputdir + "/PLOTS"):
     os.system("mkdir " + outputdir + "/PLOTS")
-fin = open(outputdir + "/LOGS/expression.txt", "r")
 
 generation = ap.getOptionalArg("--gen")
 if generation != False:
     generation = int(generation)
 
+indi = ap.getOptionalArg("--id")
+if indi != False:
+    indi = int(indi)
+else:
+    indi = -1
 
-# data is  key = gene id, value = hash: key = time, value = expression level
 
-tarr = []
-color = {}
-
-data = {}
-gene_mode = {}
-
-def color_for_run(x):
-    if x not in color:
-        this_color = (color.__len__()+1).__str__()
-        color[x] = this_color
-    return color[x]
-
-def get_data():
+def get_expression_data(dir):
+    tarr = []
+    # data is  key = gene id, value = hash: key = time, value = expression level
+    data = {}
+    gene_mode = {}
     """Parses a text file containing the STDOUT from SimGenome."""
-    for l in fin.xreadlines():
+    expr_fin = open(dir + "/LOGS/expression.txt", "r")
+    for l in expr_fin.xreadlines():
         if l.startswith("r:"):
             tokens = l.split()
             if tokens.__len__() < 11:
@@ -52,6 +50,11 @@ def get_data():
                 continue
             t = int( tokens[5] )
             id = int( tokens[7] )
+            
+            #print id, indi
+            if indi != -1 and id != indi: # skip this individual, possibly
+                continue
+            
             gid = int( tokens[9] )
             mode = tokens[10]
             if mode.startswith("expr:"):
@@ -78,13 +81,10 @@ def get_data():
                 if gid not in data[genr][id][rid]:
                     data[genr][id][rid][gid] = {}
                 data[genr][id][rid][gid][t] = expr
-    fin.close()
-    print data
-    return data
+    expr_fin.close()
+    return (data,tarr,gene_mode)
 
-def plot_data( data, gen, id):
-    foutpath = outputdir + "/PLOTS/" + "gen" + gen.__str__() + ".id" + id.__str__()
-    fout = open(foutpath + ".rscript", "w")
+def getr_expression( data, gen, id, tarr, gene_mode):
     tarr.sort()
     mint = None
     maxt = None
@@ -108,6 +108,7 @@ def plot_data( data, gen, id):
     maxy = 10.0
     
     var_str = {}
+    var_gene = {}
     for r in data[gen][id]:
         for g in data[gen][id][r]:
             var = "Gene" + g.__str__() + gene_mode[g]
@@ -123,18 +124,24 @@ def plot_data( data, gen, id):
             str = re.sub(",$", "", str)
             str += ");\n"
             var_str[var] = str
+            var_gene[var] = g
     
-    fout.write("pdf('" + foutpath + ".pdf', width=7, height=3.5);\n")
-    fout.write(ts)
+    lstr = ""
+    lstr += ts
+    lstr +="par(xpd=TRUE);\n"
+    #fout.write("par(fig=c(0,1.0,0,0.8), new=TRUE)\n")
     
-    fout.write("x <-c(" + mint.__str__() + "," + maxt.__str__() + ");\n" )
-    fout.write("y <-c(" + miny.__str__() + "," + maxy.__str__() + ");\n" )
-    fout.write("plot(x,y,type='n',log='y');\n")
+    lstr +="x <-c(" + mint.__str__() + "," + maxt.__str__() + ");\n" 
+    lstr +="y <-c(" + miny.__str__() + "," + maxy.__str__() + ");\n" 
+    lstr +="plot(x,y,type='n', las=1, log='y', xlab='time', ylab='');\n"
     for var in var_str:
-        fout.write( var_str[var] )
-        fout.write("points(ts," + var + ",type='l',col='" + color_for_run(var) + "');\n")
+        lstr += var_str[var]
+        lstr +="points(ts," + var + ",type='l',lwd='" + lwd_for_gene(var_gene[var]) + "', col=\"" + gene_color[var_gene[var]] + "\");\n"
+        
+    #fout.write("par(fig=c(0,1.0,0.55,1), new=TRUE)\n")
     
-    lstr = "legend(\"topleft\", c("
+    #lstr = "legend(\"topleft\", c("
+    lstr += "legend(0.0,1500.0, cex=0.7, ncol=5, c("
     varkeys = var_str.keys()
     varkeys.sort()
     for var in varkeys:
@@ -143,23 +150,48 @@ def plot_data( data, gen, id):
     lstr += "), "
     lstr += "col=c("
     for var in varkeys:
-        lstr += color_for_run(var) + ","
+        lstr += "\"" + gene_color[var_gene[var]] + "\","
     lstr = re.sub(",$", "", lstr)
     lstr += "), "
     lstr += "pch=c("
     for var in varkeys:
-        lstr += "21,"
+        lstr += "15,"
     lstr = re.sub(",$", "", lstr)
     lstr += ")"
     lstr += ");\n"
-    fout.write(lstr);
-    fout.write("dev.off();\n")
-    fout.close()
     
-    os.system("r --no-save < " + foutpath + ".rscript")
-    
-    
-data = get_data()
-for genr in data:
-    for id in data[genr]:
-        plot_data(data, genr, id)
+    return lstr
+
+
+#########################################################################
+#
+# main
+#
+(expr_data,tarr,gene_mode) = get_expression_data(outputdir)
+init_colors(gene_mode.keys().__len__())
+
+for genr in expr_data:
+    for id in expr_data[genr]:
+        #plot_data(data, genr, id)
+        foutpath = outputdir + "/PLOTS/" + "gen" + genr.__str__() + ".id" + id.__str__()
+        fout = open(foutpath + ".rscript", "w")
+        fout.write("pdf('" + foutpath + ".pdf', width=7, height=3.5);\n")
+        
+        # Time vs. Occupancy
+        expr_string = getr_expression(expr_data, genr, id, tarr, gene_mode)
+        fout.write(expr_string)
+        
+        if False == ap.getOptionalArg("--skip_binding"):
+            # Sites vs. P(binding)
+            for gene in gene_mode:
+                for t in tarr:
+                    timeslice = t
+                    rid = 0
+                    occupancy_path = outputdir + "/OCCUPANCY/occ.gen" + genr.__str__() + ".id" + id.__str__() + ".gene" + gene.__str__() + ".txt"
+                    bind_string = getr_binding(occupancy_path, timeslice, rid)
+                    fout.write(bind_string)
+        
+        fout.write("dev.off();\n")
+        fout.write("par(xpd=TRUE);\n")
+        fout.close()
+        os.system("r --no-save < " + foutpath + ".rscript")

@@ -31,7 +31,6 @@ void build_output_folders(settings* ss){
 	}
 	free(tmp);
 
-
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat(strcat(tmp, ss->outdir), "/LOGS/expression.txt");
 	ss->file_expr_log = fopen(tmp, "w");
@@ -63,6 +62,18 @@ void build_output_folders(settings* ss){
 		mkdir(tmp, 0700);
 	}
 	free(tmp);
+
+	if (ss->enable_timelog){
+		tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+		strcat(strcat(tmp, ss->outdir), "/LOGS/time.txt");
+		ss->file_time_log = fopen(tmp, "w");
+		if (ss->file_time_log == NULL) {
+		  fprintf(stderr, "Error: can't open output file %s!\n", tmp);
+		  fprintf(stderr, "fout 72: %s\n", ss->outdir);
+		  exit(1);
+		}
+		free(tmp);
+	}
 
 }
 
@@ -221,10 +232,10 @@ void log_occupancy(t_genome *g, int gid, int t, int rid, t_ptable* ptable, setti
 			sprintf(tfs, "%d", tf);
 
 			char* rms = (char*)malloc(10*sizeof(char));
-			if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 0){
+			if (g->genes[tf]->has_dbd && g->genes[tf]->reg_mode == 0){
 				sprintf(rms, "r");
 			}
-			else if (g->genes[gid]->has_dbd && g->genes[gid]->reg_mode == 1){
+			else if (g->genes[tf]->has_dbd && g->genes[tf]->reg_mode == 1){
 				sprintf(rms, "a");
 			}
 
@@ -436,5 +447,12 @@ void log_dbds(t_genome *g, settings* ss, FILE* fo){
 	free(gc);
 }
 
-
+void log_timegen(settings* ss, int gen){
+	if (ss->file_time_log != NULL) {
+		int delta = ss->t_stopgen - ss->t_startgen;
+		float secs = ((float)delta)/CLOCKS_PER_SEC;
+		fprintf(ss->file_time_log,
+				"%d\t%f\n", gen, secs);
+	}
+}
 

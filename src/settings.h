@@ -1,8 +1,10 @@
 #include <getopt.h>
+#include <time.h>
 
 typedef struct __Settings {
 	int verbosity;
-	/* Mutation rates */
+
+	/* Mutation-related parameters */
 	bool do_mutation;
 	double urs_mu_rate; // mean mutation rate for URSs
 	double psam_mu_rate; // mean mutation rate for PSAMs
@@ -21,6 +23,7 @@ typedef struct __Settings {
 
 	double ddgmu;
 
+	/* Paths, directories, and output-related stuff */
 	char* outdir; /* The directory into which output is written */
 
 	char* psampath;
@@ -32,6 +35,7 @@ typedef struct __Settings {
 
 	FILE* file_expr_log;
 
+	/* Enable paternal inheritence? */
 	bool inherit_expression;
 
 	int start_gen; /* The starting generation */
@@ -45,7 +49,6 @@ typedef struct __Settings {
 
 	int maxtime;
 	double elite_proportion;
-
 
 	/* Random-Init Stuff: */
 	bool build_random_population;
@@ -65,6 +68,19 @@ typedef struct __Settings {
 	 * the output of this run.
 	 */
 	bool run_clean;
+
+	/* Tuning-related parameters */
+	bool enable_timelog;
+	char* timelogpath;
+	FILE* file_time_log;
+	clock_t t_startmain;
+	clock_t t_stopmain;
+	clock_t t_startga;
+	clock_t t_stopga;
+	clock_t t_startgen;
+	clock_t t_stopgen;
+
+
 }settings;
 
 settings* make_settings();

@@ -5,7 +5,6 @@ Plots the entire population, generations versus fitness.
 The coalescent process is drawn.
 """
 
-
 import os, re, sys
 outputdir = sys.argv[1] #outputdir is the folder into which a SimGenome run placed output.
 

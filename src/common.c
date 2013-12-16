@@ -221,7 +221,6 @@ void quicksort(double *data, int begin, int end) {
 
 /*
  * Sample a random number from a normal distribution, with mean mu and stdev sigma.
- *
  * Code from here: http://phoxis.org/2013/05/04/generating-random-numbers-from-normal-distribution-in-c/
  */
 double randn (double mu, double sigma)
@@ -252,3 +251,12 @@ double randn (double mu, double sigma)
 
   return (mu + sigma * (double) X1);
 }
+
+void print_time(settings* ss){
+	int delta = ss->t_stopmain - ss->t_startmain;
+	printf("\n. Time Summary:\n");
+	printf ("\t* Total runtime = %f seconds\n",((float)delta)/CLOCKS_PER_SEC);
+	delta = ss->t_stopga - ss->t_startga;
+	printf ("\t* Simulation runtime = %f seconds\n",((float)delta)/CLOCKS_PER_SEC);
+}
+

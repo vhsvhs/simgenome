@@ -74,7 +74,7 @@ void mutate(t_pop* pop, settings* ss){
 			int rs = mutate_urs(pop->genomes[ii]->genes[rand_gene], ss);
 
 			if (ss->verbosity > 2){
-				fprintf(fp, "ID %d, +SNP to URS %d site %d\n", ii, rand_gene, rs);
+				fprintf(fp, "SNP: ID %d URS %d site %d\n", ii, rand_gene, rs);
 			}
 		}
 		if (ss->verbosity > 3){
@@ -97,7 +97,7 @@ void mutate(t_pop* pop, settings* ss){
 			int rs = mutate_psam(pop->genomes[ii]->genes[rand_gene]->dbd, ss);
 
 			if (ss->verbosity > 2){
-				fprintf(fp, "ID %d, +PSAM mutation to PSAM %d index %d\n", ii, rand_gene, rs);
+				fprintf(fp, "PSAM mutant: ID %d gene %d index %d\n", ii, rand_gene, rs);
 			}
 		}
 		if (ss->verbosity > 3){
@@ -119,7 +119,7 @@ void mutate(t_pop* pop, settings* ss){
 			int before_len = pop->genomes[ii]->genes[rand_gene]->dbd->nsites;
 			mutate_psamlength(pop->genomes[ii]->genes[rand_gene]->dbd, ss);
 			if (ss->verbosity > 3){
-				fprintf(fp, "ID %d, indel to PSAM %d, old_len = %d, new_len = %d\n",
+				fprintf(fp, "PSAM indel: ID %d gene %d old_len = %d, new_len = %d\n",
 						ii, rand_gene, before_len, pop->genomes[ii]->genes[rand_gene]->dbd->nsites);
 			}
 		}
@@ -140,7 +140,6 @@ void mutate(t_pop* pop, settings* ss){
 	if (ss->verbosity > 2){
 		fclose(fp);
 	}
-
 }
 
 /* Mutates a single random site in the psam.

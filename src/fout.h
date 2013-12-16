@@ -5,3 +5,4 @@ void log_occupancy(t_genome *g, int gid, int t, int rid, t_ptable* ptable, setti
 void log_cofactor(t_genome *g, settings* ss, FILE* fo);
 void log_dbds(t_genome *g, settings* ss, FILE* fo);
 void log_urs(t_genome *g, settings* ss, FILE* fo);
+void log_timegen(settings* ss, int gen);

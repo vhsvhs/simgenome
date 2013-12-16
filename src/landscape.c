@@ -77,8 +77,8 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	}
 
 	if (ss->verbosity > 3){
-		if (nrs > 1){ printf("   . I found %d regulatory problems:\n", nrs); }
-		else { printf("   . I found %d regulatory problem:\n", nrs); }
+		if (nrs > 1){ printf(". I found %d regulatory problems:\n", nrs); }
+		else { printf(". I found %d regulatory problem:\n", nrs); }
 	}
 
 
@@ -179,12 +179,12 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 				rulesets[this_rs]->rules[ruleset_countrule[this_rs]] = make_rule(timepoint, geneid, expr, ruletype, weight);
 				if (ss->verbosity > 3){
 					if (ruletype == 0){
-						printf("   (%d) time %d, gene %d, expr > %f [weight = %f]\n",
+						printf("   (%d) Goal: time %d, gene %d, expr > %f [weight = %f]\n",
 							this_rs, timepoint, geneid, expr, weight);
 					}
 					else
 					{
-						printf("   (%d) time %d, gene %d, expr < %f [weight = %f]\n",
+						printf("   (%d) Goal: time %d, gene %d, expr < %f [weight = %f]\n",
 							this_rs, timepoint, geneid, expr, weight);
 					}
 				}
@@ -203,6 +203,11 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 				}
 				double expr = atof(strtok(NULL, " ") ); // tokens 3
 				rulesets[this_rs]->inputs[ ruleset_countinput[this_rs] ] = make_input(timestart, timestop, geneid, expr);
+				if (ss->verbosity > 3){
+					printf("   (%d) Input: gene %d, start %d, stop %d, expr %f\n",
+						this_rs, geneid, timestart, timestop, expr);
+
+				}
 				ruleset_countinput[this_rs]++;
 			}
 		}

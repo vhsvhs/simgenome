@@ -31,13 +31,13 @@ def get_command(id = "", random = False, popsave = False, popsize = 2, randseed 
     command = "simreg "
     command += " --outdir " + OUTDIR
     command += " --maxgen 1 "
-    command += " --niid 10000 "
+    command += " --niid 15000 "
     command += " --rulepath " + OUTDIR + "/" + RUNID + ".rules "
     command += " --popsize " + popsize.__str__()
     command += " --verbosity 5 "
     command += " --maxgd 1 "
-    command += " --psam_mu 0.05 "
-    command += " --urs_mu 0.005"
+    command += " --psam_mu 0.05 " #1.0 " #0.05 "
+    command += " --urs_mu 0.005 " #0.1 " #0.005"
     command += " --growth_scalar 1.0 "
     command += " --decay_scalar 1.0 "
     command += " --f_scalar -2.0 "
@@ -55,70 +55,131 @@ def get_command(id = "", random = False, popsave = False, popsize = 2, randseed 
 
 def print_psams(outdir = ""):
     fout = open(outdir + "/" + RUNID + ".psam", "w")
-    fout.write("# activator binds GGGG\n")
-    fout.write("Gene 0 1\n")
-    fout.write("0.0 0.1 30.0 1\n")
-    fout.write("0.0 0.1 30.0 1\n")
-    fout.write("0.0 0.1 30.0 1\n")
-    fout.write("0.0 0.1 30.0 1\n")
+    fout.write("# inducer signal binds G\n")
+    fout.write("Gene 0 0\n")
+    # dec4:
+    #fout.write("0.0 0.0 80 0\n")    
+    # dec2:
+    fout.write("0.0 0.0 7.0 0\n")
+    fout.write("0.0 0.0 8.0 0\n")
+    fout.write("0.0 0.0 7.0 0\n")
+    fout.write("0.0 0.0 8.0 0\n")
+    fout.write("0.0 0.0 7.0 0\n")
+    fout.write("0.0 0.0 8.0 0\n")
 
-    fout.write("# activator binds CCCC\n")
+    fout.write("# non-spec activation\n")
     fout.write("Gene 1 1\n")
-    fout.write("0.0 30 0.1 0.1\n")
-    fout.write("0.0 30 0.1 0.1\n")
-    fout.write("0.0 30 0.1 0.1\n")
-    fout.write("0.0 30 0.1 0.1\n")
-    
+    fout.write("1 1 1 1\n")
+    fout.write("1 1 1 1\n")
+    fout.write("1 1 1 1\n")
+    fout.write("1 1 1 1\n")
+
     fout.write("# repressor binds TTTT\n")
     fout.write("Gene 2 0\n")
-    fout.write("0.0 0.1 0.1 80.0\n")
-    fout.write("0.0 0.1 0.1 20.0\n")
-    fout.write("0.0 0.1 0.1 20.0\n")
-    fout.write("0.0 0.1 0.1 20.0\n")
-    fout.write("0.0 0.1 0.1 20.0\n")
-    
-    fout.write("# non-spec repression\n")
-    fout.write("Gene 3 0\n")
-    fout.write("1 1 1 1\n")
-    fout.write("1 1 1 1\n")
-    fout.write("1 1 1 1\n")
-    
-    fout.write("# non-spec activation\n")
-    fout.write("Gene 4 1\n")
-    fout.write("1 1 1 1\n")
-    fout.write("1 1 1 1\n")
-    fout.write("1 1 1 1\n")
-    fout.close()
+    fout.write("0.0 0.0 0.0 18\n")
+    fout.write("0.0 0.0 0.0 18\n")
+    fout.write("0.0 0.0 0.0 10\n")
+    fout.write("0.0 0.0 0.0 10\n")
+    fout.write("0.0 0.0 0.0 10\n")
+
     
 def print_urss( outdir=""):
     fout = open(outdir + "/" + RUNID + ".urs", "w")
     fout.write(">0\n")
-    fout.write( get_repeat("A", 20) + "\n")
+    fout.write( "AAAAA\n")
     fout.write(">1\n")
-    fout.write( get_repeat("A", 20) + "\n")
+    fout.write( "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
     fout.write(">2\n")
-    fout.write( "AAAAAAGGGAAAAAAAAAA\n")
+    fout.write( "AAAAAAAAAGGGGGGAAAAAAAAAAAAAAAAAA\n")
     fout.write(">3\n")
-    fout.write( get_repeat("A", 20) + "\n")
+    fout.write( "AAAAAAAAATTAAAAAAAAAAAAAAAAAAAAAA\n")
     fout.write(">4\n")
-    fout.write( get_repeat("A", 20) + "\n")
+    fout.write( "AAAAAAAAATTTAAAAAAAAAAAAAAAAAAAAA\n")
     fout.write(">5\n")
-    fout.write( "AAAAAAGGGAAAAAATTTTAAAA\n")
-   
+    fout.write( "AAAAAAAAATTTTAAAAAAAAAAAAAAAAAAAA\n")
+    fout.write(">6\n")
+    fout.write( "AAAAAAAAATTTTTAAAAAAAAAAAAAAAAAAA\n")
+    fout.write(">7\n")
+    fout.write( "AAAAAAAAATTTTTTAAAAAAAAAAAAAAAAAA\n")
+    fout.write(">8\n")
+    fout.write( "AAAAAAAAATTTTTTTAAAAAAAAAAAAAAAAA\n")
+    fout.write(">9\n")
+    fout.write( "AAAAAAAAATTTTTTTTAAAAAAAAAAAAAAAA\n")
+    fout.write(">10\n")
+    fout.write( "AAAAAAAAATTTTTTTTTAAAAAAAAAAAAAAA\n")
     fout.close()
 
 def print_rules( outdir = ""):
     fout = open( outdir + "/" + RUNID + ".rules", "w" )
-    fout.write("RULE 0     5     4     1.0     0    1.0\n")
-    fout.write("RULE 0     5     7     0.0001  1    1.0\n")
-    fout.write("INPUT 0     0     0     7     0.01\n")
-    fout.write("INPUT 0     1     0     7     0.0001\n")
-    #fout.write("INPUT 0     2     0     7     0.0001\n")
-    fout.write("INPUT 0     3     0     7     0.0001\n")
-    fout.write("INPUT 0     4     0     7     0.0001\n")
-    #fout.write("INPUT 0     1     0     7     0.1\n")
+    fout.write("# inducer pulse\n")
+    fout.write("INPUT 0     0     0     10      0.00001\n")
+    fout.write("INPUT 0     0     11     12     0.0001\n")
+    fout.write("INPUT 0     0     12     13     0.001\n")
+    fout.write("INPUT 0     0     13     14     0.01\n")
+    fout.write("INPUT 0     0     14     25     0.1\n")
+    fout.write("INPUT 0     0     25     27     0.01\n")
+    fout.write("INPUT 0     0     27     29     0.001\n")
+    fout.write("INPUT 0     0     29     31     0.0001\n")
+    fout.write("INPUT 0     0     31     50     0.00001\n")
+    
+    fout.write("# low-level activation always on\n")
+    fout.write("INPUT 0     1     0     50     0.00047\n")
+
+
+    #fout.write("RULE 0     5     4     1.0     0    1.0\n")
+    #fout.write("RULE 0     5     7     0.0001  1    1.0\n")
     fout.close()
 
+# analyze for Kd
+def analyze_kd(outdir = ""):
+    """THis function gets data for a kinetics experiment on Dec. 5 2013.
+    It contains some ad-hoc things, and should be considered depricated."""
+    print "\n================================================="
+    print ". Analyzing for Kd..."
+    fin = open(outdir + "/LOGS/expression.txt", "r")
+
+    # dec2:
+    timepoint = 32
+    print ". Time", timepoint,"..."
+    gene_expr = {}
+    for l in fin.xreadlines():
+        if l.__len__() > 10:
+            tokens = l.split()
+            time = int(tokens[5])
+            if time == timepoint:
+                gene = int(tokens[9])
+                if tokens[11].startswith("expr"):
+                    gene_expr[ gene ] = float(tokens[12])
+                else:
+                    gene_expr[ gene ] = float(tokens[11])
+    for gene in gene_expr:
+        print gene_expr[gene]
+    fin.close()
+    
+    gene_pgene2 = {}
+    for gene in gene_expr:
+        #if gene == 0:
+        #    continue
+        gene_pgene2[gene] = 0.0
+        fin = open(outdir + "/OCCUPANCY/occ.gen0.id0.gene" + gene.__str__() + ".txt", "r")
+        foundit = False
+        for l in fin.xreadlines():
+            #print gene, l
+            if l.__len__() > 10:
+                if l.__contains__("time " + timepoint.__str__()):
+                    foundit = True
+                elif l.__contains__("time") and False == l.__contains__("time " + timepoint.__str__()):
+                    foundit = False
+                elif foundit:
+                    tokens = l.split()
+                    #print tokens
+                    pgene2 = float(tokens[11])        
+                    if gene_pgene2[gene] < pgene2:
+                        gene_pgene2[gene] = pgene2
+        fin.close()
+    print ". Occupancy P(gene2)..."
+    for gene in gene_expr:
+        print gene_pgene2[gene]
 
 #################################
 #
@@ -126,7 +187,7 @@ def print_rules( outdir = ""):
 #
 commands = []
 
-pe_scalars = [0.00005]
+pe_scalars = [0.01]
 count = 0
 for pe in pe_scalars:
     count += 1
@@ -149,4 +210,7 @@ for c in commands:
     fout.write(c + "\n")
 fout.close()
 os.system("source " + OUTDIR + "/" + RUNID + ".commands.txt" )
+
+# post analysis:
+analyze_kd(outdir = OUTDIR)
 

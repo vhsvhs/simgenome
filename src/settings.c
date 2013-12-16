@@ -32,6 +32,7 @@ settings* make_settings(){
 	ss->cooppath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->rulepath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->poppath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	ss->timelogpath = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	ss->load_save_pop = false;
 
 	ss->popsize = POPSIZE;
@@ -53,8 +54,6 @@ settings* make_settings(){
 	ss->nreg = NGENES_DEFAULT/2;
 	ss->urslen = 1000;
 
-
-
 	ss->pe_scalar = PE_SCALAR;
 	ss->fitness_scalar = FITNESS_SCALAR;
 
@@ -62,6 +61,9 @@ settings* make_settings(){
 	ss->decay_rate = DECAY_RATE;
 
 	ss->run_clean = false;
+
+	ss->enable_timelog = true;
+
 
 	return ss;
 }
@@ -73,7 +75,11 @@ void free_settings(settings* ss){
 	free(ss->cooppath);
 	free(ss->rulepath);
 	free(ss->poppath);
+	free(ss->timelogpath);
 	fclose(ss->file_expr_log);
+	if (ss->enable_timelog){
+		fclose(ss->file_time_log);
+	}
 }
 
 void read_cli(int argc, char **argv, settings* ss){
@@ -119,6 +125,8 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"ngenes",		required_argument,	NULL,	401}, // for random initialization only
 			{"urslen", 		required_argument,	NULL,	402},
 			{"nreg",		required_argument,	NULL,	403},
+
+			{"time",		no_argument,		NULL,	500},
 
 			{0,0,0,0}
 	};
@@ -272,6 +280,11 @@ void read_cli(int argc, char **argv, settings* ss){
 			}
 			case 403:{
 				ss->nreg = atoi(optarg);
+				break;
+			}
+
+			case 500:{
+				ss->enable_timelog = true;
 				break;
 			}
 

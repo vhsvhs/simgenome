@@ -11,12 +11,20 @@ t_ga* make_ga(){
  */
 void runsim(t_ga* ga, settings* ss){
 
+	if (ss->enable_timelog){
+		ss->t_startga = clock();
+	}
+
 	/* For each generation */
 	int start_gen = ss->start_gen;
 	for (int ii = start_gen;
 			ii < (start_gen + ss->max_gens);
 			ii++){
 		ss->gen_counter = ii;
+
+		if (ss->enable_timelog){
+			ss->t_startgen = clock();
+		}
 
 		if (ss->verbosity > 2){
 			printf("\n\n=================\n");
@@ -57,16 +65,17 @@ void runsim(t_ga* ga, settings* ss){
 
 
 		/* Consider each individual */
+		// to-do: time get_f start
 		for (int gid=0; gid < ga->pop->ngenomes; gid++){
 			/*
 			 * GET FITNESS of an individual
 			 */
 			f[gid] = get_fitness(ga->pop->genomes[gid], ga->l, ss);
 		}
+		// to-do: time get_f stop
 
 		/* Using the new fitness values, mark elite individuals */
 		mark_elite(ga->pop, f, ss);
-
 
 		get_fitness_stats( f, ga->pop->ngenomes,
 				maxf, minf, meanf, medianf, stdf);
@@ -96,6 +105,15 @@ void runsim(t_ga* ga, settings* ss){
 			ga->pop = reproduce( ga->pop, ss, f);
 			mutate(ga->pop, ss);
 		}
+
+		if (ss->enable_timelog){
+			ss->t_stopgen = clock();
+			log_timegen(ss, ii);
+		}
+	}
+
+	if (ss->enable_timelog){
+		ss->t_stopga = clock();
 	}
 }
 

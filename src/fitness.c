@@ -44,7 +44,6 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				//printf("\n 46 %d %d %d\n", x->gid, x->start, x->stop);
 				if (t >= x->start && t <= x->stop){
 					g->gene_expr[ x->gid * g->expr_timeslices + t] = x->expr_level;
-					//printf("\n. 49: %d %f\n", ii, x->expr_level);
 				}
 			}
 
@@ -301,32 +300,9 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 				s += 1;
 			}
 			else{
-//				/* This following block is essentially a CDF sampler */
-//				double totp = pt->cpr[s]; // total binding energy at this site
-//				//double randp = (float)rand()/(float)RAND_MAX * totp;
-//				double randp = drand() * totp;
-//				int x1 = s*pt->dim1;
-//				double sump = 0.0;
-//				int reti = 0;
-//				int retj = 0;
-//				int retd = 0;
-//				for (int qq = 0; qq < g->ntfs; qq++){ // qq = TF on the left
-//					int x2 = qq * pt->dim2;
-//					for (int rr = 0; rr < g->ntfs + 1; rr++){ // rr = TF (or empty) on the right
-//						int x3 = rr * pt->dim3;
-//						for(int ss = 0; ss < pt->D; ss++){ // ss = distance between TFs
-//							sump += pt->cpa[x1 + x2 + x3 + ss];
-//							if (sump > randp){
-//								reti = qq;
-//								retj = rr;
-//								retd = ss;
-//								break;
-//							}
-//						}
-//					}
-//				}
 
 				int reti, retj, retd;
+				/* Sample from the CDF. . . */
 				ptable_sample(pt, s, reti, retj, retd);
 
 				// So, gene reti will bind at site, with retj as a cofactor retd distance away.

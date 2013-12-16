@@ -9,6 +9,10 @@ int main( int argc, char **argv )
 	read_cli(argc, argv, ss);
 	print_settings(ss);
 
+	if (ss->enable_timelog)
+	{	ss->t_startmain = clock();
+	}
+
 	srand( ss->randseed );
 
 	/* There are three ways to make a population:
@@ -57,8 +61,12 @@ int main( int argc, char **argv )
 	if (ss->verbosity > 0){	 printf("\n. The simulation is starting now.\n"); }
 	runsim(ga, ss);
 
-	if (ss->verbosity > 0){	 printf("\n. The simulation is finished."); }
+	if (ss->enable_timelog)
+	{	ss->t_stopmain = clock();
+		print_time(ss);
+	}
 
+	if (ss->verbosity > 0){	 printf("\n. The simulation is finished.\n"); }
 	if (ss->verbosity > 0){	 printf("\n. Goodbye\n\n"); }
 
 	free_ga( ga );
