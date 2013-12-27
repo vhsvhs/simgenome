@@ -89,6 +89,9 @@ typedef struct __Settings {
 	int t_sumsamplept;
 
 
+	/* Debug-related / backdoor features */
+	bool use_tran_sampling;
+
 }settings;
 
 settings* make_settings();

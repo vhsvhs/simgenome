@@ -177,6 +177,9 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
  */
 double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 
+	/*
+	 * Make the P table
+	 */
 	if (ss->enable_timelog){
 		ss->t_startmakept = clock();
 	}
@@ -187,6 +190,9 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 		ss->t_startfillpt = clock();
 	}
 
+	/*
+	 * Fill the P table with probability values
+	 */
 	fill_prob_table(g, gid, ptable, t, ss);
 
 	if (ss->enable_timelog){
@@ -194,6 +200,9 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 		ss->t_startsamplept = clock();
 	}
 
+	/*
+	 * Sample from the P table's CDF
+	 */
 	double pe = prob_expr(g, gid, ptable, t, ss);
 	pe = pe - 0.5;
 
@@ -201,13 +210,14 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 		ss->t_sumsamplept += clock() - ss->t_startsamplept;
 	}
 
-
-	/* If verbosity is high, then log occupancy for every gene, genome, and generation.
+	/*
+	 * Log occupancy for every gene, genome, and generation.
 	 */
 	if (ss->verbosity > 30){
 		log_occupancy(g, gid, t, rid, ptable, ss);
 	}
-	/* Else, only log occupancies after each Nth generation.
+	/*
+	 * Or, log only occupancies after each Nth generation.
 	 * This option can consume much less disk space.
 	 */
 	else if (ss->verbosity > 3){
@@ -310,6 +320,12 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 	double pe_sum = 0.0;
 	int urslen = g->genes[gid]->urslen;
 
+	if (ss->use_tran_sampling){
+		printf("\n. fitness 324\n");
+		build_tran(pt);
+		tran_ptable(pt);
+	}
+
 	for (int ii = 0; ii < ss->niid; ii++){ // for each IID sample
 		double sum_act = 0.0; // sum of activation energy
 		double sum_rep = 0.0; // sum of repression energy
@@ -322,7 +338,12 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 
 				int reti, retj, retd;
 				/* Sample from the CDF. . . */
-				ptable_sample(pt, s, reti, retj, retd);
+				if (ss->use_tran_sampling){
+					tran_sample(pt, s, reti, retj, retd);
+				}
+				else{
+					ptable_sample(pt, s, reti, retj, retd);
+				}
 
 				// So, gene reti will bind at site, with retj as a cofactor retd distance away.
 

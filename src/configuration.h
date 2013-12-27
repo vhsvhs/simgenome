@@ -81,3 +81,6 @@ for genes to be activated.*/
 #define COOP_DIR "LOG_COOP"
 #define DBD_DIR "LOG_DBD"
 #define CONFIG_DIR "LOG_OCCUPANCY"
+
+
+#define TRANPT_SIZE 10

@@ -63,6 +63,7 @@ settings* make_settings(){
 	ss->run_clean = false;
 
 	ss->enable_timelog = true;
+	ss->use_tran_sampling = false;
 
 
 	return ss;
@@ -127,6 +128,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"nreg",		required_argument,	NULL,	403},
 
 			{"time",		no_argument,		NULL,	500},
+			{"tran_cdf",	no_argument,		NULL,	600},
 
 			{0,0,0,0}
 	};
@@ -288,6 +290,10 @@ void read_cli(int argc, char **argv, settings* ss){
 				break;
 			}
 
+			case 600:{
+				ss->use_tran_sampling = true;
+				break;
+			}
 			case 1000:
 			{
 				printf("\n. I found --hello\n");

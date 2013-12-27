@@ -43,6 +43,7 @@ def get_command(id = "", random = False, popsave = False, popsize = 2, randseed 
     command += " --f_scalar -2.0 "
     command += " --pe_scalar " + pe_scalar.__str__()
     command += " --elite_prop 0.29 "
+    #command += " --tran_cdf "
     command += " --randseed " + randseed.__str__() + " "
     if popsave == False and random == False:
         command += "--psampath " + OUTDIR + "/" + RUNID + ".psam "
@@ -140,7 +141,7 @@ def analyze_kd(outdir = ""):
 
     # dec2:
     timepoint = 32
-    print ". Time", timepoint,"..."
+    print ". Expression at Time", timepoint,"..."
     gene_expr = {}
     for l in fin.xreadlines():
         if l.__len__() > 10:
