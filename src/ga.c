@@ -58,8 +58,10 @@ void runsim(t_ga* ga, settings* ss){
 
 		/* f is an array of fitness values, one for each individual */
 		double* f = (double *)malloc(ga->pop->ngenomes * sizeof(double));
+		double* er = (double *)malloc(ga->pop->ngenomes * sizeof(double));
 		for (int qq = 0; qq < ga->pop->ngenomes; qq++){
 			f[qq] = 0.0;
+			er[qq] = 0.0;
 		}
 		double maxf = 0;
 		double minf = 1.0;
@@ -73,11 +75,14 @@ void runsim(t_ga* ga, settings* ss){
 		}
 
 		/* Consider each individual */
+
 		for (int gid=0; gid < ga->pop->ngenomes; gid++){
 			/*
 			 * GET FITNESS of an individual
 			 */
-			f[gid] = get_fitness(ga->pop->genomes[gid], ga->l, ss);
+			double this_er = 0.0;
+			f[gid] = get_fitness(ga->pop->genomes[gid], ga->l, ss, this_er);
+			er[gid] = this_er;
 		}
 
 		if (ss->enable_timelog){
@@ -102,7 +107,7 @@ void runsim(t_ga* ga, settings* ss){
 		printf("==================================\n");
 
 		/* Save the fitness stats, and serialize the population */
-		log_fitness(f, ga->pop->ngenomes, ss);
+		log_fitness(f, er, ga->pop->ngenomes, ss);
 
 		/* Print and log the settings, but only if it's the starting generation. */
 		if (ii == start_gen){ print_settings(ss); }

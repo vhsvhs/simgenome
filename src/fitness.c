@@ -3,7 +3,7 @@
 /* Returns the fitness of the genome g on the
  * landscape described by l.
  */
-double get_fitness(t_genome* g, t_landscape* l, settings* ss){
+double get_fitness(t_genome* g, t_landscape* l, settings* ss, double& this_er){
 
 	/* Build the r vector */
 	g->r = (int *)malloc(g->ngenes*sizeof(int));
@@ -47,7 +47,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 				}
 			}
 
-			/* Knock-out any genes that have been specified
+			/* To-do: Knock-out any genes that have been specified
 			 * in the KO array.
 			 */
 
@@ -130,8 +130,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 
 		/* Now score this genome's gene expression vs. the ruleset rid */
 		//double error = 0.0; // sum expression error
-		double max_error = 0.0; // sum of possible error
-		double sum_of_wt = 0.0;
+		double sum_of_wt = 0.0; // sum of rule weights
 		for (int rr = 0; rr < l->rulesets[rid]->nrules; rr++){
 			sum_of_wt += l->rulesets[rid]->rules[rr]->weight;
 		}
@@ -141,29 +140,36 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss){
 			double obs_expr = g->gene_expr[ rul->repid
 			                                * g->expr_timeslices
 			                                + rul->timepoint];
-			double error = 0.0;
+			double rid_error = 0.0; // we'll incrementally add to this error counter
 
 			/* Rule type 0: expression must be greater than the rule. */
 			if (rul->rule_type == 0){
 				if (obs_expr < rul->expr_level){
-					error += fabs( obs_expr - rul->expr_level) / (MAXIMUM_EXPRESSION_LEVEL-MINIMUM_EXPRESSION_LEVEL);
+					//error += fabs( obs_expr - rul->expr_level) / (MAXIMUM_EXPRESSION_LEVEL-MINIMUM_EXPRESSION_LEVEL);
+					// new error function: January 2014:
+					rid_error += rul->expr_level / obs_expr - 1.0;
 				}
 			}
 
 			/* Rule type 1: expression must be less than the rule. */
 			if (rul->rule_type == 1){
 				if (obs_expr > rul->expr_level){
-					error += fabs( obs_expr - rul->expr_level) / (MAXIMUM_EXPRESSION_LEVEL-MINIMUM_EXPRESSION_LEVEL);
+					//error += fabs( obs_expr - rul->expr_level) / (MAXIMUM_EXPRESSION_LEVEL-MINIMUM_EXPRESSION_LEVEL);
+					// new error function: January 2014:
+					rid_error += obs_expr / rul->expr_level - 1.0;
 				}
 			}
+			this_er += rid_error;
 
-			double this_fit = exp( ss->fitness_scalar * error);
+			//double this_fit = exp( ss->fitness_scalar * rid_error);
 
-			my_fit += this_fit * rul->weight / sum_of_wt;
+			//my_fit += this_fit * rul->weight / sum_of_wt;
 		}
 
 	} // end for ruleset
-	my_fit /= l->nrulesets;
+	my_fit = exp(ss->fitness_scalar * this_er);
+
+	//my_fit /= l->nrulesets;
 
 	free(g->r);
 

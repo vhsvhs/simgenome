@@ -81,7 +81,7 @@ void build_output_folders(settings* ss){
 /* Writes the file FITNESS/fitness.genX.txt for generation X,
  * and updates the file LOGS/generations.txt for all generations so far.
  */
-void log_fitness(double* f, int len, settings* ss){
+void log_fitness(double* f, double* er, int len, settings* ss){
 
 	double minf = min(f, len);
 	double maxf = max(f, len);
@@ -117,7 +117,7 @@ void log_fitness(double* f, int len, settings* ss){
 		double this_f = f[ii];
 		if (this_f == maxf){ mark = '*'; }
 		else{ mark = ' '; }
-		fprintf(fp, "%d %f %c\n", ii, f[ii], mark);
+		fprintf(fp, "%d %f %f %c\n", ii, f[ii], er[ii], mark);
 	}
 	fclose(fp);
 	if (ss->verbosity > 2){

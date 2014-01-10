@@ -14,8 +14,8 @@
 #define MAX_TOKENS 20 // maximum expected number of tokens on an input file line
 #define MAX_PSAM_LEN 100
 
-#define MAX_DDG 30.0
-#define MIN_DDG -10.0
+#define MAX_DDG 5.0
+#define MIN_DDG -5.0
 #define MAX_GD 1
 #define MIN_TF_SEPARATION 0
 
