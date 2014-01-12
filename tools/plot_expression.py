@@ -39,17 +39,17 @@ else:
     print "You need to specify an individual with --id"
     exit()
 
-gene = ap.getOptionalArg("--gene")
+gene = ap.getArg("--gene")
 if gene != False:
     gene = int(gene)
 else:
-    gene = False
+    gene = -1
 
 rid = ap.getOptionalArg("--rid")
 if rid != False:
     rid = int(rid)
 else:
-    rid = False
+    rid = 0
 
 # mode specifies if the output goes to an R plot, or to the command-line
 # mode can equal 'cran' or 'cli'
@@ -75,8 +75,7 @@ def get_expression_data(dir):
                 continue
             
             this_rid = int( tokens[1] )
-            if rid != False:
-                if this_rid != rid:
+            if this_rid != rid:
                     continue
             
             genr = int( tokens[3] )
@@ -88,7 +87,7 @@ def get_expression_data(dir):
                 continue
             
             gid = int( tokens[9] )
-            if gene != False and gid != gene:
+            if gid != gene and gene != -1:
                 continue
             
             mode = tokens[10]
@@ -242,7 +241,7 @@ def plot_cli():
     #
     #expr_data[genr][id][this_rid][gid][t]
     #
-    ybins = [1.0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001]    
+    ybins = [1.0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001,0.0000001]    
     
     for genr in expr_data:
         for id in expr_data[genr]:   
@@ -252,14 +251,24 @@ def plot_cli():
                     for t in tarr:
                         yvals.append( float(expr_data[genr][id][this_rid][gid][t]) )
                     print "\nGenr:", genr, "ID:", id, "Problem:", this_rid, "Gene:", gid
-                    for y in ybins:
-                        line = y.__str__() + "\t"
-                        for i in range(0, tarr.__len__()):
-                            val = yvals[i]
-                            if val >= y:
-                                line += "O"
+                    #print yvals
+                    for rowi in range(0,ybins.__len__()):
+                        line = ybins[rowi].__str__() + "\t"
+                        for timei in range(0, tarr.__len__()):
+                            val = yvals[timei]
+                            #print val
+                            if rowi == 0:
+                                if val >= ybins[0]:
+                                    line += "x"
+                                else:
+                                    line += "."
+                                #print val, rowi
+                            elif val >= ybins[rowi] and val < ybins[rowi-1]:
+                                line += "x"
+                                #print val, rowi
                             else:
-                                line += "-"
+                                #print val
+                                line += "."
                         print line 
                     print ""
                     

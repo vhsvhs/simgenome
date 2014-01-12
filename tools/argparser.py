@@ -14,7 +14,7 @@ class ArgParser:
         else:
             message = "You did not specify the required command-line argument: " + flag 
             print "(ERROR) " + message
-            raise AssertionError
+            #raise AssertionError
             exit(1)
             
     # this is somewhat a hack:
