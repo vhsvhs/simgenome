@@ -5,8 +5,15 @@ Plots the entire population, generations versus fitness.
 The coalescent process is drawn.
 """
 
-import os, re, sys
-outputdir = sys.argv[1] #outputdir is the folder into which a SimGenome run placed output.
+import math, os, re, sys
+from argparser import *
+ap = ArgParser(sys.argv)
+
+outputdir = ap.getArg("--outdir") #outputdir is the folder into which a SimGenome run placed output.
+if False == os.path.exists(outputdir):
+    print "I cannot find the output directory ", outputdir
+    exit()
+
 
 if False == os.path.exists(outputdir + "/PLOTS"):
     os.system("mkdir " + outputdir + "/PLOTS")
@@ -19,6 +26,68 @@ title = "Population Fitness"
 xlab = "generations"
 ylab = "fitness"
 
+
+def cli_plot():
+    #import curses
+    #window = curses.initscr()
+    #(width, height) = window.getmaxyx()
+    
+    
+    #print width, height
+    
+    width = 50
+    
+    fin = open(outputdir + "/LOGS/generations.txt", "r")
+    lines = fin.readlines()
+    fin.close()
+    
+    maxx = 0
+    maxy = 0
+    gen_mean = {}
+    gen_min = {}
+    gen_max = {}
+    
+    count_gen = 0
+    for l in lines:
+        if l.__len__() > 1:
+            tokens = l.split()
+            gen = int(tokens[1])
+            if maxx < gen:
+                maxx = gen
+            maxf = float(tokens[3])
+            if maxy < maxf:
+                maxy = maxf
+            minf = float(tokens[5])
+            meanf = float(tokens[7])
+            gen_mean[gen] = meanf
+            gen_min[gen] = minf
+            gen_max[gen] = maxf
+    
+    # Now subsample to fit the terminal
+    divi = math.ceil( float(maxx)/(width-5) )
+    nrows = 25
+    for rowi in range(0, nrows+1):
+        this_row_f = (float(nrows-rowi)/nrows)
+        up_row_f = (float(nrows-rowi+1)/nrows)
+        line = this_row_f.__str__()
+        
+        for i in range(line.__len__(), 6):
+            line += " "
+        for coli in range(0, width):
+            this_gen = coli*divi
+            if this_gen > maxx:
+                continue
+            if gen_mean[this_gen] >= this_row_f and gen_mean[this_gen] < up_row_f:
+                line += "x"
+            elif gen_max[this_gen] >= this_row_f and gen_max[this_gen] < up_row_f:
+                line += "-"
+            elif gen_min[this_gen] >= this_row_f and gen_min[this_gen] < up_row_f:
+                line += "-"
+            else:
+                line += " "
+        
+        print line
+    
 #
 # Read LOG/generations.txt
 #
@@ -219,6 +288,11 @@ def execute_cran_string(cstring):
 #
 # main. . .
 #
+
+if ap.getOptionalArg("--mode") == "cli":
+    cli_plot()
+    exit()
+
 [s,ngen] = build_plot_basics()
 p = build_poptrace(ngen)
 l = get_legend()
