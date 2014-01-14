@@ -63,7 +63,7 @@ settings* make_settings(){
 	ss->run_clean = false;
 
 	ss->enable_timelog = true;
-	ss->use_tran_sampling = false;
+	ss->use_tran_sampling = false; // Not finished implemeting this feature: use transitive CDF sampling,
 
 
 	return ss;
@@ -376,42 +376,42 @@ void print_settings(settings *ss){
 		printf("==========================================\n");
 		printf("Current Settings:\n");
 		printf(". verbosity: %d\n", ss->verbosity);
-		printf(". output directory: %s\n", ss->outdir);
-		printf(". fitness rules: %s\n", ss->rulepath);
+		printf(". output directory: \t%s\n", ss->outdir);
+		printf(". fitness rules: \t%s\n", ss->rulepath);
 		if (ss->load_save_pop == true){
-			printf(". saved population: %s\n", ss->poppath);
+			printf(". saved population: \t%s\n", ss->poppath);
 		}
 		else if(ss->build_random_population == true){
-			printf(". population: random\n");
+			printf(". population: \trandom\n");
 		}
 		else{
-			printf(". PSAMs: %s\n", ss->psampath);
-			printf(". URSs: %s\n", ss->urspath);
+			printf(". PSAM definitions: \t%s\n", ss->psampath);
+			printf(". URS definitions: \t%s\n", ss->urspath);
 		}
 		printf("\n");
-		printf(". start at generation: %d\n", ss->gen_counter);
-		printf(". stop at generation: %d\n", ss->max_gens);
-		printf(". population size: %d\n", ss->popsize);
+		printf(". start at generation: \t%d\n", ss->gen_counter);
+		printf(". stop at generation: \t%d\n", ss->max_gens);
+		printf(". population size: \t%d\n", ss->popsize);
 		printf("\n");
 		if (ss->do_mutation) {
 			printf(". mutations: enabled\n");
-			printf(". URS mu rate: %f\n", ss->urs_mu_rate);
-			printf(". PSAM mu rate: %f\n", ss->psam_mu_rate);
-			printf(". URS indel rate: %f\n", ss->urslenmu);
-			printf(". PSAM indel rate: %f\n", ss->psamlenmu);
-			printf(". cofactor mu rate: %f\n", ss->ddgmu);
-			printf(". 'elite' proportion: %f\n", ss->elite_proportion);
+			printf(". URS mu rate: \t\t%f\n", ss->urs_mu_rate);
+			printf(". PSAM mu rate: \t%f\n", ss->psam_mu_rate);
+			printf(". URS indel rate: \t%f\n", ss->urslenmu);
+			printf(". PSAM indel rate: \t%f\n", ss->psamlenmu);
+			printf(". cofactor mu rate: \t%f\n", ss->ddgmu);
+			printf(". 'elite' proportion: \t%f\n", ss->elite_proportion);
 		}
 		else {
 			printf(". mutations: disabled\n");
 		}
 		printf("\n");
-		printf(". n I.I.D. samples: %d\n", ss->niid);
-		printf(". random seed: %d\n", ss->randseed);
-		printf(". pe scalar: %f\n", ss->pe_scalar);
-		printf(". max. on rate: %f\n", ss->growth_rate);
-		printf(". max. off rate: %f\n", ss->decay_rate);
-		printf(". max. cofactor distance: %d sites\n", ss->maxgd);
+		printf(". n I.I.D. samples: \t%d\n", ss->niid);
+		printf(". random seed: \t\t%d\n", ss->randseed);
+		printf(". pe scalar: \t\t%f\n", ss->pe_scalar);
+		printf(". max. on rate: \t%f\n", ss->growth_rate);
+		printf(". max. off rate: \t%f\n", ss->decay_rate);
+		printf(". max. cofactor dist.: \t%d sites\n", ss->maxgd);
 		printf("==========================================\n");
 	}
 

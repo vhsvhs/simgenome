@@ -128,13 +128,13 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss, double& this_er){
 
 		} // end for t
 
-		/* Now score this genome's gene expression vs. the ruleset rid */
-		//double error = 0.0; // sum expression error
+		/* Now score this genome's gene expression vs. this regulatory problem */
 		double sum_of_wt = 0.0; // sum of rule weights
 		for (int rr = 0; rr < l->rulesets[rid]->nrules; rr++){
 			sum_of_wt += l->rulesets[rid]->rules[rr]->weight;
 		}
 
+		/* For each rule in this regulatory problem */
 		for (int rr = 0; rr < l->rulesets[rid]->nrules; rr++){
 			t_rule* rul = l->rulesets[rid]->rules[rr];
 			double obs_expr = g->gene_expr[ rul->repid
@@ -159,13 +159,8 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss, double& this_er){
 					rid_error += obs_expr / rul->expr_level - 1.0;
 				}
 			}
-			this_er += rid_error;
-
-			//double this_fit = exp( ss->fitness_scalar * rid_error);
-
-			//my_fit += this_fit * rul->weight / sum_of_wt;
-		}
-
+			this_er += rid_error * (rul->weight / sum_of_wt);
+		} // end for each rule
 	} // end for ruleset
 	my_fit = exp(ss->fitness_scalar * this_er);
 

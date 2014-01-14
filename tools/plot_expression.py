@@ -39,11 +39,10 @@ else:
     print "You need to specify an individual with --id"
     exit()
 
-gene = ap.getArg("--gene")
-if gene != False:
-    gene = int(gene)
-else:
-    gene = -1
+genelist = ap.getList("--gene", type=int)
+if genelist == False:
+    print "You need to specify one or more genes using --gene"
+    exit()
 
 rid = ap.getOptionalArg("--rid")
 if rid != False:
@@ -87,7 +86,7 @@ def get_expression_data(dir):
                 continue
             
             gid = int( tokens[9] )
-            if gid != gene and gene != -1:
+            if gid not in genelist and genelist[0] != -1:
                 continue
             
             mode = tokens[10]
@@ -239,9 +238,9 @@ def plot_cli():
     (expr_data,tarr,gene_mode) = get_expression_data(outputdir)
     
     #
-    #expr_data[genr][id][this_rid][gid][t]
+    #expr_data is : [genr][id][this_rid][gid][t]
     #
-    ybins = [1.0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001,0.0000001]    
+    ybins = [1.0, 0.1, 0.01, 0.001,0.0001,0.00001,0.000001, 0.0000001]    
     
     for genr in expr_data:
         for id in expr_data[genr]:   
@@ -271,10 +270,6 @@ def plot_cli():
                                 line += "."
                         print line 
                     print ""
-                    
-                        
-                            
-                        #print genr, id, this_rid, gid, t, y
 
 
 #########################################################################

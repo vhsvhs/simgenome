@@ -53,7 +53,6 @@
 #define MAX_TIME 1
 #define CONFIG_SAMPLE_STRIDE 10 // every N generations, the configurations will be logged.  Else, they consume way too much disk space.
 
-
 #define GROWTH_RATE 1.0 /* Controls how fast genes are turned on. */
 #define DECAY_RATE 1.0 /* Controls how fast gene expression lowers when RNA Pol. is removed */
 
@@ -67,12 +66,12 @@ whereas small values make the coopfunc dropoff quickly.*/
 Higher values make k_act higher, which makes it easer for genes to be expressed.
 Lower values make k_act lower, which means that more bound sites are required
 for genes to be activated.*/
-#define PE_SCALAR 0.001
+#define PE_SCALAR 0.005
 
 /* Larger values make the fitness function sharper around
  * optimal expression, smaller values spread the function's
  * hills further out over poor expression. */
-#define FITNESS_SCALAR -2.0
+#define FITNESS_SCALAR -0.0005
 
 /* Output directory path defaults */
 #define POPDIR "LOG_POPS"

@@ -27,15 +27,12 @@ xlab = "generations"
 ylab = "fitness"
 
 
-def cli_plot():
-    #import curses
-    #window = curses.initscr()
-    #(width, height) = window.getmaxyx()
-    
-    
-    #print width, height
-    
-    width = 50
+def cli_plot():    
+    width = ap.getOptionalArg("--width")
+    if width == False:
+        width = 50
+    else:
+        width = int(width)
     
     fin = open(outputdir + "/LOGS/generations.txt", "r")
     lines = fin.readlines()
@@ -66,6 +63,7 @@ def cli_plot():
     # Now subsample to fit the terminal
     divi = math.ceil( float(maxx)/(width-5) )
     nrows = 25
+    print "\nFitness for " + outputdir + ", generations 0 - " + maxx.__str__()
     for rowi in range(0, nrows+1):
         this_row_f = (float(nrows-rowi)/nrows)
         up_row_f = (float(nrows-rowi+1)/nrows)
@@ -73,7 +71,7 @@ def cli_plot():
         
         for i in range(line.__len__(), 6):
             line += " "
-        for coli in range(0, width):
+        for coli in range(0, width-5):
             this_gen = coli*divi
             if this_gen > maxx:
                 continue
