@@ -159,6 +159,8 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss, double& this_er){
 					rid_error += obs_expr / rul->expr_level - 1.0;
 				}
 			}
+			//printf("\n. debug fitness 162: rid %d sumriderr %f ruletype %d rulexpr %f obsexpr %f\n",
+			//		rr, rid_error, rul->rule_type, rul->expr_level, obs_expr);
 			this_er += rid_error * (rul->weight / sum_of_wt);
 		} // end for each rule
 	} // end for ruleset
@@ -238,6 +240,10 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 	for (int xx = 0; xx < ret->L; xx++){ // for each site in the upstream regulatory sequence
 
+		//double debug1 = g->genes[1]->gamma[1*ss->maxgd];
+		//printf("\n. debug 244: %f\n", debug1);
+
+
 		double sum_cpr = 0.0;
 		for (int ii = 0; ii < g->ntfs; ii++){ // for each transcription factor
 
@@ -251,8 +257,6 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 						/* Case 1: TF i cannot fit here. */
 						double value = 0.0;
 						ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
-						sum_cpt += value;
-						sum_cpr += value;
 						if (ss->verbosity > 100){
 							printf("site %d case 1: tfs %d %d distance %d p= %f\n",
 									xx, ii, jj, dd, value);
@@ -354,7 +358,7 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 						g->genes[gid]->urslen,
 						s);
 
-				//printf("\n fitness 306: reti=%d, retj=%d, retd=%d, reg_mode= %d, aff= %f\n",
+				//printf("\n fitness 306: tf %d at site %d, cofact. dist. %d, reg_mode= %d, aff= %f\n",
 				//		reti, retj, retd, g->genes[reti]->reg_mode, aff);
 
 				if (g->genes[reti]->reg_mode == 0){

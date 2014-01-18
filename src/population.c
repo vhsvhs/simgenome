@@ -72,18 +72,30 @@ t_pop* reproduce(t_pop* pop, settings* ss, double* f) {
 						ii, ii);
 		}
 		else{
-			/* Pick random parents */
-			int parent1 = sample_from_cdf(f, pop->ngenomes);
-			int parent2 = sample_from_cdf(f, pop->ngenomes);
-			/* Mate those parents */
-			if (ss->verbosity > 2){
-				printf("\n\t. ID %d mating with ID %d", parent1, parent2);
+			if (ss->no_sex){
+				int parent = sample_from_cdf(f, pop->ngenomes);
+				newpop->genomes[ii] = copy_genome( pop->genomes[parent]);
+				if (ss->verbosity > 2){
+					printf("\n\t. ID %d cloned into child %d.", parent, ii);
+				}
+				fprintf(fp, "generation %d cloned id %d into child %d\n",
+							ss->gen_counter,
+							ii, ii);
 			}
+			else{
+				/* Pick random parents */
+				int parent1 = sample_from_cdf(f, pop->ngenomes);
+				int parent2 = sample_from_cdf(f, pop->ngenomes);
+				/* Mate those parents */
+				if (ss->verbosity > 2){
+					printf("\n\t. ID %d mating with ID %d", parent1, parent2);
+				}
 
-			fprintf(fp, "generation %d id %d x id %d = child %d\n",
-						ss->gen_counter, parent1, parent2, ii);
-			newpop->genomes[ii] = mate(pop->genomes[parent1],
-					pop->genomes[parent2]);
+				fprintf(fp, "generation %d id %d x id %d = child %d\n",
+							ss->gen_counter, parent1, parent2, ii);
+				newpop->genomes[ii] = mate(pop->genomes[parent1],
+						pop->genomes[parent2]);
+			}
 		}
 		newpop->genomes[ii]->id = ii;
 		build_lifespan(newpop->genomes[ii], ss->maxtime);

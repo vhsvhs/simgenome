@@ -85,6 +85,7 @@ t_gene* copy_gene(t_gene* from) {
 
 }
 
+/* Allocates space for the co-op gamma matrix. */
 void build_coop(t_gene* g, int ntfs, int maxd){
 	g->tfcooplen = ntfs;
 	g->tfcoop = (double*)malloc(g->tfcooplen*sizeof(double));
@@ -92,6 +93,7 @@ void build_coop(t_gene* g, int ntfs, int maxd){
 	g->gamma = (double*)malloc(g->gammalen*sizeof(double));
 }
 
+/* Sets all co-op interactions to zero. */
 void init_coop(t_gene* g){
 	for (int ii = 0; ii < g->tfcooplen; ii++){
 		g->tfcoop[ii] = 0.0;
@@ -361,6 +363,11 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	for (int ii=0; ii < ngenes; ii++){
 		free(urses[ii]);
 	}
+
+	//
+	// to-do: uncomment these psam garbage cleanup lines. Are we leaking memory here?
+	//
+
 	//for (int ii = 0; ii < ntfs; ii++){
 	//	free(psams[ii]);
 	//}

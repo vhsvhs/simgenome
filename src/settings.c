@@ -18,7 +18,6 @@ settings* make_settings(){
 	ss->psamlensizesd = PSAMLENSIZESD;
 	ss->psamlenmumax = PSAMLENMUMAX;
 
-
 	ss->ddgmu = DDGMU;
 
 	ss->urslenmu = URSLENMU;
@@ -47,6 +46,7 @@ settings* make_settings(){
 	ss->randseed = time(0);
 	ss->maxtime = MAX_TIME;
 	ss->elite_proportion = ELITE_PROPORTION;
+	ss->no_sex = false;
 
 	/* Variables for random-init: */
 	ss->build_random_population = false;
@@ -114,11 +114,12 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"popsize",		required_argument,	NULL,	203},
 			{"maxgd",		required_argument,	NULL,	204}, // maximum co-factor distance
 			{"elite_prop",	required_argument,	NULL,	205},
+			{"no_sex",		no_argument,		NULL,	206}, // disables parental crossover during reproduction.
 
 			{"pe_scalar", 	required_argument,	NULL,	250}, // in fitness.c, pe = (1 / (1+exp(-1*ss->pe_scalar*(sum_act-sum_rep) ) ) );
 			{"f_scalar", 	required_argument,	NULL,	251}, // this_fit = exp( ss->fitness_scalar * error);
 
-			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files
+			{"run_clean",	no_argument,		NULL, 	300}, // erase previous output files, defaults to keep old output.
 			{"randseed",	required_argument,	NULL,	301},
 
 			/* For Random-Init of Population: */
@@ -246,6 +247,10 @@ void read_cli(int argc, char **argv, settings* ss){
 			}
 			case 205:{
 				ss->elite_proportion = atof(optarg);
+				break;
+			}
+			case 206:{
+				ss->no_sex = true;
 				break;
 			}
 
@@ -404,6 +409,9 @@ void print_settings(settings *ss){
 		}
 		else {
 			printf(". mutations: disabled\n");
+		}
+		if (ss->no_sex){
+			printf(". meiosis: disabled\n");
 		}
 		printf("\n");
 		printf(". n I.I.D. samples: \t%d\n", ss->niid);

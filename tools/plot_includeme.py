@@ -13,7 +13,9 @@ def getr_binding(path, timeslice, rid):
     #
     foundit = False
     fin = open(path, "r")
+    #
     relevant_lines = []
+    #
     last_time = 0
     last_rid = 0
     for l in fin.readlines():
@@ -31,6 +33,7 @@ def getr_binding(path, timeslice, rid):
     #
     site_tf_expr = {}
     tf_site_expr = {}
+    
     for l in relevant_lines:
         tokens = l.split()
         this_site = int(tokens[1])

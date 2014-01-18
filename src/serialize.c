@@ -110,7 +110,6 @@ t_pop* deserialize_population(settings* ss){
 	char match6 [] = "COOP ";
 	char match7 [] = "Gene ";
 
-
 	int this_genome = 0; // temporary counters
 	int this_gene = 0;
 	int this_site = 0;
@@ -169,10 +168,10 @@ t_pop* deserialize_population(settings* ss){
 			continue;
 		}
 
-		/* Gene:
+		/* Found a Gene:
 		 * id = 1
-		 * reg_mode = 5
-		 * urslen = 7
+		 * reg_mode = 7
+		 * urslen = 5
 		 * psamlen = 9
 		 * */
 		x = match(line, match3);
@@ -205,6 +204,7 @@ t_pop* deserialize_population(settings* ss){
 				build_coop( pop->genomes[this_genome]->genes[gid],
 								pop->genomes[this_genome]->ntfs,
 								ss->maxgd);
+				//init_coop(pop->genomes[this_genome]->genes[gid]);
 				pop->genomes[this_genome]->genes[gid]->reg_mode = this_reg_mode;
 			}
 
@@ -322,6 +322,16 @@ t_pop* deserialize_population(settings* ss){
 		}
 	}
 	fclose(fi);
+
+	// Jan 2014:
+	for (int gid=0; gid < pop->ngenomes; gid++){
+		printf("\n. 328 gid: %d", gid);
+		for (int geneid=0; geneid < pop->genomes[gid]->ntfs; geneid++){
+			printf("\n. 330 geneid: %d", geneid);
+			calc_gamma(pop->genomes[gid]->genes[geneid], pop->genomes[gid]->ntfs, ss->maxgd);
+		}
+
+	}
 
 	return pop;
 }

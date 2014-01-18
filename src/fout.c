@@ -33,7 +33,12 @@ void build_output_folders(settings* ss){
 
 	tmp = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat(strcat(tmp, ss->outdir), "/LOGS/expression.txt");
-	ss->file_expr_log = fopen(tmp, "w");
+	if (ss->run_clean == true || !Filexists(tmp) ) {
+		ss->file_expr_log = fopen(tmp, "w");
+	}
+	else {
+		ss->file_expr_log = fopen(tmp, "a");
+	}
 	if (ss->file_expr_log == NULL) {
 	  fprintf(stderr, "Error: can't open output file %s!\n", tmp);
 	  fprintf(stderr, "fout 121: %s\n", ss->outdir);
@@ -133,7 +138,10 @@ void log_fitness(double* f, double* er, int len, settings* ss){
 	FILE *fo;
 
 	/* Open a new generation log file for the first generation. */
-	if (ss->gen_counter == ss->start_gen){
+	if (ss->gen_counter == ss->start_gen && ss->run_clean == true){
+		fo = fopen(p, "w");
+	}
+	else if (!Filexists(p)){
 		fo = fopen(p, "w");
 	}
 	/* Otherwise, append to the existing generation log. */

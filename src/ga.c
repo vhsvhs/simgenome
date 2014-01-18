@@ -110,7 +110,7 @@ void runsim(t_ga* ga, settings* ss){
 		log_fitness(f, er, ga->pop->ngenomes, ss);
 
 		/* Print and log the settings, but only if it's the starting generation. */
-		if (ii == start_gen){ print_settings(ss); }
+		//if (ii == start_gen){ print_settings(ss); }
 
 
 		/* Save the population to disk. */
