@@ -39,7 +39,7 @@ void runsim(t_ga* ga, settings* ss){
 		/*
 		 * Pre-fitness Setup
 		 */
-		if (ii == 0){ // Only do this for generation zero
+		if (ii == 0 || ii == ss->start_gen){ // Only do this for generation zero
 			for(int ii = 0; ii < ga->pop->ngenomes; ii++){
 				// allocate memory AND init gene expression
 				build_lifespan(ga->pop->genomes[ii], ga->l->ntime);
@@ -82,6 +82,9 @@ void runsim(t_ga* ga, settings* ss){
 			 */
 			double this_er = 0.0;
 			f[gid] = get_fitness(ga->pop->genomes[gid], ga->l, ss, this_er);
+			//
+			// to-do: get fitness for each regulatory problem, in addition to fitness overall regulatory problems.
+			//
 			er[gid] = this_er;
 		}
 

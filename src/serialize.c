@@ -325,9 +325,9 @@ t_pop* deserialize_population(settings* ss){
 
 	// Jan 2014:
 	for (int gid=0; gid < pop->ngenomes; gid++){
-		printf("\n. 328 gid: %d", gid);
+		//printf("\n. 328 gid: %d", gid);
 		for (int geneid=0; geneid < pop->genomes[gid]->ntfs; geneid++){
-			printf("\n. 330 geneid: %d", geneid);
+			//printf("\n. 330 geneid: %d", geneid);
 			calc_gamma(pop->genomes[gid]->genes[geneid], pop->genomes[gid]->ntfs, ss->maxgd);
 		}
 
