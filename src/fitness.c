@@ -214,20 +214,20 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 	}
 
 	/*
-	 * Log occupancy for every gene, genome, and generation.
+	 * Log occupancy, if logging is enabled.
 	 */
-	if (ss->verbosity > 30){
+	if (ss->log_occupancy){
 		log_occupancy(g, gid, t, rid, ptable, ss);
 	}
 	/*
 	 * Or, log only occupancies after each Nth generation.
 	 * This option can consume much less disk space.
 	 */
-	else if (ss->verbosity > 3){
-		if (ss->gen_counter%CONFIG_SAMPLE_STRIDE == 0){
-			log_occupancy(g, gid, t, rid, ptable, ss);
-		}
-	}
+//	else if (ss->verbosity > 3){
+//		if (ss->gen_counter%CONFIG_SAMPLE_STRIDE == 0){
+//			log_occupancy(g, gid, t, rid, ptable, ss);
+//		}
+//	}
 
 	free_ptable(ptable);
 	return pe;
