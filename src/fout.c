@@ -91,15 +91,13 @@ void log_fitness(double* f, double* er, int len, settings* ss){
 	double minf = min(f, len);
 	double maxf = max(f, len);
 	double meanf = mean(f, len);
-	double errf = sderr(f, len);
+	double sdf = stdev(f, len);
 
 	/*
 	 * Part 1: write FITNESS/fitness.genX.txt */
 	char* g;
 	g = (char*)malloc(10*sizeof(char));
 	sprintf(g, "%d", ss->gen_counter);
-
-	//printf("fout 37\n");
 
 	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
 	strcat(
@@ -154,9 +152,9 @@ void log_fitness(double* f, double* er, int len, settings* ss){
 	  exit(1);
 	}
 
-	// gen, max, min, mean
-	fprintf(fo, "gen: %d\tmax= %f\tmin= %f\tmean= %f\terr= %f\n",
-			ss->gen_counter, maxf, minf, meanf, errf);
+	// gen, max, min, mean, s.d.
+	fprintf(fo, "gen: %d\tmax= %f\tmin= %f\tmean= %f\ts.d.= %f\n",
+			ss->gen_counter, maxf, minf, meanf, sdf);
 
 	fclose(fo);
 	free(p);

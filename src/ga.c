@@ -96,8 +96,11 @@ void runsim(t_ga* ga, settings* ss){
 		/* Using the new fitness values, mark elite individuals */
 		mark_elite(ga->pop, f, ss);
 
-		get_fitness_stats( f, ga->pop->ngenomes,
-				maxf, minf, meanf, medianf, stdf);
+
+		// depricated. this code was moved to log_fitness.
+//		get_fitness_stats( f, ga->pop->ngenomes,
+//				maxf, minf, meanf, medianf, stdf);
+
 		printf("==================================\n");
 		printf(". Generation %d Fitness:\n", ii);
 		for (int gid = 0; gid < ga->pop->ngenomes; gid++){
@@ -111,10 +114,6 @@ void runsim(t_ga* ga, settings* ss){
 
 		/* Save the fitness stats, and serialize the population */
 		log_fitness(f, er, ga->pop->ngenomes, ss);
-
-		/* Print and log the settings, but only if it's the starting generation. */
-		//if (ii == start_gen){ print_settings(ss); }
-
 
 		/* Save the population to disk. */
 		serialize_population(ga->pop, ss);

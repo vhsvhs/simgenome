@@ -22,7 +22,6 @@ def get_repeat(r, N):
 color = {}
 lwd = {}
 
-
 def lwd_for_gene(x):
     if x not in lwd:
         if x == 0:
