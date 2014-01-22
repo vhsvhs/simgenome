@@ -6,11 +6,17 @@
  *
  * */
 t_genome* make_genome(int ngenes, t_gene** ingenes, settings *ss) {
+	printf("\n. genome 9 - entered make_genome");
+	fflush(stdout);
 	t_genome *gn;
 	gn = (t_genome*)malloc(1*sizeof(t_genome));
+	printf("\n. genome 11");
 	gn->ngenes = ngenes;
+	printf("\n. genome 12");
 	gn->genes = (t_gene**)malloc(ngenes*sizeof(t_gene));
+	printf("\n. genome 13");
 	gn->ntfs = 0;
+	printf("\n. genome 14");
 	gn->is_elite = false;
 	if (ingenes != NULL){
 		for (int ii=0; ii<ngenes; ii++){

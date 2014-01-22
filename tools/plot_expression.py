@@ -72,6 +72,8 @@ def get_expression_data(dir):
             tokens = l.split()
             if tokens.__len__() < 11:
                 continue
+            if tokens.__len__() > 15:
+                continue
             
             this_rid = int( tokens[1] )
             if this_rid != rid:

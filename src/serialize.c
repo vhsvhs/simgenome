@@ -117,6 +117,7 @@ t_pop* deserialize_population(settings* ss){
 
 	char line[MAXLEN];
 	while (  fgets(line, MAXLEN, fi)  ){
+		printf("%s", line);
 
 		/* Skip empty lines */
 		if (strlen(line) < 2){
@@ -156,10 +157,9 @@ t_pop* deserialize_population(settings* ss){
 			tokens[5] = strtok(0, " ");
 			tokens[6] = strtok(0, " ");
 			int this_ntfs = atoi(tokens[6]);
-			tokens[7] = strtok(0, " ");
-			tokens[8] = strtok(0, " ");
 			if (ss->verbosity > 3){
-				printf("\n. Building genome %d", this_id);
+				printf("\n. Building genome %d with %d genes and %d tfs.\n", this_id, this_ngenes, this_ntfs);
+				fflush(stdout);
 			}
 			pop->genomes[this_id] = make_genome(this_ngenes, NULL, ss);
 			pop->genomes[this_id]->id = this_id;

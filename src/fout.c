@@ -186,6 +186,8 @@ void log_occupancy(t_genome *g, int gid, int t, int rid, t_ptable* ptable, setti
 		strcat(
 		strcat(
 		strcat(
+		strcat(
+			strcat(
 			strcat(
 			strcat(
 			strcat(
@@ -196,6 +198,10 @@ void log_occupancy(t_genome *g, int gid, int t, int rid, t_ptable* ptable, setti
 		gs),
 		".gene"),
 		ge),
+
+		".rid"),
+		ris),
+
 	".txt");
 
 	FILE *fp;

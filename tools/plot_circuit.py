@@ -50,7 +50,6 @@ def get_intx_matrix():
             gene_tf_wt[this_gene] = get_intx_submatrix( outputdir + "/OCCUPANCY/" + f )
     return gene_tf_wt
 
-
 m = get_intx_matrix()
 tflist = found_tfs.keys()
 tflist.sort()

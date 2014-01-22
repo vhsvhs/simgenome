@@ -140,8 +140,6 @@ void free_gene(t_gene* g){
 	}
 }
 
-
-
 void print_urs(int* urs, int urslen) {
 	char state;
 	state = '-';
