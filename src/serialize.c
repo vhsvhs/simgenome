@@ -117,7 +117,6 @@ t_pop* deserialize_population(settings* ss){
 
 	char line[MAXLEN];
 	while (  fgets(line, MAXLEN, fi)  ){
-		printf("%s", line);
 
 		/* Skip empty lines */
 		if (strlen(line) < 2){
@@ -204,6 +203,7 @@ t_pop* deserialize_population(settings* ss){
 				build_coop( pop->genomes[this_genome]->genes[gid],
 								pop->genomes[this_genome]->ntfs,
 								ss->maxgd);
+				// this line will cause a seg. fault:
 				//init_coop(pop->genomes[this_genome]->genes[gid]);
 				pop->genomes[this_genome]->genes[gid]->reg_mode = this_reg_mode;
 			}

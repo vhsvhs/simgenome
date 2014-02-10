@@ -96,11 +96,6 @@ void runsim(t_ga* ga, settings* ss){
 		/* Using the new fitness values, mark elite individuals */
 		mark_elite(ga->pop, f, ss);
 
-
-		// depricated. this code was moved to log_fitness.
-//		get_fitness_stats( f, ga->pop->ngenomes,
-//				maxf, minf, meanf, medianf, stdf);
-
 		printf("==================================\n");
 		printf(". Generation %d Fitness:\n", ii);
 		for (int gid = 0; gid < ga->pop->ngenomes; gid++){
@@ -133,19 +128,6 @@ void runsim(t_ga* ga, settings* ss){
 	if (ss->enable_timelog){
 		ss->t_stopga = clock();
 	}
-}
-
-void get_fitness_stats(double *f, int len, double &max, double &min, double &mean, double &median, double &stddev) {
-	max = f[0];
-	min = f[0];
-	double sum = 0.0;
-	for (int ii = 0; ii < len; ii++){
-		if (f[ii] > max) { max = f[ii]; }
-		else if (f[ii] < min) { min = f[ii]; }
-		sum += f[ii];
-	}
-	mean = sum / len;
-	// to-do: median and stdev
 }
 
 void free_ga(t_ga* ga){

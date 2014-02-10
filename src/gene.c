@@ -91,6 +91,8 @@ void build_coop(t_gene* g, int ntfs, int maxd){
 	g->tfcoop = (double*)malloc(g->tfcooplen*sizeof(double));
 	g->gammalen = ntfs*maxd;
 	g->gamma = (double*)malloc(g->gammalen*sizeof(double));
+
+	init_coop(g);
 }
 
 /* Sets all co-op interactions to zero. */
@@ -213,6 +215,10 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 	/* Get URSes */
 	rewind(fu); /* Set the fu file pointer back to the start */
 	int *urslengths = (int *)malloc(ngenes*sizeof(int));
+	int ii;
+	for (ii=0;ii<ngenes;ii++){
+		urslengths[ii] = 0;
+	}
 	char **urses = (char **)malloc(ngenes*sizeof(char*));
 	int this_gene = -1;
 	while (  fgets(line, MAXLEN, fu) ){
@@ -247,6 +253,16 @@ t_gene** read_genes_from_file(settings *ss, int &ngenes) {
 		}
 	}
 	fclose(fu);
+
+	/* Sanity check: did we actually find all ngenes? */
+	for (ii=0;ii<ngenes;ii++){
+		if (urslengths[ii] == 0){
+			printf("\n. Something is wrong. I did not find an upstream regulatory sequence for gene %d", ii);
+			printf("\n-> Check your URS file, and try again.\n\n");
+			exit(1);
+		}
+	}
+
 
 	if (ss->verbosity > 20){
 		printf("\n. I found %d gene definitions.\n", ngenes);
