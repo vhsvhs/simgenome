@@ -29,16 +29,18 @@ the fixed gene expression inputs and their corresponding regulatory problems.</p
 
 <p><strong>--psampath [path]</strong>, where [path] is the filepath to a text file describing
 the position-specific affinity matrices (i.e., PSAMs) for all transcription factors
-in one genome.  Every individual in the population will be initialized with these PSAMs.</p>
+in one genome.  Every individual in the population will be initialized with these PSAMs.
+Note: If you the option --poppath is used (see below), then --psampath is not required.</p>
 
 <p><strong>--urspath [path]</strong>, where [path] is the filepath to a text file containing
 the upstream regulatory sequences (i.e. URSs) for all genes in one genome.  Every individual in the
-population will be initizlied with these URSs.</p>
+population will be initizlied with these URSs. Note: If you the option --poppath is used (see below), then --urspath is not required.</p>
 
 <p><strong>--poppath [path]</strong>, where [path] is the filepath to a saved population written
 by SimGenome.  If this option is present, it will override values for --psampath and --urspath.  The
 option --poppath is often combined with the option --startgen N, where N is not zero, in order
-to continue a previously saved simulation at a later generation.</p>
+to continue a previously saved simulation at a later generation. Note: the option --poppath is only required
+if the options --psampath and --urspath are NOT specified.</p>
 
 <h2>Optional Parameters:</h2>
 
