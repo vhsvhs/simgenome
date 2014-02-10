@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<HTML>
+   <HEAD>
+   	  <link rel="stylesheet" type="text/css" href="docs.css">
+      <TITLE>SimGenome: in silico directed evolution of gene regulatory circuits</TITLE>
+   </HEAD>
+<BODY>
+
+
+<h1>SimGenome</h1>
+<p>Simulated directed evolution of gene regulatory circuits</p>
+<p>Written by Victor Hanson-Smith :: EMAIL victor.hanson-smith@ucsf.edu</p>
+
+<hr>
+<p><a href="manual.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Recipes</a> | <a href="cli.html">Command-Line Reference</a></p>
+<hr>
+
+<h3>1: Create a new population</h3>
+<p>Use this basic command to create a population with twenty individuals that evolves for only one generation.
+Each individual in the population will be a clone of the same genome, defined with the URS and PSAM filepaths
+at examples/test_basic.urs and examples/test_basic.psam. Fitness will be evaluated based on the regulatory
+problem defined in examples/test_basic.rules.</p>
+<div class="divBlue">
+<p>Run simgen with the following commands:</p>
+<code>$> simreg --outdir test1 --popsize 20 --maxgen 1 --psampath examples/test_basic.psam --urspath examples/test_basic.urs --rulepath examples/test_basic.rules
+</code>
+</div>
+
+<h3>2: Load a saved population.</h3>
+<p>Whereas the previous example built a population by cloning individuals from URS and PSAM files, in this example
+a complete population is loaded from a saved file, and the evolved for ten generations.</p>
+<div class="divBlue">
+<code>$> simreg --outdir test2 --poppath test1/POPS/pop.gen0.save.txt --rulepath examples/test_basic.rules --maxgen 10
+</code>
+</div>
+
+<h3>3. Plot Fitness vs. Generations</h3>
+<p>In order to visualize the population evolution from the previous example, use Python script
+<strong>plot_population.py</strong> that comes included in the 'tools' folder.</p>
+<div class="divBlue">
+<code>$> python tools/plot_population.py --outdir test2
+</code>
+</div>
+
+<p>The Python script plot_population.py will scan the output folder 'test2' and plot the fitness
+of all individuals at eacha generation.  The plot will be written to the file
+'popgraph.pdf' in the folder 'test2/PLOTS'. Although the specific evolutionary trajectory will vary
+every time you run this example (due to randomness of evolution), the plot from this script
+will look something like this:</p>
+
+<div align="center">
+<img src="graphics/popgraph.png" width="60%">
+</div>
+
+
+
+<h3>4. Plot Gene Expression</h3>
+<p>The Python script <strong>plot_expression.py</strong> will plot the binding patterns and gene expression
+of individual genes. In this example, we will plot the gene expression of the maximum fit individual from generation 9, 
+previously generated in example #2. 
+First, find the max-fit individual by examining the fitness log file for generation 9:</p>
+<div class="divBlue">
+<code>$> cat test2/FITNESS/fitness.gen9.txt
+</code>
+</div>
+
+<p>The fitness log will look something like this:</p>
+
+<div>
+<pre>
+0 0.981880 36.571396  
+1 0.996993 6.022310  
+2 0.998194 3.615637  
+3 0.997475 5.056566  
+4 0.996300 7.414163  
+5 0.628028 930.341745  
+6 0.995454 9.112915  
+7 0.528206 1276.537218  
+8 0.963717 73.914916  
+9 0.989079 21.963016  
+10 0.997154 5.700071  
+11 0.996371 7.270319  
+12 0.997622 4.761092  
+13 0.990172 19.752892  
+14 0.998240 3.522615  
+15 0.997866 4.272381  
+16 0.000000 49999.500000  
+17 0.940511 122.663436  
+18 0.192972 3290.419800  
+19 0.998322 3.359068 *
+</pre>
+</div>
+
+<p>The specific values within the fitness log file will vary on your machine, due to randomness of evolution. 
+In this example, individual 19 has the highest fitness score (0.998322) and the lowest expression error (3.359068).</p>
+
+<p>To plot the expression of all genes in individual 19 at generation 9,
+use the Python script <strong>plot_expression.py</strong> as follows:</p>
+
+<div class="divBlue">
+<code>$> python tools/plot_expression.py --outdir test2 --gen 9 --id 19 --gene 0 1 2 3 4 5
+</code>
+</div>
+
+<p>The resulting plot will be written to the file 'gen9.id19.pdf' in the folder 'test2/PLOTS'.
+It will look something like this:</p>
+
+<div align="center">
+<img src="graphics/gen9.id19.png" width="75%">
+</div>
+
+<p>In the plot, the horizontal axis corresponds to time slices, while the vertical axis corresponds
+to effective concentration. The expresssion data for each gene has a unique color. In the legend,
+regulator genes are indicated with an 'a' for activators or 'r' for repressors. Genes lacking 'a' or 'r'
+are reporter genes. In this example, based on the regulatory problem defined in 'examples/test_basic.urs',
+you can see that individual 19 has a high fitness score because it
+correctly activated reporter gene 5 by time 4, and then repressed gene 5 by time 7.</p>
+
+<hr>
+
+</BODY>
+</HTML>

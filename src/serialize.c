@@ -136,6 +136,7 @@ t_pop* deserialize_population(settings* ss){
 				printf("\n. There are %d unique genomes.", popsize);
 			}
 			pop = make_population_basic( popsize );
+			ss->popsize = popsize;
 			continue;
 		}
 

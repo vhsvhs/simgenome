@@ -7,7 +7,6 @@ int main( int argc, char **argv )
 	/* Read the command-line and load user-specified files */
 	settings *ss = make_settings();
 	read_cli(argc, argv, ss);
-	print_settings(ss);
 
 	if (ss->enable_timelog)
 	{	ss->t_startmain = clock();
@@ -52,6 +51,8 @@ int main( int argc, char **argv )
 	t_ga* ga = make_ga();
 	ga->pop = pop;
 	ga->l = l;
+
+	print_settings(ss);
 
 	if ( false == is_world_consistent(ga) ){
 		printf("\n. Sorry, something is inconsistent with your setup, I'm stopping.\n");
