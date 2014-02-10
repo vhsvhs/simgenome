@@ -35,6 +35,8 @@
 #define URSLENSIZESD 1
 
 #define DDGMU 0.0
+#define DDGMUSIZE 1.1
+#define DDGMUSD 0.0
 
 /* For random-init of the population: */
 #define URSLEN_DEFAULT 1000

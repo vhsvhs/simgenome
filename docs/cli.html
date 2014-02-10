@@ -16,21 +16,7 @@
 <p><a href="manual.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Tutorial</a> | <a href="cli.html">Command-Line Reference</a></p>
 <hr>
 
-<h3>Usage 1: Create a new population</h3>
-<div class="divBlue">
-<p>Run simgen with the following commands:</p>
-<code>$> simgen --outdir [path] --psampath [path] --urspath [path] --rulepath [path] [Optional Parameters]
-</code>
-</div>
-
-<h3>Usage 2: Load a saved population.</h3>
-<div class="divBlue">
-<p>Run simgen with this commands:</p>
-<code>$> simgen --outdir [path] --poppath [path] --rulepath [path] [Optional Parameters]
-</code>
-</div>
-
-<br>
+<h2>Required Parameters:</h2>
 
 <p><strong>--outdir [path]</strong>, where [path] is a directory into which all output from this
 simulation will be written.  By default, SimGenome will overwrite any previous contents in this folder, and
@@ -54,7 +40,7 @@ by SimGenome.  If this option is present, it will override values for --psampath
 option --poppath is often combined with the option --startgen N, where N is not zero, in order
 to continue a previously saved simulation at a later generation.</p>
 
-<h3>Optional Parameters:</h3>
+<h2>Optional Parameters:</h2>
 
 <p><strong>--verbosity N</strong>, where N can range from 0 to 100.
 Higher values of N produce more output on the screen, while lower values produce
@@ -72,9 +58,10 @@ containing cofactor interaction definitions.  If this file is not specified, the
 co-factor interactions will be initialized to 1.0, indicating no specific interaction.  
 See the examples for more information about formatting this file.</p>
 
-<p><strong>--startgen N</strong> will start the simulation at generation N.</p>
+<p><strong>--startgen N</strong> will start the simulation at generation N. The default value is 0.</p>
 
-<p><strong>--maxgen N</strong> will stop the simulation when it reaches generation N.</p>
+<p><strong>--maxgen N</strong> will stop the simulation when it reaches generation N.
+The default value is 1000.</p>
 
 <p><strong>--popsize N</strong> will create a population of size N.  Each individual
 will be initialized as a clone of the URSs, PSAMs, and co-factor interactions described
@@ -83,8 +70,7 @@ ignored if you also specify --poppath.</p>
 
 <p><strong>--maxgd N</strong>, where N is the maximum distance, in nucleotide sites, over
 which two co-factors can interact.  Co-factor interactions are strongest when the
-co-factors are nearby, and the interaction degrades over distance.  The default value for
-this parameter is 3 sites.</p>
+co-factors are nearby, and the interaction degrades over distance.  The default value is 3 sites.</p>
 
 <p><strong>--niid N</strong> will set the number of independent and identically
 distributed (I.I.D.) samples to draw from the distribution of binding occupancies.  Higher
@@ -93,38 +79,62 @@ value is 5000.</p>
 
 <p><strong>--pe_scalar X</strong>, where X is the expression scalar.
 Higher values make it easer for genes to be expressed with fewer sites bound in their URS,
-while lower values mean that expression requires more sites bound in the URS.</p>
+while lower values mean that expression requires more sites bound in the URS.
+The default value is 0.005.</p>
+
+<p><strong>--f_scalar X</strong>, where X is the fitness scalar used to translate an individual's expression
+error into a fitness score, according to the following equation: [fitness = e^(f_scalar x error)]. The default value is
+-0.0005. Values approaching zero will create a broad fitness function, while values much lower than zero create
+a sharper fitness peak. The relationship between f_scalar, expression error, and fitness are shown in the
+following plot:</p>
+<div align="center">
+<img src="graphics/f_scalar.png" width="50%">
+</div>
 
 
-<h4>Mutation Parameters:</h4>
+<h3>Basic Mutations:</h3>
 
-<p><strong>--nomu</strong> will disable the mutation step in the genetic algorithm.</p>
+<p><strong>--nomu</strong> will disable all mutations in the genetic algorithm. By default, mutations are enabled.</p>
 
 <p><strong>--urs_mu X</strong> sets the mean mutation rate for URSs to X, where X is
-nucleotide substitutions per sequence site.</p>
+nucleotide substitutions per sequence site. Default = 0.01.</p>
 
 <p><strong>--psam_mu X</strong> sets the mean mutation rate for PSAMs to X, where X is the
-probability of mutating a single site in a PSAM.</p>
+probability of mutating a single site in a PSAM. Default = 0.05.</p>
 
 <p><strong>--mu_stdev X</strong> sets the standard deviation of the mutation rates for URSs and PSAMs.
+Default = 0.01.
+</p>
+
+<h3>Insertion/Deletion:</h3>
 
 <p><strong>--urslenmu X</strong>, where X is the probability of inserting or deleting sites
-into each URS.</p>
+into each URS. Default = 0.05.</p>
 
-<p><strong>--urslenmulen X</strong>, where X is the mean number of nucleotide sites inserted
-or deleted with each URS length mutation.</p>
+<p><strong>--urslensd X</strong>, where X is the standard deviation of the indel mutation rate provided
+by 'urslenmu'. Default = 0.01.</p>
+
+<p><strong>--urslensizemu X</strong>, where X is the mean URS indel size. Default = 3 sites.</p>
+
+<p><strong>--urslensizesd X</strong>, where X is the standard deviation of the mean URS indel size. Default = 1 site.</p>
 
 <p><strong>--psamlenmu X</strong>, where X is the probability of mutating the length of each PSAM.
-The mutation can be an insertion or a deletion of a PSAM site.
+The mutation can be an insertion or a deletion of a PSAM site. Default = 0.05.</p>
 
-<p><strong>--psamlenmulen X</strong>, where X is the mean number of PSAM sites inserted or
-deleted with each PSAM mutation.</p>
+<p><strong>--psamlensd X</strong>, where X is the standard deviation of the PSAM indel mutation rate. Default = 0.01.</p>
 
-<p><strong>--coopmu X</strong>, where X is the probability of increasing/decreasing each co-factor
-interaction.</p>
+<p><strong>--psamlensizemu X</strong>, were X is the mean PSAM indel size. Default = 2 sites.</p>
+
+<p><strong>--psamlensizesd X</strong>, where X is the standard deviation of the mean PSAM indel size. Default = 1 site.</p>
+
+<h3>Co-Factor Interaction Mutations:</h3>
+
+<p><strong>--coopmu X</strong>, where X is the probability of mutating co-factor interactions. Default = 0.0.</p>
+
+<p><strong>--coopmusd X</strong>, where X is the standard deviation of the probability of mutating co-factor interactions. Default = 0.0</p>
 
 <p><strong>--coopmusize X</strong>, where X is the mean multiplier by which each mutated 
-co-factor mutation will increase or decrease.</p>
+co-factor mutation will increase or decrease. Default = 1.1.</p>
 
 <hr>
 

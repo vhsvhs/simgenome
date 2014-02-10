@@ -19,6 +19,8 @@ settings* make_settings(){
 	ss->psamlenmumax = PSAMLENMUMAX;
 
 	ss->ddgmu = DDGMU;
+	ss->ddgmusize = DDGMUSIZE;
+	ss->ddgmusd = DDGMUSD;
 
 	ss->urslenmu = URSLENMU;
 	ss->urslensd = URSLENSD;
@@ -98,7 +100,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"nomu", 		no_argument, 	    NULL, 	100}, // disable mutations
 			{"psamlenmu", 	required_argument, 	NULL, 	101},
 			{"psamlenmumax", required_argument, NULL, 	102},
-			{"ddgmu", 		required_argument, 	NULL, 	103},
+			{"coopmu", 		required_argument, 	NULL, 	103},
 			{"urs_mu",		required_argument,	NULL,	104},
 			{"psam_mu",		required_argument,	NULL,	105},
 			{"growth_scalar",required_argument,	NULL,	106}, // at each timeslice, expression delta = growth_rate * pe_scalar

@@ -23,6 +23,8 @@ typedef struct __Settings {
 	int psamlenmumax;
 
 	double ddgmu;
+	double ddgmusize;
+	double ddgmusd;
 
 	/* Paths, directories, and output-related stuff */
 	char* outdir; /* The directory into which output is written */
