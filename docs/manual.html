@@ -3,21 +3,60 @@
 <HTML>
    <HEAD>
    	  <link rel="stylesheet" type="text/css" href="docs.css">
-      <TITLE>SimGenome: in silico directed evolution of gene regulatory circuits</TITLE>
+      <TITLE>SimGenome: simulated directed evolution of gene regulatory circuits</TITLE>
    </HEAD>
 <BODY>
 
 
 <h1>SimGenome</h1>
-<p><em>in silico</em> directed evolution of gene regulatory circuits</p>
+<p>Simulated directed evolution of gene regulatory circuits</p>
 <p>Written by Victor Hanson-Smith :: EMAIL victor.hanson-smith@ucsf.edu</p>
 
 <hr>
-<p><a href="manual.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Tutorial</a> | <a href="cli.html">Command-Line Reference</a></p>
+<p><a href="manual.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Tutorial</a> | <a href="cli.html">Command Reference</a></p>
 <hr>
 
+<p>SimGenome is a software suite for simulating the evolution of a population of artificial genomes, each encoding a gene transcription regulatory
+circuit. This software is designed to test hypotheses about the evolution of regulatory circuits in response to 
+a wide range of evolutionary and genomic conditions.</p>
+
+<p>To get started, follow the links above to <a href="installation.html">download and install</a>, 
+and then <a href="tutorial">run</a> SimGenome.</p>
+
+<hr>
+
+<h2>Overview</h2>
 
 
+<p>SimGenome implements a unified model of gene regulatory circuit evolution that includes
+multiple parameters to account for genome sequences, transcription factor DNA-binding preferences,
+strength of selection, and mutation rate. The unified model is illustred in the figure below, and described
+as follows:</p>
+<p>(Fig. a) A population of individuals with unique genomes responds to a regulatory 
+problem, defined as input stimuli and ideal output gene expression that would constitute 
+maximum fitness. In this cartoon, each genome contains six genes, but in practical simulations, 
+genomes contain hundreds or thousands of genomes. The thermodynamic model (T.M., Segal et al. 2008) translates 
+each genome into a regulatory circuit that encodes the individual’s gene expression 
+in response to the stimuli. A comparison of the max-fitness expression to each individual’s 
+expression yields a fitness score.</p>
+<p>(Fig. b) The TM samples the probability distribution of possible binding configurations 
+of regulator genes X, Y, and Z binding to the upstream DNA of gene A. Only three configurations
+ are shown in this cartoon, but typical analysis would use 10,000+ samples. Configurations are 
+ only shown for binding at gene A, but in practice, configurations are computed for all genes in 
+ each genome. The specificity matrix of each bound regulator contributes a number of bound bits
+  of DNA; bits are translated to expression levels using a variant of the Hill Equation.
+   The expression levels from all samples are then weighted averaged into a single expression 
+   value.</p>
+<p>(Fig. c) The TM computes gene expression for a single timeslice. By using the output of the 
+   TM as the input for the next timeslice, the TM is used iteratively to compute gene expression
+    over multiple timepoints in a simulated cell’s lifespan.</p> 
+<p>(Fig. d) The simulated population can evolve a solution to the regulatory problem over multiple 
+generations by cycling through the steps of a genetic algorithm: compute expression and fitness
+ for each individual, reproduce the population selectively, and then mutate the population.</p>
+
+<img src="graphics/model.png" width="80%">
+
+<hr>
 
 </BODY>
 </HTML>
