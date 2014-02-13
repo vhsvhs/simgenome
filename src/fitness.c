@@ -203,10 +203,17 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 		ss->t_startsamplept = clock();
 	}
 
+
+	// New February 2014
+	double* tf_k = (double *)malloc(g->ntfs*sizeof(double));
+	for (int ii=0; ii<g->ntfs; ii++){
+		tf_k[ii] = 0.0;
+	}
+
 	/*
 	 * Sample from the P table's CDF
 	 */
-	double pe = prob_expr(g, gid, ptable, t, ss);
+	double pe = prob_expr(g, gid, ptable, t, ss, tf_k);
 	pe = pe - 0.5;
 
 	if (ss->enable_timelog){
@@ -218,6 +225,9 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 	 */
 	if (ss->log_occupancy){
 		log_occupancy(g, gid, t, rid, ptable, ss);
+	}
+	if (ss->log_k){
+		log_k(g, gid, t, rid, tf_k, ss);
 	}
 	/*
 	 * Or, log only occupancies after each Nth generation.
@@ -321,7 +331,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 }
 
 /* Returns the expression of gene gid, given the probtable ret */
-double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
+double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double* tf_k){
 	double pe_sum = 0.0;
 	int urslen = g->genes[gid]->urslen;
 
@@ -373,6 +383,9 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss){
 				if (retj < g->ntfs){
 					s += g->r[retj];
 				}
+
+				// February 2014:
+				tf_k[reti] += aff;
 			}
 
 		} // end while s < urslen

@@ -160,6 +160,84 @@ void log_fitness(double* f, double* er, int len, settings* ss){
 	free(p);
 }
 
+void log_k(t_genome *g, int gid, int t, int rid, double* tf_k, settings* ss){
+	char* gc;
+	gc = (char*)malloc(10*sizeof(char));
+	sprintf(gc, "%d", ss->gen_counter);
+
+	char* gs;
+	gs = (char*)malloc(4*sizeof(char));
+	sprintf(gs, "%d", g->id);
+
+	char *ge;
+	ge = (char*)malloc(10*sizeof(char));
+	sprintf(ge, "%d", gid);
+
+	char* ts;
+	ts = (char*)malloc(100*sizeof(char));
+	sprintf(ts, "%d", t);
+
+	char* ris;
+	ris = (char*)malloc(100*sizeof(char));
+	sprintf(ris, "%d", rid);
+
+	char* p = (char *)malloc(FILEPATH_LEN_MAX*sizeof(char));
+	strcat(
+		strcat(
+		strcat(
+		strcat(
+		strcat(
+			strcat(
+			strcat(
+			strcat(
+			strcat(
+			strcat(p, ss->outdir),
+			"/OCCUPANCY/k.gen"),
+			gc),
+		".id"),
+		gs),
+		".gene"),
+		ge),
+
+		".rid"),
+		ris),
+
+	".txt");
+
+	FILE *fp;
+	if (t == 0){
+		fp = fopen(p, "w");
+	}
+	else{
+		fp = fopen(p, "a");
+	}
+	if (fp == NULL) {
+	  fprintf(stderr, "Error: can't open output file %s!\n",
+			  p);
+	  exit(1);
+	}
+
+	fprintf(fp, "%s", ts);
+	fprintf(fp, "\t");
+	fprintf(fp, "%s", ris);
+	fprintf(fp, "\t");
+	for (int tf = 0; tf < g->ntfs; tf++){
+		fprintf(fp, "%.2f\t", tf_k[tf]);
+	}
+	fprintf(fp, "\n");
+
+	free(gs);
+	free(ts);
+	free(gc);
+	free(ge);
+	free(ris);
+	free(p);
+
+	fclose(fp);
+}
+
+
+
 void log_occupancy(t_genome *g, int gid, int t, int rid, t_ptable* ptable, settings* ss){
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));

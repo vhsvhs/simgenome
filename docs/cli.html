@@ -99,6 +99,12 @@ but is useful for determining the logical circuit of an individual. Logs written
  folder titled 'OCCUPANCY'.
 </p>
 
+<p><strong>--log_k</strong> enables activation and repression energies to be logged. This log provides a more compact and summarized version
+of the data in the occupancy log (see above, for '--log_occupancy'). However, unlike the occupancy log, the K log doesn't include
+information for every sequence site. Rather, the K log expresses energies over the entire regulatory sequence. This log is
+especially useful for inferring the logical structure of the circuit. 
+</p>
+
 <h3>Basic Mutations:</h3>
 
 <p><strong>--nomu</strong> will disable all mutations in the genetic algorithm. By default, mutations are enabled.</p>

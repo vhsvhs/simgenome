@@ -4,6 +4,7 @@
 typedef struct __Settings {
 	int verbosity;
 	bool log_occupancy;
+	bool log_k;
 
 	/* Mutation-related parameters */
 	bool do_mutation;

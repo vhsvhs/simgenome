@@ -6,6 +6,7 @@ settings* make_settings(){
 
 	ss->verbosity = DEF_VERBOSITY; //(int)DEF_VERBOSITY;
 	ss->log_occupancy = false;
+	ss->log_k = false;
 
 	ss->do_mutation = 1;
 	ss->urs_mu_rate = URSMU; // mean subs per seq site
@@ -132,6 +133,7 @@ void read_cli(int argc, char **argv, settings* ss){
 
 			{"time",		no_argument,		NULL,	500},
 			{"log_occupancy", no_argument,		NULL,	501},
+			{"log_k",		no_argument,		NULL,	502},
 			{"tran_cdf",	no_argument,		NULL,	600},
 
 			{0,0,0,0}
@@ -299,6 +301,10 @@ void read_cli(int argc, char **argv, settings* ss){
 			}
 			case 501:{
 				ss->log_occupancy = true;
+				break;
+			}
+			case 502:{
+				ss->log_k = true;
 				break;
 			}
 
