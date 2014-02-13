@@ -12,7 +12,7 @@
 <p>Simulated directed evolution of gene regulatory circuits</p>
 <p>Written by Victor Hanson-Smith :: EMAIL victor.hanson-smith@ucsf.edu</p>
 
-<hr>
+<hr>`
 <p><a href="manual.html">Overview</a> | <a href="installation.html">Download and Install</a> | <a href="tutorial.html">Tutorial</a> | <a href="cli.html">Command Reference</a></p>
 <hr>
 
@@ -85,14 +85,19 @@ while lower values mean that expression requires more sites bound in the URS.
 The default value is 0.005.</p>
 
 <p><strong>--f_scalar X</strong>, where X is the fitness scalar used to translate an individual's expression
-error into a fitness score, according to the following equation: [fitness = e^(f_scalar x error)]. The default value is
--0.0005. Values approaching zero will create a broad fitness function, while values much lower than zero create
-a sharper fitness peak. The relationship between f_scalar, expression error, and fitness are shown in the
-following plot:</p>
+error into a fitness score, according to the following equation: [fitness = e^(f_scalar x error)]. The default value
+for the scalar is -0.0005. Values approaching zero will create a broad fitness function, while values much lower than zero create
+a sharper fitness peak. The relationship between f_scalar, expression error, and fitness are shown in the plot below. It is recommended
+that you tune this parameter according to the particular regulatory problems in your simulation, such that the fitness function can accomodate
+the maximum possible expression error.</p>
 <div align="center">
 <img src="graphics/f_scalar.png" width="50%">
 </div>
 
+<p><strong>--log_occupancy</strong> enables binding occupancies to be logged. This log consumes a lot of disk space,
+but is useful for determining the logical circuit of an individual. Logs written by this feature will appear in an output
+ folder titled 'OCCUPANCY'.
+</p>
 
 <h3>Basic Mutations:</h3>
 

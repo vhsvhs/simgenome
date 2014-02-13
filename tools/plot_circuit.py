@@ -16,13 +16,29 @@ ap = ArgParser(sys.argv)
 outputdir = ap.getArg("--outdir") #outputdir is the folder into which a SimGenome run placed output.
 generation = int( ap.getArg("--gen") )
 id = int( ap.getArg("--id") )
+rid =  int( ap.getArg("--rid") )
+timeslice =  ap.getOptionalArg("--time")
+if timeslice == False:
+    timeslice = -1
+else:
+    timeslice = int(timeslice)
+
+
+
 found_tfs = {}
 
 def get_intx_submatrix(opath):
     tf_wt = {} # key = TF, value = interaction weight
     fin = open(opath, "r")
+    last_time_seen = None
+    last_rid_seen = None
     for l in fin.xreadlines():
-        if l.startswith("site"):
+        if l.startswith(". time"):
+            tokens = l.split()
+            last_time_seen = int(tokens[2])
+            last_rid_seen = int(tokens[4])
+        if l.startswith("site") and (timeslice == -1 or timeslice == last_time_seen) and (rid == last_rid_seen):
+            #print last_time_seen
             tokens = l.split()
             toki = 3
             while(toki < tokens.__len__()):
@@ -42,15 +58,25 @@ def get_intx_matrix():
     gene_tf_wt = {} # key = target gene, value = hash; key = TF, value = interaction weight
     
     fkey = "occ.gen" + generation.__str__() + ".id" + id.__str__() + ".gene"
-    for f in os.listdir(outputdir + "/OCCUPANCY"):
+    files = os.listdir(outputdir + "/OCCUPANCY")
+    if files.__len__() == 0:
+        print "\n. I found no occupancy logs for those settings."
+    
+    for f in files:
         if f.startswith(fkey):
             this_gene = re.sub(fkey, "", f)
             this_gene = re.sub(".txt", "", this_gene)
-            this_gene = int(this_gene)
-            gene_tf_wt[this_gene] = get_intx_submatrix( outputdir + "/OCCUPANCY/" + f )
+            this_gene = int( this_gene.split(".")[0] )
+            inpath = outputdir + "/OCCUPANCY/" + f
+            gene_tf_wt[this_gene] = get_intx_submatrix( inpath )
     return gene_tf_wt
 
 m = get_intx_matrix()
+
+if found_tfs.__len__() == 0:
+    print "\n. I found no occupancy logs for those settings."
+    exit()
+
 tflist = found_tfs.keys()
 tflist.sort()
 line = "Gene\t"
