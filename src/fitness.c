@@ -397,6 +397,10 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double
 		pe_sum += pe;
 	}
 
+	for (int ii=0; ii<g->ntfs; ii++){
+		tf_k[ii] /= ss->niid;
+	}
+
 	return pe_sum / (double)ss->niid;
 }
 

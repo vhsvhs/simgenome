@@ -82,7 +82,13 @@ value is 5000.</p>
 <p><strong>--pe_scalar X</strong>, where X is the expression scalar.
 Higher values make it easer for genes to be expressed with fewer sites bound in their URS,
 while lower values mean that expression requires more sites bound in the URS.
-The default value is 0.005.</p>
+The default value is 0.005. The relationship between pe_scalar and expression levels is as follows.
+Expression for some gene at time t+1 equals expression at time t plus a modifier pe. The modifier is computed
+using the following expression:<br>
+pe = R * [ (1 / (1+exp(-1*ss->pe_scalar*(sum_act-sum_rep) ) ) ) - 0.5]<br>
+...where R is the growth rate, or decay rate
+
+</p>
 
 <p><strong>--f_scalar X</strong>, where X is the fitness scalar used to translate an individual's expression
 error into a fitness score, according to the following equation: [fitness = e^(f_scalar x error)]. The default value
