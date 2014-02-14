@@ -86,7 +86,8 @@ The default value is 0.005. The relationship between pe_scalar and expression le
 Expression for some gene at time t+1 equals expression at time t plus a modifier pe. The modifier is computed
 using the following expression:<br>
 pe = R * [ (1 / (1+exp(-1*ss->pe_scalar*(sum_act-sum_rep) ) ) ) - 0.5]<br>
-...where R is the growth rate, or decay rate
+...where R is the growth rate, or decay rate, depending if pe is positive (growth)
+or negative (decay). sum_act is the sum of delta-delta G affinity 
 
 </p>
 

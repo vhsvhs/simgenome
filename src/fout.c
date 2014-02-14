@@ -217,9 +217,7 @@ void log_k(t_genome *g, int gid, int t, int rid, double* tf_k, settings* ss){
 	  exit(1);
 	}
 
-	fprintf(fp, "%s", ts);
-	fprintf(fp, "\t");
-	fprintf(fp, "%s", ris);
+	fprintf(fp, "%s:", ts);
 	fprintf(fp, "\t");
 	for (int tf = 0; tf < g->ntfs; tf++){
 		fprintf(fp, "%.2f\t", tf_k[tf]);
