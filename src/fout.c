@@ -546,9 +546,10 @@ void log_timegen(settings* ss, int gen){
 		float sumf = ((float)ss->t_sumf)/CLOCKS_PER_SEC;
 		float makept = ((float)ss->t_summakept)/CLOCKS_PER_SEC;
 		float fillpt = ((float)ss->t_sumfillpt)/CLOCKS_PER_SEC;
-		float samplept = ((float)ss->t_sumsamplept)/CLOCKS_PER_SEC;
+		float pexpr = ((float)ss->t_sumprob_expr)/CLOCKS_PER_SEC;
+		//float ptable_sample = ((float)ss->t_sum_ptable_sample)/CLOCKS_PER_SEC;
 		fprintf(ss->file_time_log,
-				"%d\t%f\t%f\t%f\t%f\t%f\n", gen, secs, sumf, makept, fillpt, samplept);
+				"%d\t%f\t%f\t%f\t%f\t%f\n", gen, secs, sumf, makept, fillpt, pexpr);
 	}
 }
 

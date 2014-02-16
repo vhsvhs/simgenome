@@ -91,12 +91,13 @@ typedef struct __Settings {
 	int t_summakept;
 	clock_t t_startfillpt; // time to fille P tables
 	int t_sumfillpt;
-	clock_t t_startsamplept; // time to sample form the P tables
-	int t_sumsamplept;
-
+	clock_t t_startprob_expr; // time to sample form the P tables
+	int t_sumprob_expr;
+	//clock_t t_start_ptable_sample;
+	//int t_sum_ptable_sample;
 
 	/* Debug-related / backdoor features */
-	bool use_tran_sampling;
+//	bool use_tran_sampling;
 
 }settings;
 

@@ -193,18 +193,25 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 		ss->t_startfillpt = clock();
 	}
 
+#ifdef MEMO_AFFINITY
+	t_afftable *afft = make_afftable(g->ntfs, g->genes[gid]->urslen);
+#endif
 	/*
 	 * Fill the P table with probability values
 	 */
+#ifdef MEMO_AFFINITY
+	fill_prob_table(g, gid, ptable, afft, t, ss);
+#else
 	fill_prob_table(g, gid, ptable, t, ss);
-
+#endif
 	if (ss->enable_timelog){
 		ss->t_sumfillpt += clock() - ss->t_startfillpt;
-		ss->t_startsamplept = clock();
+		ss->t_startprob_expr = clock();
 	}
 
-
-	// New February 2014
+	/*
+	 * tf_k records the binding energy of each TF for gene 'gid'
+	 */
 	double* tf_k = (double *)malloc(g->ntfs*sizeof(double));
 	for (int ii=0; ii<g->ntfs; ii++){
 		tf_k[ii] = 0.0;
@@ -213,15 +220,19 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 	/*
 	 * Sample from the P table's CDF
 	 */
+#ifdef MEMO_AFFINITY
+	double pe = prob_expr(g, gid, ptable, afft, t, ss, tf_k);
+#else
 	double pe = prob_expr(g, gid, ptable, t, ss, tf_k);
+#endif
 	pe = pe - 0.5;
 
 	if (ss->enable_timelog){
-		ss->t_sumsamplept += clock() - ss->t_startsamplept;
+		ss->t_sumprob_expr += clock() - ss->t_startprob_expr;
 	}
 
 	/*
-	 * Log occupancy, if logging is enabled.
+	 * Log occupancy and/or binding energies, if logging is enabled.
 	 */
 	if (ss->log_occupancy){
 		log_occupancy(g, gid, t, rid, ptable, ss);
@@ -229,6 +240,7 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 	if (ss->log_k){
 		log_k(g, gid, t, rid, tf_k, ss);
 	}
+
 	/*
 	 * Or, log only occupancies after each Nth generation.
 	 * This option can consume much less disk space.
@@ -239,6 +251,10 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 //		}
 //	}
 
+#ifdef MEMO_AFFINITY
+	free(afft);
+#endif
+	free(tf_k);
 	free_ptable(ptable);
 	return pe;
 }
@@ -247,7 +263,11 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
  * of the ptable.  The algorithm works in place, and upon
  * completion, the new values will be written into ret.
  */
+#ifdef MEMO_AFFINITY
+void fill_prob_table(t_genome *g, int gid, t_ptable *ret, t_afftable *afft, int t, settings *ss){
+#else
 void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
+#endif
 	for (int xx = 0; xx < ret->L; xx++){ // for each site in the upstream regulatory sequence
 
 		//double debug1 = g->genes[1]->gamma[1*ss->maxgd];
@@ -258,14 +278,17 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 		for (int ii = 0; ii < g->ntfs; ii++){ // for each transcription factor
 
 			double aff = get_affinity(g->genes[ii]->dbd, g->genes[gid]->urs, g->genes[gid]->urslen, xx);
-
+#ifdef MEMO_AFFINITY
+			afft->tf_site_aff[ii*g->genes[gid]->urslen + xx] = aff;
+#endif
 			double sum_cpt = 0.0; // the sum of cpt values over this jj.
 			for (int jj = 0; jj < g->ntfs + 1; jj++){ // for co-factors, +1 is the empty slot, i.e. no cofactor.
 				for (int dd = 0; dd < ret->D; dd++){ // for possible distance between TF and co-factor
 
+					double value = 0.0;
 					if (ret->L-xx < g->r[ii]){
 						/* Case 1: TF i cannot fit here. */
-						double value = 0.0;
+						value = 0.0;
 						ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
 						if (ss->verbosity > 100){
 							printf("site %d case 1: tfs %d %d distance %d p= %f\n",
@@ -276,7 +299,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 					{
 						if (dd < MIN_TF_SEPARATION){
 							/* Case 4: the distance between ii and jj is too small. */
-							double value = 0.0;
+							value = 0.0;
 							ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
 							if (ss->verbosity > 100){
 								printf("site %d case 4: tfs %d %d distance %d p= %f\n",
@@ -287,7 +310,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 							/* Case 3: ii and jj cannot both fit.
 							 *
 							 */
-							double value = 0.0;
+							value = 0.0;
 							ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
 							if (ss->verbosity > 100){
 								printf("site %d case 3: tfs %d %d distance %d p= %f\n",
@@ -296,7 +319,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 						}
 						else{
 							/* Case 5: ii and jj can both fit here. */
-							double value = g->gene_expr[ii*g->expr_timeslices + t]
+							value = g->gene_expr[ii*g->expr_timeslices + t]
 							                            * aff
 							                            * g->genes[ii]->gamma[jj*ss->maxgd + dd];
 							ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
@@ -310,7 +333,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 					}
 					else if (jj == g->ntfs){
 						/* Case 6: no cofactor */
-						double value = g->gene_expr[ii*g->expr_timeslices + t] * aff;
+						value = g->gene_expr[ii*g->expr_timeslices + t] * aff;
 						ret->cpa[xx*ret->dim1 + ii*ret->dim2 + jj*ret->dim3 + dd] = value;
 						sum_cpt += value;
 						sum_cpr += value;
@@ -328,18 +351,28 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 		} // end for ii
 		ret->cpr[xx] = sum_cpr;
 	}
+
+#ifdef CDF_CPA
+	// Precompute the C.D.F. for the cpa distribution.
+	for (int ii=0; ii < ret->L*ret->dim1; ii++){
+		if (ii == 0){ ret->cpacdf[ii] = ret->cpa[ii]; }
+		else if (ii%ret->dim1 == 0){ ret->cpacdf[ii] = ret->cpa[ii];}
+		else {
+			ret->cpacdf[ii] = ret->cpa[ii] + ret->cpacdf[ii-1];
+		}
+	}
+#endif
+
 }
 
 /* Returns the expression of gene gid, given the probtable ret */
+#ifdef MEMO_AFFINITY
+double prob_expr(t_genome *g, int gid, t_ptable *pt, t_afftable* afft, int t, settings *ss, double* tf_k){
+#else
 double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double* tf_k){
+#endif
 	double pe_sum = 0.0;
 	int urslen = g->genes[gid]->urslen;
-
-	if (ss->use_tran_sampling){
-		printf("\n. fitness 324\n");
-		build_tran(pt);
-		tran_ptable(pt);
-	}
 
 	for (int ii = 0; ii < ss->niid; ii++){ // for each IID sample
 		double sum_act = 0.0; // sum of activation energy
@@ -353,23 +386,31 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double
 
 				int reti, retj, retd;
 				/* Sample from the CDF. . . */
-				if (ss->use_tran_sampling){
-					tran_sample(pt, s, reti, retj, retd);
-				}
-				else{
-					ptable_sample(pt, s, reti, retj, retd);
-				}
+
+				//if (ss->enable_timelog)
+				//{	ss->t_start_ptable_sample = clock();
+				//}
+
+				ptable_sample(pt, s, reti, retj, retd);
+
+				//if (ss->enable_timelog)
+				//{	ss->t_sum_ptable_sample += clock() - ss->t_start_ptable_sample;
+				//}
 
 				// So, gene reti will bind at site, with retj as a cofactor retd distance away.
 
 				// affinity of reti for the sequence starting at site
+#ifdef MEMO_AFFINITY
+				double aff = afft->tf_site_aff[reti*g->genes[gid]->urslen + s];
+#else
 				double aff = get_affinity(g->genes[reti]->dbd,
 						g->genes[gid]->urs,
 						g->genes[gid]->urslen,
 						s);
+#endif
 
-				//printf("\n fitness 306: tf %d at site %d, cofact. dist. %d, reg_mode= %d, aff= %f\n",
-				//		reti, retj, retd, g->genes[reti]->reg_mode, aff);
+
+
 
 				if (g->genes[reti]->reg_mode == 0){
 					sum_rep += aff;

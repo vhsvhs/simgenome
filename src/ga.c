@@ -26,7 +26,7 @@ void runsim(t_ga* ga, settings* ss){
 			ss->t_startgen = clock();
 			ss->t_summakept = 0;
 			ss->t_sumfillpt = 0;
-			ss->t_sumsamplept = 0;
+			ss->t_sumprob_expr = 0;
 
 		}
 

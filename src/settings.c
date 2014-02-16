@@ -67,7 +67,7 @@ settings* make_settings(){
 	ss->run_clean = false;
 
 	ss->enable_timelog = true;
-	ss->use_tran_sampling = false; // Not finished implemeting this feature: use transitive CDF sampling,
+//	ss->use_tran_sampling = false; // Not finished implemeting this feature: use transitive CDF sampling,
 
 
 	return ss;
@@ -136,7 +136,7 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"log_occupancy", no_argument,		NULL,	501},
 			{"log_k",		no_argument,		NULL,	502},
 			{"log_sample_stride", required_argument,NULL,503},
-			{"tran_cdf",	no_argument,		NULL,	600},
+//			{"tran_cdf",	no_argument,		NULL,	600},
 
 			{0,0,0,0}
 	};
@@ -317,10 +317,10 @@ void read_cli(int argc, char **argv, settings* ss){
 				break;
 			}
 
-			case 600:{
-				ss->use_tran_sampling = true;
-				break;
-			}
+//			case 600:{
+//				ss->use_tran_sampling = true;
+//				break;
+//			}
 			case 1000:
 			{
 				printf("\n. I found --hello\n");
