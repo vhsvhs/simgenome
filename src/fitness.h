@@ -11,3 +11,7 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss);
 double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double* tf_k);
 
 #endif
+
+#ifdef PTHREADS
+double niid_sample(struct pthread_args* args);
+#endif

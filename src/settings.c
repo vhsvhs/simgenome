@@ -69,6 +69,9 @@ settings* make_settings(){
 	ss->enable_timelog = true;
 //	ss->use_tran_sampling = false; // Not finished implemeting this feature: use transitive CDF sampling,
 
+#ifdef PTHREADS
+	ss->n_pthreads = 4;
+#endif
 
 	return ss;
 }
@@ -137,6 +140,10 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"log_k",		no_argument,		NULL,	502},
 			{"log_sample_stride", required_argument,NULL,503},
 //			{"tran_cdf",	no_argument,		NULL,	600},
+
+#ifdef PTHREADS
+			{"n_pthreads",	no_argument,		NULL,	601},
+#endif
 
 			{0,0,0,0}
 	};
@@ -321,6 +328,18 @@ void read_cli(int argc, char **argv, settings* ss){
 //				ss->use_tran_sampling = true;
 //				break;
 //			}
+#ifdef PTHREADS
+			case 601:
+			{
+				ss->n_pthreads = atof(optarg);
+				if (ss->n_pthreads < 1){
+					printf("\n. You cannot have n_pthreads < 1.\n. Restoring n_pthreads to 1.");
+					ss->n_pthreads = 1;
+				}
+				break;
+			}
+#endif
+
 			case 1000:
 			{
 				printf("\n. I found --hello\n");

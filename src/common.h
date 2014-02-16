@@ -8,6 +8,11 @@
 #include <time.h>
 #include <unistd.h>
 
+//#define PTHREADS 1
+#ifdef PTHREADS
+#include <pthread.h>
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif

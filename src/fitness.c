@@ -365,6 +365,94 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 
 }
 
+#ifdef PTHREADS
+
+struct pthread_args {
+	int pthread_id;
+	double* return_pes;
+	t_genome *g;
+	int gid;
+	t_ptable *pt;
+	t_afftable* afft;
+	int t;
+	settings *ss;
+	double* tf_k;
+};
+
+
+/* Returns a partial value to add to pe_sum */
+double niid_sample(struct pthread_args* args){
+	t_genome* g = args->g;
+	int gid = args->gid;
+	t_ptable* pt = args->pt;
+	t_afftable* afft = args->afft;
+	int t = args->t;
+	settings* ss = args->ss;
+	double* tf_k = args->tf_k;
+
+	int n_samples = ss->niid / ss->n_pthreads;
+
+	args->return_pes = 0.0;
+	for (int ii=0; ii<n_samples; ii++){
+		double sum_act = 0.0; // sum of activation energy
+		double sum_rep = 0.0; // sum of repression energy
+		int s = 0; // site counter
+		while (s < g->genes[gid]->urslen){
+			if (pt->cpr[s] == 0.0){
+				s += 1;
+			}
+			else{
+
+				int reti, retj, retd;
+
+				/* Sample from the CDF. . . */
+				ptable_sample(pt, s, reti, retj, retd);
+				// So, gene reti will bind at site, with retj as a cofactor retd distance away.
+
+				// affinity of reti for the sequence starting at site
+	#ifdef MEMO_AFFINITY
+				double aff = afft->tf_site_aff[reti*g->genes[gid]->urslen + s];
+	#else
+				double aff = get_affinity(g->genes[reti]->dbd,
+						g->genes[gid]->urs,
+						g->genes[gid]->urslen,
+						s);
+	#endif
+
+
+
+
+				if (g->genes[reti]->reg_mode == 0){
+					sum_rep += aff;
+				}
+				else if (g->genes[reti]->reg_mode == 1){
+					sum_act += aff;
+				}
+				/* Advance the site counter */
+				s += g->r[reti];
+				s += retd;
+				if (retj < g->ntfs){
+					s += g->r[retj];
+				}
+
+				// February 2014:
+				tf_k[reti] += aff;
+			}
+
+		} // end while s < urslen
+
+		double pe = (1 / (1+exp(-1*ss->pe_scalar*(sum_act-sum_rep) ) ) );
+
+		//printf("\n. fitness 315b - sum_act= %f, sum_rep= %f pe= %f\n", sum_act, sum_rep, pe);
+
+		return_pe += pe;
+	}
+}
+#endif
+
+
+
+
 /* Returns the expression of gene gid, given the probtable ret */
 #ifdef MEMO_AFFINITY
 double prob_expr(t_genome *g, int gid, t_ptable *pt, t_afftable* afft, int t, settings *ss, double* tf_k){
@@ -372,8 +460,51 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, t_afftable* afft, int t, se
 double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double* tf_k){
 #endif
 	double pe_sum = 0.0;
-	int urslen = g->genes[gid]->urslen;
 
+#ifdef PTHREADS
+	pthread_attr_t attr;
+	pthread_t* threads = (pthread_t *)malloc(ss->n_pthreads*sizeof(pthread_t));
+	double* return_pes = (double *)malloc(ss->n_pthreads*sizeof(double));
+	int rc;
+	int ii;
+	void *status;
+    /* Initialize and set thread detached attribute */
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	/* Arguments for the pthread function */
+	struct pthread_args args;
+	args.return_pes = return_pes[ii];
+	args.g = g;
+	args.gid = gid;
+	args.pt = pt;
+	args.afft = afft;
+	args.t = t;
+	args.ss = ss;
+	args.tf_k = tf_k;
+    for(ii=0; ii<ss->n_pthreads; ii++){
+		 rc = pthread_create(&threads[ii], NULL, &niid_sample, (void *)&args));
+		 if (rc){
+			 printf("ERROR; return code from pthread_create() is %d\n", rc);
+			 exit(-1);
+		 }
+	}
+
+	pthread_attr_destroy(&attr);
+	for(ii=0; ii<ss->n_pthreads; ii++) {
+		rc = pthread_join(threads[tt], &status);
+		if (rc) {
+			printf("ERROR; return code from pthread_join() is %d\n", rc);
+			exit(-1);
+		}
+		printf("Main: completed join with thread %ld having a status of %ld\n",t,(long)status);"
+		pe_sum += return_pes[ii];
+	}
+	 pthread_exit(NULL);
+	 free(threads);
+	 free(return_pes);
+#else
+
+	int urslen = g->genes[gid]->urslen;
 	for (int ii = 0; ii < ss->niid; ii++){ // for each IID sample
 		double sum_act = 0.0; // sum of activation energy
 		double sum_rep = 0.0; // sum of repression energy
@@ -385,18 +516,9 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double
 			else{
 
 				int reti, retj, retd;
+
 				/* Sample from the CDF. . . */
-
-				//if (ss->enable_timelog)
-				//{	ss->t_start_ptable_sample = clock();
-				//}
-
 				ptable_sample(pt, s, reti, retj, retd);
-
-				//if (ss->enable_timelog)
-				//{	ss->t_sum_ptable_sample += clock() - ss->t_start_ptable_sample;
-				//}
-
 				// So, gene reti will bind at site, with retj as a cofactor retd distance away.
 
 				// affinity of reti for the sequence starting at site
@@ -436,6 +558,7 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double
 		//printf("\n. fitness 315b - sum_act= %f, sum_rep= %f pe= %f\n", sum_act, sum_rep, pe);
 
 		pe_sum += pe;
+#endif
 	}
 
 	for (int ii=0; ii<g->ntfs; ii++){
