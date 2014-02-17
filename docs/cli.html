@@ -112,6 +112,13 @@ information for every sequence site. Rather, the K log expresses energies over t
 especially useful for inferring the logical structure of the circuit. 
 </p>
 
+<p><strong>--log_sample_stride X</strong> restricts log files to be written every X generations. By default, X = 50.
+This option applies only to the log files written by --log_occupancy and --log_k. If neither of these logging options
+is enabled, then the use of --log_sample_stride is ignored.
+The occupancy and K log files are very large, and writing these logs every generation can quickly consume 100s of
+GB of disk space. The use of --log_sample_stride helps alleviate this problem.
+</p>
+
 <h3>Basic Mutations:</h3>
 
 <p><strong>--nomu</strong> will disable all mutations in the genetic algorithm. By default, mutations are enabled.</p>

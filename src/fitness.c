@@ -235,10 +235,14 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 	 * Log occupancy and/or binding energies, if logging is enabled.
 	 */
 	if (ss->log_occupancy){
-		log_occupancy(g, gid, t, rid, ptable, ss);
+		if (ss->gen_counter%ss->log_sample_stride == 0){
+			log_occupancy(g, gid, t, rid, ptable, ss);
+		}
 	}
 	if (ss->log_k){
-		log_k(g, gid, t, rid, tf_k, ss);
+		if (ss->gen_counter%ss->log_sample_stride == 0){
+			log_k(g, gid, t, rid, tf_k, ss);
+		}
 	}
 
 	/*
