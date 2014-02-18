@@ -119,6 +119,9 @@ void runsim(t_ga* ga, settings* ss){
 			ss->t_stopgen = clock();
 			log_timegen(ss, ii);
 		}
+
+		free(f);
+		free(er);
 	}
 
 	if (ss->enable_timelog){

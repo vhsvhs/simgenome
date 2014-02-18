@@ -416,6 +416,7 @@ void log_cofactor(t_genome *g, settings* ss, FILE* fo){
 	}
 	free(gc);
 	free(gs);
+	free(p);
 }
 
 /* Writes the URSs for genome g.
@@ -533,6 +534,7 @@ void log_dbds(t_genome *g, settings* ss, FILE* fo){
 	}
 	free(gs);
 	free(gc);
+	free(p);
 }
 
 void log_timegen(settings* ss, int gen){

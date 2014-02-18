@@ -61,6 +61,7 @@ void free_genome(t_genome* gn){
 	}
 	free(gn->genes);
 	free(gn->gene_expr);
+	free(gn);
 }
 
 /* Makes a genome with all random gene sequences and affinities */

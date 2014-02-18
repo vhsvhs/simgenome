@@ -136,10 +136,10 @@ void free_gene(t_gene* g){
 	free(g->urs);
 	if (g->has_dbd){
 		free_psam(g->dbd);
-		free(g->dbd);
 		free(g->gamma);
 		free(g->tfcoop);
 	}
+	free(g);
 }
 
 void print_urs(int* urs, int urslen) {

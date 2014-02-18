@@ -28,9 +28,9 @@ t_pop* make_population_basic(int popsize){
 void free_pop(t_pop* pop){
 	for(int ii=0; ii < pop->ngenomes; ii++){
 		free_genome(pop->genomes[ii]);
-		free(pop->genomes[ii]);
 	}
 	free(pop->genomes);
+	free(pop);
 }
 
 /* f is an array of fitness scores */

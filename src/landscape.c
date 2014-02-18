@@ -214,18 +214,27 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 	ntime += 1;// to offset for 0.
 	ss->maxtime = ntime;
 	ret_n = nrs;
+
+	// Added Feb. 2014
+	free(ninputs);
+	free(nrules);
+	free(ruleset_countinput);
+	free(ruleset_countrule);
+
 	return rulesets;
 }
 
 void free_landscape(t_landscape* l){
 	for (int ii = 0; ii < l->nrulesets; ii++){
+		// Free inputs:
 		for (int jj = 0; jj < l->rulesets[ii]->ninputs; jj++){
 			free( l->rulesets[ii]->inputs[jj] );
 		}
+		free( l->rulesets[ii]->inputs );
+		// Free rules:
 		for (int jj = 0; jj < l->rulesets[ii]->nrules; jj++){
 			free( l->rulesets[ii]->rules[jj] );
 		}
-		free( l->rulesets[ii]->inputs );
 		free( l->rulesets[ii]->rules );
 		free( l->rulesets[ii] );
 	}

@@ -98,6 +98,7 @@ t_pop* deserialize_population(settings* ss){
 	}
 
 	printf("\n. Reading the saved population in %s\n", p);
+	free(p);
 
 	int popsize = 0;
 	t_pop* pop; // the new population
