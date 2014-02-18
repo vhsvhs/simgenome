@@ -57,7 +57,6 @@ t_genome* copy_genome(t_genome *org){
 void free_genome(t_genome* gn){
 	for(int ii=0; ii<gn->ngenes; ii++){
 		free_gene( gn->genes[ii] );
-		free(gn->genes[ii]);
 	}
 	free(gn->genes);
 	free(gn->gene_expr);
