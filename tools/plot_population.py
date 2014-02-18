@@ -14,9 +14,10 @@ if False == os.path.exists(outputdir):
     print "I cannot find the output directory ", outputdir
     exit()
 
-
 if False == os.path.exists(outputdir + "/PLOTS"):
     os.system("mkdir " + outputdir + "/PLOTS")
+
+SKIP_COE = ap.getOptionalToggle("--skip_coe_lines")
 
 # All output files written by this script will be prefaced with
 # the contents of the variable output_filename_seed
@@ -241,19 +242,20 @@ def build_coalescent_paths(ngen):
 
 def plot_coalescent_paths(paths, marks):
     ret = ""
-    for path in paths:
-        print path
-        s =  "x <-c(" + path[0][0].__str__() + "," + path[1][0].__str__() + ");\n"
-        s += "y <-c(" + path[0][1].__str__() + "," + path[1][1].__str__() + ");\n"
-        
-        if path[0][1] > path[1][1]:
-            color = "indianred1"
-            lwd = 0.05
-        else:
-            color = "royalblue1"  
-            lwd = 0.15
-        s += "points(x,y,type='l',col='" + color + "',lwd=" + lwd.__str__() + ");\n"
-        ret += s
+    if SKIP_COE != False:
+        for path in paths:
+            print path
+            s =  "x <-c(" + path[0][0].__str__() + "," + path[1][0].__str__() + ");\n"
+            s += "y <-c(" + path[0][1].__str__() + "," + path[1][1].__str__() + ");\n"
+            
+            if path[0][1] > path[1][1]:
+                color = "indianred1"
+                lwd = 0.05
+            else:
+                color = "royalblue1"  
+                lwd = 0.15
+            s += "points(x,y,type='l',col='" + color + "',lwd=" + lwd.__str__() + ");\n"
+            ret += s
     for mark in marks:
         s = "points(c(" + mark[0][0].__str__() + "), c(" + mark[0][1].__str__() + "),"
         if mark[1] == "x":

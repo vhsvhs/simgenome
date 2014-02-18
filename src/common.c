@@ -134,7 +134,6 @@ int Filexists(char *filename)
  */
 int match(char *a, char *b)
 {
-   int c;
    int position = 0;
    char *x, *y;
 

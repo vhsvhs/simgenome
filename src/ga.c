@@ -63,11 +63,7 @@ void runsim(t_ga* ga, settings* ss){
 			f[qq] = 0.0;
 			er[qq] = 0.0;
 		}
-		double maxf = 0;
-		double minf = 1.0;
-		double meanf = 0;
-		double medianf = 0;
-		double stdf = 0;
+
 
 
 		if (ss->enable_timelog){

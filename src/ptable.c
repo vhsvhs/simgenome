@@ -12,6 +12,7 @@ t_afftable* make_afftable(int ntfs, int nsites){
 
 void free_afftable( t_afftable *t){
 	free(t->tf_site_aff);
+	free(t);
 }
 
 t_ptable* make_ptable(int M, int D, int L) {
@@ -54,6 +55,7 @@ void free_ptable( t_ptable* p){
 #ifdef CDF_CPA
 	free(p->cpacdf);
 #endif
+	free(p);
 }
 
 void print_ptable(t_ptable *p){
@@ -87,7 +89,9 @@ void ptable_sample(t_ptable* pt, int s, int& reti, int& retj, int& retd){
 	double totp = pt->cpr[s]; // total binding energy at this site
 	double randp = drand() * totp;
 
+#ifndef CDF_CPA
 	double sump = 0.0;
+#endif
 	reti = 0;
 	retj = 0;
 	retd = 0;

@@ -102,7 +102,6 @@ t_ruleset** read_rulesets_from_file(settings* ss, int &ret_n, int &ntime){
 		}
 		else if (tokens[0]){
 			int this_rs = atoi( strtok(NULL, " " ) );
-			int geneid = atoi( strtok(NULL, " ") );
 			if (tokens[0][0] == 'R' &&
 					tokens[0][1] == 'U' &&
 					tokens[0][2] == 'L' &&

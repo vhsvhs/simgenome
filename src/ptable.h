@@ -1,5 +1,3 @@
-#define CDF_CPA 1
-
 typedef struct __ProbTable {
 	double* cpa;
 	double* cpt;

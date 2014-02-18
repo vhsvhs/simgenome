@@ -256,7 +256,7 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 //	}
 
 #ifdef MEMO_AFFINITY
-	free(afft);
+	free_afftable(afft);
 #endif
 	free(tf_k);
 	free_ptable(ptable);
