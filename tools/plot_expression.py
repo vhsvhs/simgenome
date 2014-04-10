@@ -48,7 +48,34 @@ rid = ap.getOptionalArg("--rid")
 if rid != False:
     rid = int(rid)
 else:
+    print "You didn't specify a rule ID, using --rid, so by default I'm using rule ID 0."
     rid = 0
+
+rulepath = ap.getOptionalArg("--rulepath") # path to rule file
+gene_time_expr_type = {}
+CALC_ERROR = False
+if rulepath != False:
+    CALC_ERROR = True
+    fin = open(rulepath, "r")
+    for l in fin.xreadlines():
+        if l.startswith("RULE"):
+            tokens = l.split()
+            this_rid = int(tokens[1])
+            if this_rid != rid:
+                continue
+            
+            this_gene = int(tokens[2])
+            if this_gene not in gene_time_expr_type:
+                gene_time_expr_type[this_gene] = {}
+            this_time = int(tokens[3])
+            if this_time not in gene_time_expr_type[this_gene]:
+                gene_time_expr_type[this_gene][this_time] = []
+            this_expr = float(tokens[4])
+            this_type = int(tokens[5])
+            this_weight = float(tokens[6])
+            gene_time_expr_type[this_gene][this_time] = (this_expr, this_type, this_weight)
+
+
 
 # mode specifies if the output goes to an R plot, or to the command-line
 # mode can equal 'cran' or 'cli'
@@ -64,6 +91,9 @@ def get_expression_data(dir):
     tarr = [] # array of time points in data
     data = {} # key = generation, value = hash; key = gene id, value = hash: key = time, value = expression level
     gene_mode = {} # key = gene id, value = "a" or "r" or None
+    
+    if CALC_ERROR == True:
+        gene_error = {} # key = gene, value = error summed over all timepoints, using the rules defined in the rule path file.
     
     """Parses a text file containing the STDOUT from SimGenome."""
     expr_fin = open(dir + "/LOGS/expression.txt", "r")
@@ -118,6 +148,25 @@ def get_expression_data(dir):
                     data[genr][id][this_rid][gid] = {}
                 data[genr][id][this_rid][gid][t] = expr
                 #print "87:", genr, id, this_rid, gid, t
+                            
+                if CALC_ERROR == True:
+                    if gid not in gene_error:
+                        gene_error[gid] = 0.0
+                    if gid in gene_time_expr_type:
+                        if t in gene_time_expr_type[gid]:
+                            if gene_time_expr_type[gid][t][1] == 0:
+                                gene_error[gid] +=  gene_time_expr_type[gid][t][0] / expr - 1.0
+                            elif gene_time_expr_type[gid][t][1] == 1:
+                                gene_error[gid] +=  expr / gene_time_expr_type[gid][t][0] - 1.0
+                    #
+                    # to-do: normalize gene error by weight
+                    #
+                
+    if CALC_ERROR == True:
+        print "Gene\tSum of Error"
+        for gene in gene_error:
+            print gene, "\t%.3f"%gene_error[gene]
+    
     expr_fin.close()
     return (data,tarr,gene_mode)
 
@@ -213,7 +262,7 @@ def plot_cran():
     for genr in expr_data:
         for id in expr_data[genr]:
             #plot_data(data, genr, id)
-            foutpath = outputdir + "/PLOTS/" + "gen" + genr.__str__() + ".id" + id.__str__()
+            foutpath = outputdir + "/PLOTS/" + "gen" + genr.__str__() + ".id" + id.__str__() + ".rid" + rid.__str__()
             fout = open(foutpath + ".rscript", "w")
             fout.write("pdf('" + foutpath + ".pdf', width=7, height=3.5);\n")
             # Time vs. Occupancy
@@ -226,7 +275,7 @@ def plot_cran():
                     for t in tarr:
                         timeslice = t
                         this_rid = 0
-                        occupancy_path = outputdir + "/OCCUPANCY/occ.gen" + genr.__str__() + ".id" + id.__str__() + ".gene" + g.__str__() + ".txt"
+                        occupancy_path = outputdir + "/OCCUPANCY/occ.gen" + genr.__str__() + ".id" + id.__str__() + ".gene" + g.__str__() + ".rid" + rid.__str__() + ".txt"
                         if os.path.exists(occupancy_path):
                             bind_string = getr_binding(occupancy_path, timeslice, this_rid)
                             fout.write(bind_string)    
@@ -251,7 +300,7 @@ def plot_cli():
                     yvals = []
                     for t in tarr:
                         yvals.append( float(expr_data[genr][id][this_rid][gid][t]) )
-                    print "\nGenr:", genr, "ID:", id, "Problem:", this_rid, "Gene:", gid
+                    print "\nGenr:", genr, "ID:", id, "Reg.Problem:", this_rid, "Gene:", gid
                     #print yvals
                     for rowi in range(0,ybins.__len__()):
                         line = ybins[rowi].__str__() + "\t"

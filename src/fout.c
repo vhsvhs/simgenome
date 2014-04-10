@@ -161,6 +161,16 @@ void log_fitness(double* f, double* er, int len, settings* ss){
 }
 
 void log_k(t_genome *g, int gid, int t, int rid, double* tf_k, settings* ss){
+	/*
+	 * This method writes a table as a text file. A unique file gets written for
+	 * every gene in every individual and for every regulatory problem.
+	 * Each line in the table looks like this:
+	 * time:	float_0	float_1	float_2	. . . float_N
+	 * where time is the timeslice
+	 * and float_0 is the sum of affinities of regulatory gene 0 on the URS of
+	 * gene 'gid', and float_N is the sum of affinities of regulatory gene N on
+	 * the URS of gene 'gid'.
+	 */
 	char* gc;
 	gc = (char*)malloc(10*sizeof(char));
 	sprintf(gc, "%d", ss->gen_counter);

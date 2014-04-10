@@ -69,6 +69,8 @@ settings* make_settings(){
 	ss->enable_timelog = true;
 //	ss->use_tran_sampling = false; // Not finished implemeting this feature: use transitive CDF sampling,
 
+	ss->mu_reporters_only = false;
+	ss->mu_regulators_only = false;
 #ifdef PTHREADS
 	ss->n_pthreads = 4;
 #endif
@@ -141,10 +143,12 @@ void read_cli(int argc, char **argv, settings* ss){
 			{"log_sample_stride", required_argument,NULL,503},
 //			{"tran_cdf",	no_argument,		NULL,	600},
 
+			{"mu_reporters_only", no_argument,	NULL,	1001},
+			{"mu_regulators_only", no_argument,	NULL,	1002},
+
 #ifdef PTHREADS
 			{"n_pthreads",	no_argument,		NULL,	601},
 #endif
-
 			{0,0,0,0}
 	};
 
@@ -340,6 +344,17 @@ void read_cli(int argc, char **argv, settings* ss){
 			}
 #endif
 
+			case 1001:
+			{
+				ss->mu_reporters_only = true;
+				break;
+			}
+			case 1002:
+			{
+				ss->mu_regulators_only = true;
+				break;
+			}
+
 			case 1000:
 			{
 				printf("\n. I found --hello\n");
@@ -425,7 +440,7 @@ void print_settings(settings *ss){
 		printf(". output directory: \t%s\n", ss->outdir);
 		printf(". fitness rules: \t%s\n", ss->rulepath);
 		if (ss->load_save_pop == true){
-			printf(". saved population: \t%s\n", ss->poppath);
+			printf(". starting with the saved population: \t%s\n", ss->poppath);
 		}
 		else if(ss->build_random_population == true){
 			printf(". population: \trandom\n");
@@ -440,7 +455,15 @@ void print_settings(settings *ss){
 		printf(". population size: \t%d\n", ss->popsize);
 		printf("\n");
 		if (ss->do_mutation) {
-			printf(". mutations: enabled\n");
+			if (ss->mu_reporters_only){
+				printf(". mutations: enabled only for reporter genes\n");
+			}
+			else if (ss->mu_regulators_only){
+				printf(". mutations: enabled only for regulator genes\n");
+			}
+			else{
+				printf(". mutations: enabled\n");
+			}
 			printf(". URS mu rate: \t\t%f\n", ss->urs_mu_rate);
 			printf(". PSAM mu rate: \t%f\n", ss->psam_mu_rate);
 			printf(". URS indel rate: \t%f\n", ss->urslenmu);
@@ -485,7 +508,7 @@ void print_settings(settings *ss){
 		fprintf(fp,". output directory: %s\n", ss->outdir);
 		fprintf(fp,". fitness rules: %s\n", ss->rulepath);
 		if (ss->load_save_pop == true){
-			fprintf(fp,". saved population: %s\n", ss->poppath);
+			fprintf(fp,". starting with the saved population: %s\n", ss->poppath);
 		}
 		else if(ss->build_random_population == true){
 			fprintf(fp,". population: random\n");
@@ -500,7 +523,15 @@ void print_settings(settings *ss){
 		fprintf(fp,". population size: %d\n", ss->popsize);
 		fprintf(fp,"\n");
 		if (ss->do_mutation) {
-			fprintf(fp, ". mutations: enabled\n");
+			if (ss->mu_reporters_only){
+				fprintf(fp, ". mutations: enabled only for reporter genes\n");
+			}
+			else if (ss->mu_regulators_only){
+				fprintf(fp, ". mutations: enabled only for regulator genes\n");
+			}
+			else{
+				fprintf(fp, ". mutations: enabled\n");
+			}
 			fprintf(fp, ". URS mu rate: %f\n", ss->urs_mu_rate);
 			fprintf(fp, ". PSAM mu rate: %f\n", ss->psam_mu_rate);
 			fprintf(fp, ". URS indel rate: %f\n", ss->urslenmu);

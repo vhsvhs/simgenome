@@ -58,20 +58,18 @@ void runsim(t_ga* ga, settings* ss){
 
 		/* f is an array of fitness values, one for each individual */
 		double* f = (double *)malloc(ga->pop->ngenomes * sizeof(double));
+		/* er is an array of error values, one for each individual */
 		double* er = (double *)malloc(ga->pop->ngenomes * sizeof(double));
 		for (int qq = 0; qq < ga->pop->ngenomes; qq++){
 			f[qq] = 0.0;
 			er[qq] = 0.0;
 		}
 
-
-
 		if (ss->enable_timelog){
 			ss->t_startf = clock();
 		}
 
 		/* Consider each individual */
-
 		for (int gid=0; gid < ga->pop->ngenomes; gid++){
 			/*
 			 * GET FITNESS of an individual
@@ -87,7 +85,6 @@ void runsim(t_ga* ga, settings* ss){
 		if (ss->enable_timelog){
 			ss->t_sumf += clock() - ss->t_startf;
 		}
-
 
 		/* Using the new fitness values, mark elite individuals */
 		mark_elite(ga->pop, f, ss);

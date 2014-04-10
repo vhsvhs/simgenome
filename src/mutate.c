@@ -69,8 +69,12 @@ void mutate(t_pop* pop, settings* ss){
 		if (n < 0){
 			n = 0;
 		}
-		for (int jj = 0; jj < n; jj++){
+		for (int jj = 0; jj < n; jj++){ // for gene jj
 			int rand_gene = rand()%pop->genomes[ii]->ngenes;
+
+			if (ss->mu_reporters_only && rand_gene < pop->genomes[ii]->ntfs){ continue; } // skip TF mutations
+			if (ss->mu_regulators_only && rand_gene >= pop->genomes[ii]->ntfs){ continue; } // skip TF mutations
+
 			int rs = mutate_urs(pop->genomes[ii]->genes[rand_gene], ss);
 
 			if (ss->verbosity > 2){
@@ -92,8 +96,10 @@ void mutate(t_pop* pop, settings* ss){
 		if (n < 0){
 			n = 0;
 		}
+		if (ss->mu_reporters_only){ n=0; } // if we're only mutating reporter genes, then skip this next part.
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ntfs;
+
 			int rs = mutate_psam(pop->genomes[ii]->genes[rand_gene]->dbd, ss);
 
 			if (ss->verbosity > 2){
@@ -114,6 +120,7 @@ void mutate(t_pop* pop, settings* ss){
 		 * Mutate PSAM lengths
 		 * */
 		n = count_psamlen( pop->genomes[ii] ) * randn(ss->psamlenmu, ss->psamlensd);
+		if (ss->mu_reporters_only){ n=0; }
 		for (int jj = 0; jj < n; jj++){
 			int rand_gene = rand()%pop->genomes[ii]->ntfs;
 			int before_len = pop->genomes[ii]->genes[rand_gene]->dbd->nsites;

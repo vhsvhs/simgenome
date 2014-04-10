@@ -45,7 +45,6 @@ def cli_plot():
     gen_min = {}
     gen_max = {}
     
-    count_gen = 0
     for l in lines:
         if l.__len__() > 1:
             tokens = l.split()
@@ -92,8 +91,11 @@ def cli_plot():
 #
 def build_plot_basics():
     """Reads LOGS/generations.txt in order to gather basic information about the population history,
-    including min, max, and mean fitness at each generation."""
-    maxx = None
+    including min, max, and mean fitness at each generation.
+    This method returns
+    """
+    maxgen = None
+    mingen = None
     maxy = None
     genstring = ""
     genstring += "g <-c("
@@ -110,18 +112,28 @@ def build_plot_basics():
         if l.__len__() > 1:
             tokens = l.split()
             gen = int(tokens[1])
-            if maxx < gen:
-                maxx = gen
-            maxf = float(tokens[3])
-            if maxy < maxf:
-                maxy = maxf
-            minf = float(tokens[5])
-            meanf = float(tokens[7])
+            if maxgen == None:
+                maxgen = gen
+            if mingen == None:
+                mingen = gen
+            
+            if maxgen < gen:
+                maxgen = gen
+            if mingen > gen:
+                maxgen = gen
+
+            this_maxf = float(tokens[3])
+            if maxy == None:
+                maxy = this_maxf
+            if maxy < this_maxf:
+                maxy = this_maxf
+            this_minf = float(tokens[5])
+            this_meanf = float(tokens[7])
             
             genstring += gen.__str__() + ","   
-            maxfstring += maxf.__str__() + ","
-            minfstring += minf.__str__() + ","
-            meanfstring += meanf.__str__() + ","
+            maxfstring += this_maxf.__str__() + ","
+            minfstring += this_minf.__str__() + ","
+            meanfstring += this_meanf.__str__() + ","
             count_gen += 1
     
     genstring = re.sub(",$", "", genstring)
@@ -133,7 +145,7 @@ def build_plot_basics():
     meanfstring = re.sub(",$", "", meanfstring)
     meanfstring += ");\n"
     
-    plotstring = "plot(c(0.0," + maxx.__str__() + "), c(0," + maxy.__str__() + "), type='n', main='" + title + "', xlab='" + xlab + "', ylab='" + ylab + "');\n"
+    plotstring = "plot(c(" + mingen.__str__() + "," + maxgen.__str__() + "), c(0," + maxy.__str__() + "), type='n', main='" + title + "', xlab='" + xlab + "', ylab='" + ylab + "');\n"
     
     pointsstring = "points(g,maxf,type='l', col='black', lwd=1);\n"
     pointsstring += "points(g,minf,type='l', col='black', lwd=1);\n"
@@ -145,14 +157,14 @@ def build_plot_basics():
     r += meanfstring + "\n"
     r += plotstring + "\n"
     r += pointsstring + "\n"
-    return [r, count_gen]
+    return [r, mingen, maxgen]
 
-def build_poptrace(ngen):
-    [paths,marks] = build_coalescent_paths(ngen)
+def build_poptrace( mingen, maxgen):
+    [paths,marks] = build_coalescent_paths( mingen, maxgen)
     #print paths
     return plot_coalescent_paths(paths,marks)
 
-def build_coalescent_paths(ngen):
+def build_coalescent_paths( mingen, maxgen):
     """Reads MATING/mating.gen... files in order to build a coalescent history
     of the population.
     And also reads FITNESS/fitness.gen... files in order to learn the fitness of
@@ -161,13 +173,13 @@ def build_coalescent_paths(ngen):
     marks = [] # array of [ (x,y), char ]
     
     parent_fitness = {}
-    for gen in range(0, ngen):
+    for gen in range(mingen, maxgen+1):
         my_parents = {}
 
         # put values in my_parents
         had_babies = []
         mpath = None
-        if gen > 0:
+        if gen > mingen:
             mpath = outputdir + "/MATING/mating.gen" + (gen - 1).__str__() + ".txt"
             for line in open(mpath, "r").readlines():
                 tokens = line.split()
@@ -199,7 +211,7 @@ def build_coalescent_paths(ngen):
             child_fitness[id] = f
             children.append(id)
         
-        if gen == 0:
+        if gen == mingen:
             for child in children:
                 my_parents[child] = (child,child)   
                 
@@ -208,7 +220,7 @@ def build_coalescent_paths(ngen):
         print "111:", child_fitness
         print "112:", my_parents
                     
-        if gen > 0:  
+        if gen > mingen:  
             for child in children:
                 # add lines
                 x1 = gen-1
@@ -293,8 +305,8 @@ if ap.getOptionalArg("--mode") == "cli":
     cli_plot()
     exit()
 
-[s,ngen] = build_plot_basics()
-p = build_poptrace(ngen)
+[s, mingen, maxgen] = build_plot_basics()
+p = build_poptrace( mingen, maxgen)
 l = get_legend()
 final = s + "\n" + p + "\n" + l
 execute_cran_string(final)

@@ -35,8 +35,7 @@ double get_fitness(t_genome* g, t_landscape* l, settings* ss, double& this_er){
 
 			//printf("\n. TIME %d\n", t);
 
-			/* Manually set expression levels
-			 * for genes defined in the rule set
+			/* Manually set expression levels for genes defined in the rule set
 			 * where its applicable for timeslice t.
 			 */
 			for (int ii=0; ii< l->rulesets[rid]->ninputs; ii++){

@@ -96,6 +96,9 @@ typedef struct __Settings {
 	//clock_t t_start_ptable_sample;
 	//int t_sum_ptable_sample;
 
+	bool mu_reporters_only;
+	bool mu_regulators_only;
+
 #ifdef PTHREADS
 	int n_pthreads;
 #endif
