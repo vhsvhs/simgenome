@@ -1,7 +1,7 @@
 """
 This script plots the expression (time vs. concentration) for all genes.
 By default, it will generate one of these plots for all individuals in all
-generations, but this can be restricted by using --gen and --id
+ap.params["generation"]s, but this can be restricted by using --gen and --id
 
 USAGE:
 python plot_expression.py --outdir X
@@ -17,39 +17,34 @@ from test_common import *
 from plot_includeme import *
 ap = ArgParser(sys.argv)
 
-outputdir = ap.getArg("--outdir") #outputdir is the folder into which a SimGenome run placed output.
-if False == os.path.exists(outputdir + "/PLOTS"):
-    os.system("mkdir " + outputdir + "/PLOTS")
+ap.params["outputdir"] = ap.getArg("--outdir") #ap.params["outputdir"] is the folder into which a SimGenome run placed output.
+if False == os.path.exists(ap.params["outputdir"] + "/PLOTS"):
+    os.system("mkdir " + ap.params["outputdir"] + "/PLOTS")
 
 #####################################################
 #
 # Get command-line arguments:
 #
-generation = ap.getArg("--gen")
-if generation != False:
-    generation = int(generation)
-else:
-    print "You need to specify a generation with --gen"
-    exit()
+ap.params["generation"] = ap.getOptionalArg("--gen")
+if ap.params["generation"] != False:
+    ap.params["generation"] = int(ap.params["generation"])
 
-indi = ap.getArg("--id")
-if indi != False:
-    indi = int(indi)
-else:
-    print "You need to specify an individual with --id"
-    exit()
+ap.params["id"] = ap.getOptionalArg("--id")
+if ap.params["id"] != False:
+    ap.params["id"] = int(ap.params["id"])
+#else:
+#    print "You need to specify an individual with --id"
+#    exit()
 
-genelist = ap.getList("--gene", type=int)
-if genelist == False:
-    print "You need to specify one or more genes using --gene"
-    exit()
+ap.params["genelist"] = ap.getList("--gene", type=int)
 
-rid = ap.getOptionalArg("--rid")
-if rid != False:
-    rid = int(rid)
+ap.params["rid"] = ap.getOptionalArg("--rid")
+if ap.params["rid"] != False:
+    ap.params["rid"] = int(ap.params["rid"])
 else:
-    print "You didn't specify a rule ID, using --rid, so by default I'm using rule ID 0."
-    rid = 0
+    print "\n. You didn't specify a rule ID, using --rid, so by default I'm using rule ID 0."
+    ap.params["rid"] = 0
+
 
 rulepath = ap.getOptionalArg("--rulepath") # path to rule file
 gene_time_expr_type = {}
@@ -61,7 +56,7 @@ if rulepath != False:
         if l.startswith("RULE"):
             tokens = l.split()
             this_rid = int(tokens[1])
-            if this_rid != rid:
+            if this_rid != ap.params["rid"]:
                 continue
             
             this_gene = int(tokens[2])
@@ -76,20 +71,64 @@ if rulepath != False:
             gene_time_expr_type[this_gene][this_time] = (this_expr, this_type, this_weight)
 
 
-
-# mode specifies if the output goes to an R plot, or to the command-line
-# mode can equal 'cran' or 'cli'
-mode = ap.getOptionalArg("--mode")
-if mode == False:
-    mode = "cran"
-elif mode != "cran" and mode != "cli":
-    mode = "cran"
+# ap.params["mode"] specifies if the output goes to an R plot, or to the command-line
+# ap.params["mode"] can equal 'cran' or 'cli'
+ap.params["mode"] = ap.getOptionalArg("--mode")
+if ap.params["mode"] == False:
+    ap.params["mode"] = "cran"
+elif ap.params["mode"] != "cran" and ap.params["mode"] != "cli":
+    ap.params["mode"] = "cran"
     
+
+def resolve_cli_options():
+    """If the user didn't specify all the necessary commands, then auto-determine
+    the best options for those missing commands."""
+    
+    if ap.params["generation"] == False:
+        fin = open(ap.params["outputdir"] + "/LOGS/generations.txt", "r")
+        lines = fin.readlines()
+        lastline = lines[ lines.__len__()-1 ]
+        ap.params["generation"] = int( lastline.split()[1] )
+        fin.close()
+        print "\n. You didn't specify --gen for generation. I'm defaulting to the last generation (" + ap.params["generation"].__str__() + ")."
+    if ap.params["genelist"] == False:
+        fin = open(ap.params["outputdir"] + "/POPS/pop.gen" + ap.params["generation"].__str__() + ".save.txt", "r")
+        for l in fin.xreadlines():
+            if l.startswith("Genome:"):
+                ngenes = int( l.split()[3] )
+                ap.params["genelist"] = []
+                for ii in range(0, ngenes):
+                    ap.params["genelist"].append( ii )
+                fin.close()
+                print "\n. You didn't specify --gene for a list of genes. I'm defaulting to these genes:", ap.params["genelist"]
+                
+                break
+    if ap.params["rid"] == False:
+       ap.params["rid"] = 0 
+    
+    if ap.params["id"] == False:
+        fin = open(ap.params["outputdir"] + "/FITNESS/fitness.gen" + ap.params["generation"].__str__() + ".txt", "r")
+        minid = None
+        minerr = None
+        for l in fin.xreadlines():
+            if l.__len__() > 5:
+                tokens = l.split()
+                this_id = int( tokens[0] )
+                this_err = float( tokens[2] )
+                if minerr == None:
+                    minid = this_id
+                    minerr = this_err
+                if minerr > this_err:
+                    minid == this_id
+                    minerr = this_err
+        fin.close()
+        ap.params["id"] = minid
+        print "\n. You didn't specify --id for genome ID. I'm defaulting to the max. fit individual" + ap.params["id"].__str__() + "."
 
 
 def get_expression_data(dir):
     tarr = [] # array of time points in data
-    data = {} # key = generation, value = hash; key = gene id, value = hash: key = time, value = expression level
+    data = {} # key = ap.params["generation"], value = hash; key = gene id, value = hash: key = time, value = expression level
     gene_mode = {} # key = gene id, value = "a" or "r" or None
     
     if CALC_ERROR == True:
@@ -106,26 +145,26 @@ def get_expression_data(dir):
                 continue
             
             this_rid = int( tokens[1] )
-            if this_rid != rid:
+            if this_rid != ap.params["rid"]:
                     continue
             
             genr = int( tokens[3] )
-            if generation != genr:
+            if ap.params["generation"] != genr:
                 continue
                         
             id = int( tokens[7] )
-            if id != indi:
+            if id != ap.params["id"]:
                 continue
             
             gid = int( tokens[9] )
-            if gid not in genelist and genelist[0] != -1:
+            if gid not in ap.params["genelist"] and ap.params["genelist"][0] != -1:
                 continue
             
-            mode = tokens[10]
-            if mode.startswith("expr:"):
-                mode = ""
+            ap.params["mode"] = tokens[10]
+            if ap.params["mode"].startswith("expr:"):
+                ap.params["mode"] = ""
             if gid not in gene_mode:
-                gene_mode[gid] = mode
+                gene_mode[gid] = ap.params["mode"]
 
             t = int( tokens[5] )
             if t not in tarr:
@@ -136,7 +175,7 @@ def get_expression_data(dir):
             for ii in range(10, tokens.__len__()):
                 if tokens[ii].startswith("expr:"):
                     expr = float( tokens[ii+1] )
-            if generation == genr:         
+            if ap.params["generation"] == genr:         
                 if genr not in data:
                     data[genr] = {}
                 if id not in data[genr]:
@@ -147,7 +186,6 @@ def get_expression_data(dir):
                 if gid not in data[genr][id][this_rid]:
                     data[genr][id][this_rid][gid] = {}
                 data[genr][id][this_rid][gid][t] = expr
-                #print "87:", genr, id, this_rid, gid, t
                             
                 if CALC_ERROR == True:
                     if gid not in gene_error:
@@ -257,12 +295,12 @@ def get_rstring( data, gen, id, tarr, gene_mode):
 
 
 def plot_cran():
-    (expr_data,tarr,gene_mode) = get_expression_data(outputdir)
+    (expr_data,tarr,gene_mode) = get_expression_data(ap.params["outputdir"])
     init_colors(gene_mode.keys().__len__())
     for genr in expr_data:
         for id in expr_data[genr]:
             #plot_data(data, genr, id)
-            foutpath = outputdir + "/PLOTS/" + "gen" + genr.__str__() + ".id" + id.__str__() + ".rid" + rid.__str__()
+            foutpath = ap.params["outputdir"] + "/PLOTS/" + "gen" + genr.__str__() + ".id" + id.__str__() + ".rid" + ap.params["rid"].__str__()
             fout = open(foutpath + ".rscript", "w")
             fout.write("pdf('" + foutpath + ".pdf', width=7, height=3.5);\n")
             # Time vs. Occupancy
@@ -274,10 +312,10 @@ def plot_cran():
                 for g in gene_mode:
                     for t in tarr:
                         timeslice = t
-                        this_rid = 0
-                        occupancy_path = outputdir + "/OCCUPANCY/occ.gen" + genr.__str__() + ".id" + id.__str__() + ".gene" + g.__str__() + ".rid" + rid.__str__() + ".txt"
+                        #this_ap.params["rid"] = 0
+                        occupancy_path = ap.params["outputdir"] + "/OCCUPANCY/occ.gen" + genr.__str__() + ".id" + id.__str__() + ".gene" + g.__str__() + ".rid" + ap.params["rid"].__str__() + ".txt"
                         if os.path.exists(occupancy_path):
-                            bind_string = getr_binding(occupancy_path, timeslice, this_rid)
+                            bind_string = getr_binding(occupancy_path, timeslice, ap.params["rid"])
                             fout.write(bind_string)    
             fout.write("dev.off();\n")
             fout.write("par(xpd=TRUE);\n")
@@ -286,17 +324,17 @@ def plot_cran():
 
 
 def plot_cli():
-    (expr_data,tarr,gene_mode) = get_expression_data(outputdir)
+    (expr_data,tarr,gene_mode) = get_expression_data(ap.params["outputdir"])
     
     #
-    #expr_data is : [genr][id][this_rid][gid][t]
+    #expr_data is : [genr][id][this_ap.params["rid"]][gid][t]
     #
     ybins = [1.0, 0.1, 0.01, 0.001,0.0001,0.00001,0.000001, 0.0000001]    
     
     for genr in expr_data:
         for id in expr_data[genr]:   
             for this_rid in expr_data[genr][id]:
-                for gid in expr_data[genr][id][rid]:
+                for gid in expr_data[genr][id][ap.params["rid"]]:
                     yvals = []
                     for t in tarr:
                         yvals.append( float(expr_data[genr][id][this_rid][gid][t]) )
@@ -327,9 +365,10 @@ def plot_cli():
 #
 # main
 #
-if mode == "cran":
+resolve_cli_options()
+if ap.params["mode"] == "cran":
     plot_cran()
-elif mode == "cli":
+elif ap.params["mode"] == "cli":
     plot_cli()
         
         
