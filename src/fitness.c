@@ -219,11 +219,15 @@ double get_expr_modifier(t_genome *g, int gid, int t, int rid, settings *ss){
 	/*
 	 * Sample from the P table's CDF
 	 */
-#ifdef MEMO_AFFINITY
-	double pe = prob_expr(g, gid, ptable, afft, t, ss, tf_k);
-#else
-	double pe = prob_expr(g, gid, ptable, t, ss, tf_k);
-#endif
+
+//#ifdef MEMO_AFFINITY
+//	double pe = prob_expr(g, gid, ptable, afft, t, ss, tf_k);
+//#else
+//	double pe = prob_expr(g, gid, ptable, t, ss, tf_k);
+//#endif
+
+	double pe = prob_expr_approx(g, gid, ptable, t, ss, tf_k);
+
 	pe = pe - 0.5;
 
 	if (ss->enable_timelog){
@@ -272,10 +276,6 @@ void fill_prob_table(t_genome *g, int gid, t_ptable *ret, t_afftable *afft, int 
 void fill_prob_table(t_genome *g, int gid, t_ptable *ret, int t, settings *ss){
 #endif
 	for (int xx = 0; xx < ret->L; xx++){ // for each site in the upstream regulatory sequence
-
-		//double debug1 = g->genes[1]->gamma[1*ss->maxgd];
-		//printf("\n. debug 244: %f\n", debug1);
-
 
 		double sum_cpr = 0.0;
 		for (int ii = 0; ii < g->ntfs; ii++){ // for each transcription factor
@@ -456,12 +456,16 @@ double niid_sample(struct pthread_args* args){
 
 
 
-/* Returns the expression of gene gid, given the probtable ret */
+/* Returns the expression of gene gid, given the probtable ret.
+ * tf_k is also returned, for logging purposes. tf_k[ii] is the affinity of TF ii for gene gid,
+ * averaged over all the NIID samples. */
 #ifdef MEMO_AFFINITY
 double prob_expr(t_genome *g, int gid, t_ptable *pt, t_afftable* afft, int t, settings *ss, double* tf_k){
 #else
+
 double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double* tf_k){
 #endif
+
 	double pe_sum = 0.0;
 
 #ifdef PTHREADS
@@ -517,8 +521,11 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double
 				s += 1;
 			}
 			else{
-
 				int reti, retj, retd;
+
+
+				// July 2014: To-do: Is it possible to avoid the NIID samples and instead
+				// directly estimate the binding from the memo-ized ptable?
 
 				/* Sample from the CDF. . . */
 				ptable_sample(pt, s, reti, retj, retd);
@@ -533,9 +540,6 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double
 						g->genes[gid]->urslen,
 						s);
 #endif
-
-
-
 
 				if (g->genes[reti]->reg_mode == 0){
 					sum_rep += aff;
@@ -571,5 +575,46 @@ double prob_expr(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double
 	return pe_sum / (double)ss->niid;
 }
 
+/* July 2014: This method is a new attempt to speedup the calculation of pe_sum.
+ * Rather than sampling from the probability distribution (which consumes over 97% of the
+ * compute time), this new method collapses the probability distribution and approximates
+ * pe_sum.
+ */
+double prob_expr_approx(t_genome *g, int gid, t_ptable *pt, int t, settings *ss, double* tf_k){
+	int urslen = g->genes[gid]->urslen;
+	double sum_act = 0.0; // sum of activation energy
+	double sum_rep = 0.0; // sum of repression energy
+	int s = 0; // site counter
+	while (s < urslen){
+		double totp = pt->cpr[s];
+
+		if (pt->cpr[s] == 0.0){ // skip sites where nothing binds.
+			s += 1;
+		}
+		else{
+			for (int ii=s*pt->dim1; ii < s*pt->dim1 + pt->dim1; ii++) {
+
+				double this_config_wt = pt->cpa[ii] / totp;
+
+				int tfi = ii%pt->dim1 / pt->dim2;
+				double aff = get_affinity(g->genes[tfi]->dbd,
+						g->genes[gid]->urs,
+						g->genes[gid]->urslen,
+						s);
+
+				if (g->genes[tfi]->reg_mode == 0){
+					sum_rep += aff * this_config_wt;
+				}
+				else if (g->genes[tfi]->reg_mode == 1){
+					sum_act += aff * this_config_wt;
+				}
+			}
+		}
+		s += 1;
+	}
+
+	double pe = (1 / (1+exp(-1*ss->pe_scalar*(sum_act-sum_rep) ) ) );
+	return pe;
+}
 
 

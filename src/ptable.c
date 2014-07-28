@@ -81,7 +81,7 @@ void print_ptable(t_ptable *p){
  */
 void ptable_sample(t_ptable* pt, int s, int& reti, int& retj, int& retd){
 	/*
-	 * To-do: approximately 97% of the computationl runtime is spent
+	 * To-do: approximately 97% of the computational runtime is spent
 	 * in this method, according to profiling analysis.
 	 * How can I make this function faster?
 	 */

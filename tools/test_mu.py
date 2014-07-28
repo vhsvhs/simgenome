@@ -1,3 +1,8 @@
+##############################################################
+#
+#
+#
+#
 #
 # USAGE:
 # %> python tools/test_mu.py P
@@ -7,7 +12,7 @@
 # Screens values of mutation rates versus N generations to solution,
 # for the simple problem of assembling a feed-forward loop.
 #
-# NOTE: This script requires that you install simreg as a system-wide link.
+# NOTE: This script requires that you install simreg as an exe available from anywhere on the path.
 #
 import sys, os
 from test_common import *
@@ -97,17 +102,17 @@ def print_urss():
     fout.write(">0\n")
     fout.write("AAAAA\n")
     fout.write(">1\n")
-    fout.write( get_rand_nt(1000) )
+    fout.write( get_rand_nt(1000) + "\n")
     #fout.write("AAAAAGGGGGAAAAAAAAACCCCAAAAAAAAACCCCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
     fout.write(">2\n")
-    fout.write( get_rand_nt(1000) )
+    fout.write( get_rand_nt(1000) + "\n" )
     #fout.write("AAAAAAAAAACCCCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
     fout.write(">3\n")
     fout.write("AAAA\n")
     fout.write(">4\n")
     fout.write("AAAA\n")
     fout.write(">5\n")
-    fout.write( get_rand_nt(1000) )
+    fout.write( get_rand_nt(1000) + "\n" )
     #fout.write("AAAACCCCCCAAAAAAAAAAATTTTTTTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
    
     fout.close()

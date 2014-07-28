@@ -17,7 +17,11 @@ from test_common import *
 from plot_includeme import *
 ap = ArgParser(sys.argv)
 
+print "\n===================================================="
+print "  Gene Expression Summary"
+
 ap.params["outputdir"] = ap.getArg("--outdir") #ap.params["outputdir"] is the folder into which a SimGenome run placed output.
+print "\n. Reading data in " + ap.params["outputdir"]
 if False == os.path.exists(ap.params["outputdir"] + "/PLOTS"):
     os.system("mkdir " + ap.params["outputdir"] + "/PLOTS")
 
@@ -76,7 +80,7 @@ if rulepath != False:
 ap.params["mode"] = ap.getOptionalArg("--mode")
 if ap.params["mode"] == False:
     ap.params["mode"] = "cran"
-elif ap.params["mode"] != "cran" and ap.params["mode"] != "cli":
+elif ap.params["mode"] != "cran" and ap.params["mode"] != "cli" and ap.params["mode"] != "error_summary":
     ap.params["mode"] = "cran"
     
 
@@ -119,11 +123,11 @@ def resolve_cli_options():
                     minid = this_id
                     minerr = this_err
                 if minerr > this_err:
-                    minid == this_id
+                    minid = this_id
                     minerr = this_err
         fin.close()
         ap.params["id"] = minid
-        print "\n. You didn't specify --id for genome ID. I'm defaulting to the max. fit individual" + ap.params["id"].__str__() + "."
+        print "\n. You didn't specify --id for genome ID. I'm defaulting to the max. fit individual " + ap.params["id"].__str__() + "."
 
 
 def get_expression_data(dir):
@@ -192,9 +196,9 @@ def get_expression_data(dir):
                         gene_error[gid] = 0.0
                     if gid in gene_time_expr_type:
                         if t in gene_time_expr_type[gid]:
-                            if gene_time_expr_type[gid][t][1] == 0:
+                            if gene_time_expr_type[gid][t][1] == 0 and gene_time_expr_type[gid][t][0] > expr:
                                 gene_error[gid] +=  gene_time_expr_type[gid][t][0] / expr - 1.0
-                            elif gene_time_expr_type[gid][t][1] == 1:
+                            elif gene_time_expr_type[gid][t][1] == 1 and gene_time_expr_type[gid][t][0] < expr:
                                 gene_error[gid] +=  expr / gene_time_expr_type[gid][t][0] - 1.0
                     #
                     # to-do: normalize gene error by weight
@@ -370,5 +374,7 @@ if ap.params["mode"] == "cran":
     plot_cran()
 elif ap.params["mode"] == "cli":
     plot_cli()
+elif ap.params["mode"] == "error_summary":
+    x = get_expression_data(ap.params["outputdir"])
         
         
